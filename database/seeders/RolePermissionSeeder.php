@@ -19,7 +19,7 @@ class RolePermissionSeeder extends Seeder
             'view products', 'create products', 'edit products', 'delete products',
             'view devices', 'view subscriptions',
             'view activation requests', 'approve activation requests',
-            'view audit logs', 'view teams', 'manage teams',
+            'view audit logs',
             'view users', 'manage users', 'manage roles',
             'view reports', 'manage settings',
         ];
@@ -40,7 +40,6 @@ class RolePermissionSeeder extends Seeder
             'view products', 'create products', 'edit products',
             'view devices', 'view subscriptions',
             'view activation requests', 'approve activation requests',
-            'view teams', 'manage teams',
             'view users', 'view reports',
         ]);
 
