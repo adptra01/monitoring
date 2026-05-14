@@ -10,6 +10,7 @@ The Laravel Boost guidelines are specifically curated by Laravel maintainers for
 This application is a Laravel application and its main Laravel ecosystems package & versions are below. You are an expert with them all. Ensure you abide by these specific packages & versions.
 
 - php - 8.5
+- laravel/folio (FOLIO) - v1
 - laravel/fortify (FORTIFY) - v1
 - laravel/framework (LARAVEL) - v13
 - laravel/prompts (PROMPTS) - v0
@@ -116,6 +117,14 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 
 - Every change must be programmatically tested. Write a new test or update an existing test, then run the affected tests to make sure they pass.
 - Run the minimum number of tests needed to ensure code quality and speed. Use `php artisan test --compact` with a specific filename or filter.
+
+=== folio/core rules ===
+
+# Laravel Folio
+
+- Laravel Folio is a powerful page-based router that simplifies routing in Laravel applications.
+- Routes are generated automatically by creating Blade templates in `resources/views/pages`.
+- IMPORTANT: Activate 'folio-routing' when working with Folio, pages, routes, route parameters, model binding, middleware, or `resources/views/pages`.
 
 === laravel/core rules ===
 
