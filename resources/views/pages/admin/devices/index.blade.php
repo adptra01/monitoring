@@ -1,56 +1,79 @@
 <?php
 
 use App\Models\Device;
-use Livewire\Volt\Component;
+use Flux\Flux;
 use Livewire\WithPagination;
 
-new class extends Component
-{
-    use WithPagination;
+use function Laravel\Folio\name;
+use function Livewire\Volt\{uses, computed, state};
 
-    public string $search = '';
+name('admin.devices.index');
 
-    public function updatedSearch(): void
-    {
-        $this->resetPage();
-    }
-}; ?>
+uses(WithPagination::class);
 
-<div>
-    <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-900">Devices</h1>
-    </div>
+state([
+    'search' => '',
+]);
 
-    <div class="bg-white rounded-lg shadow p-6 mb-6">
-        <input type="text" wire:model="search" placeholder="Search by fingerprint..."
-               class="w-full rounded-md border-gray-300 shadow-sm">
-    </div>
+$devices = computed(function () {
+    return Device::with('license')
+        ->when($this->search, fn ($q) => $q->where('fingerprint', 'like', '%' . $this->search . '%')->orWhere('name', 'like', '%' . $this->search . '%'))
+        ->latest()
+        ->paginate(15);
+});
 
-    <div class="bg-white rounded-lg shadow overflow-hidden">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">License</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Platform</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Last Seen</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                @foreach (Device::with('license')->when($search, fn($q) => $q->where('fingerprint', 'like', '%' . $search . '%'))->latest()->paginate(15) as $device)
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap">{{ $device->id }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <code class="text-sm">{{ $device->license->key }}</code>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">{{ $device->name }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">{{ $device->platform }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">{{ $device->last_seen_at?->format('Y-m-d H:i') }}</td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-        <div class="px-6 py-4">{{ Device::with('license')->when($search, fn($q) => $q->where('fingerprint', 'like', '%' . $search . '%'))->latest()->paginate(15)->links() }}</div>
-    </div>
-</div>
+?>
+
+<x-layouts::app :title="__('Devices')">
+    @volt
+        <div class="flex h-full w-full flex-1 flex-col gap-6 rounded-xl">
+            <flux:breadcrumbs>
+                <flux:breadcrumbs.item href="{{ route('dashboard') }}">{{ __('Home') }}</flux:breadcrumbs.item>
+                <flux:breadcrumbs.item>{{ __('Devices') }}</flux:breadcrumbs.item>
+            </flux:breadcrumbs>
+
+            {{-- Header --}}
+            <div class="flex items-center justify-between">
+                <div>
+                    <flux:heading size="xl">{{ __('Devices') }}</flux:heading>
+                    <flux:subheading>{{ __('Monitor activated devices and hardware fingerprints') }}</flux:subheading>
+                </div>
+            </div>
+
+            {{-- Search --}}
+            <flux:input size="md" wire:model.live="search" type="search" placeholder="{{ __('Search by name or fingerprint...') }}" />
+
+            <div class="relative h-full flex-1 overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
+                <flux:table :paginate="$this->devices">
+                    <flux:table.columns>
+                        <flux:table.column>{{ __('ID') }}</flux:table.column>
+                        <flux:table.column>{{ __('License') }}</flux:table.column>
+                        <flux:table.column>{{ __('Device Name') }}</flux:table.column>
+                        <flux:table.column>{{ __('Platform') }}</flux:table.column>
+                        <flux:table.column>{{ __('Last Seen') }}</flux:table.column>
+                    </flux:table.columns>
+
+                    <flux:table.rows>
+                        @foreach ($this->devices as $device)
+                            <flux:table.row :key="$device->id">
+                                <flux:table.cell>{{ $device->id }}</flux:table.cell>
+                                <flux:table.cell>
+                                    <code class="text-xs font-mono bg-zinc-100 px-2 py-0.5 rounded dark:bg-zinc-800">{{ $device->license->key }}</code>
+                                </flux:table.cell>
+                                <flux:table.cell class="font-medium">{{ $device->name }}</flux:table.cell>
+                                <flux:table.cell>
+                                    <flux:badge size="sm" inset="top bottom">
+                                        {{ $device->platform }}
+                                    </flux:badge>
+                                </flux:table.cell>
+                                <flux:table.cell>
+                                    {{ $device->last_seen_at?->format('Y-m-d H:i') ?? __('Never') }}
+                                </flux:table.cell>
+                            </flux:table.row>
+                        @endforeach
+                    </flux:table.rows>
+                </flux:table>
+            </div>
+        </div>
+    @endvolt
+</x-layouts::app>

@@ -2,91 +2,90 @@
 
 use App\Models\Product;
 use Illuminate\Support\Str;
-use Livewire\Volt\Component;
+use Flux\Flux;
 
-new class extends Component
-{
-    public ?Product $product = null;
-    public string $name = '';
-    public string $slug = '';
-    public ?string $description = '';
-    public bool $is_active = true;
+use function Laravel\Folio\name;
+use function Livewire\Volt\{state, mount};
 
-    public function mount(string $product): void
-    {
-        $this->product = Product::where('slug', $product)->firstOrFail();
-        $this->name = $this->product->name;
-        $this->slug = $this->product->slug;
-        $this->description = $this->product->description;
-        $this->is_active = $this->product->is_active;
+name('admin.products.edit');
+
+state([
+    'product' => null,
+    'name' => '',
+    'slug' => '',
+    'description' => '',
+    'is_active' => true,
+]);
+
+mount(function (string $product) {
+    $this->product = Product::where('slug', $product)->firstOrFail();
+    $this->name = $this->product->name;
+    $this->slug = $this->product->slug;
+    $this->description = $this->product->description;
+    $this->is_active = $this->product->is_active;
+});
+
+$updatedName = function () {
+    if ($this->name !== $this->product->name) {
+        $this->slug = Str::slug($this->name);
     }
+};
 
-    public function updatedName(): void
-    {
-        if ($this->name !== $this->product->name) {
-            $this->slug = Str::slug($this->name);
-        }
-    }
+$save = function () {
+    $this->validate([
+        'name' => 'required|string|max:255',
+        'slug' => 'required|string|max:255|unique:products,slug,' . $this->product->id,
+        'description' => 'nullable|string',
+        'is_active' => 'boolean',
+    ]);
 
-    public function save(): void
-    {
-        $this->validate([
-            'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:products,slug,' . $this->product->id,
-            'description' => 'nullable|string',
-            'is_active' => 'boolean',
-        ]);
+    $this->product->update([
+        'name' => $this->name,
+        'slug' => $this->slug,
+        'description' => $this->description,
+        'is_active' => $this->is_active,
+    ]);
 
-        $this->product->update([
-            'name' => $this->name,
-            'slug' => $this->slug,
-            'description' => $this->description,
-            'is_active' => $this->is_active,
-        ]);
+    Flux::toast(variant: 'success', text: __('Product updated successfully.'));
+    
+    $this->redirect('/admin/products');
+};
 
-        session()->flash('message', 'Product updated successfully.');
-        $this->redirect('/admin/products');
-    }
-}; ?>
+?>
 
-<div>
-    <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-900">Edit Product</h1>
-    </div>
+<x-layouts::app :title="__('Edit Product')">
+    @volt
+        <div class="flex h-full w-full flex-1 flex-col gap-6 rounded-xl">
+            <flux:breadcrumbs>
+                <flux:breadcrumbs.item href="{{ route('dashboard') }}">{{ __('Home') }}</flux:breadcrumbs.item>
+                <flux:breadcrumbs.item href="{{ url('/admin/products') }}">{{ __('Products') }}</flux:breadcrumbs.item>
+                <flux:breadcrumbs.item>{{ __('Edit') }}</flux:breadcrumbs.item>
+            </flux:breadcrumbs>
 
-    <form wire:submit="save" class="bg-white rounded-lg shadow p-6 max-w-2xl">
-        <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
-            <input type="text" wire:model="name"
-                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-            @error('name') <span class="text-red-600 text-sm">{{ $message }}</span> @enderror
+            {{-- Header --}}
+            <div class="flex items-center justify-between">
+                <div>
+                    <flux:heading size="xl">{{ __('Edit Product') }}</flux:heading>
+                    <flux:subheading>{{ __('Update details for :name', ['name' => $product->name]) }}</flux:subheading>
+                </div>
+            </div>
+
+            <div class="max-w-2xl rounded-xl border border-neutral-200 dark:border-neutral-700 p-6 bg-white dark:bg-zinc-800">
+                <form wire:submit="save" class="space-y-6">
+                    <flux:input wire:model.live.debounce.500ms="name" :label="__('Name')" required autofocus />
+                    
+                    <flux:input wire:model="slug" :label="__('Slug')" required />
+
+                    <flux:textarea wire:model="description" :label="__('Description')" rows="4" />
+
+                    <flux:checkbox wire:model="is_active" :label="__('Active')" />
+
+                    <div class="flex justify-end gap-2 border-t border-zinc-200 pt-4 dark:border-zinc-700">
+                        <flux:button href="{{ url('/admin/products') }}" variant="filled">{{ __('Cancel') }}</flux:button>
+                        <flux:button type="submit" variant="primary">{{ __('Update Product') }}</flux:button>
+                    </div>
+                </form>
+            </div>
         </div>
-
-        <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Slug</label>
-            <input type="text" wire:model="slug"
-                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-            @error('slug') <span class="text-red-600 text-sm">{{ $message }}</span> @enderror
-        </div>
-
-        <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-            <textarea wire:model="description" rows="3"
-                      class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"></textarea>
-        </div>
-
-        <div class="mb-4">
-            <label class="flex items-center">
-                <input type="checkbox" wire:model="is_active" class="rounded border-gray-300 text-indigo-600 shadow-sm">
-                <span class="ml-2 text-sm text-gray-700">Active</span>
-            </label>
-        </div>
-
-        <div class="flex justify-end">
-            <a href="{{ url('/admin/products') }}" class="px-4 py-2 text-gray-700 mr-2">Cancel</a>
-            <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
-                Update Product
-            </button>
-        </div>
-    </form>
-</div>
+    @endvolt
+</x-layouts::app>

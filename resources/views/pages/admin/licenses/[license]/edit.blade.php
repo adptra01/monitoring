@@ -2,142 +2,162 @@
 
 use App\Models\License;
 use App\Services\LicenseService;
-use Livewire\Volt\Component;
+use Flux\Flux;
 
-new class extends Component
-{
-    public ?License $license = null;
+use function Laravel\Folio\name;
+use function Livewire\Volt\{state, mount};
 
-    public function mount(string $license): void
-    {
-        $this->license = License::where('key', $license)->orWhere('id', $license)->firstOrFail();
-    }
+name('admin.licenses.edit');
 
-    public function suspend(): void
-    {
-        app(LicenseService::class)->suspend($this->license);
-        $this->license->refresh();
-        session()->flash('message', 'License suspended.');
-    }
+state([
+    'license' => null,
+]);
 
-    public function revoke(): void
-    {
-        app(LicenseService::class)->revoke($this->license);
-        $this->license->refresh();
-        session()->flash('message', 'License revoked.');
-    }
+mount(function (string $license) {
+    $this->license = License::where('key', $license)->orWhere('id', $license)->firstOrFail();
+});
 
-    public function restore(): void
-    {
-        app(LicenseService::class)->restore($this->license);
-        $this->license->refresh();
-        session()->flash('message', 'License restored.');
-    }
-}; ?>
+$suspend = function (LicenseService $licenseService) {
+    $licenseService->suspend($this->license);
+    $this->license->refresh();
+    Flux::toast(variant: 'warning', text: __('License suspended.'));
+};
 
-<div>
-    <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-900">License Details</h1>
-    </div>
+$revoke = function (LicenseService $licenseService) {
+    $licenseService->revoke($this->license);
+    $this->license->refresh();
+    Flux::toast(variant: 'danger', text: __('License revoked.'));
+};
 
-    @if (session()->has('message'))
-        <div class="mb-4 p-4 bg-green-100 text-green-700 rounded">{{ session('message') }}</div>
-    @endif
+$restore = function (LicenseService $licenseService) {
+    $licenseService->restore($this->license);
+    $this->license->refresh();
+    Flux::toast(variant: 'success', text: __('License restored.'));
+};
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="bg-white rounded-lg shadow p-6">
-            <h2 class="text-lg font-semibold mb-4">License Information</h2>
-            <dl class="space-y-3">
-                <div class="flex justify-between">
-                    <dt class="text-gray-500">Key</dt>
-                    <dd class="font-medium"><code>{{ $license->key }}</code></dd>
+?>
+
+<x-layouts::app :title="__('License Details')">
+    @volt
+        <div class="flex h-full w-full flex-1 flex-col gap-6 rounded-xl">
+            <flux:breadcrumbs>
+                <flux:breadcrumbs.item href="{{ route('dashboard') }}">{{ __('Home') }}</flux:breadcrumbs.item>
+                <flux:breadcrumbs.item href="{{ url('/admin/licenses') }}">{{ __('Licenses') }}</flux:breadcrumbs.item>
+                <flux:breadcrumbs.item>{{ __('Details') }}</flux:breadcrumbs.item>
+            </flux:breadcrumbs>
+
+            {{-- Header --}}
+            <div class="flex items-center justify-between">
+                <div>
+                    <flux:heading size="xl">{{ __('License Details') }}</flux:heading>
+                    <flux:subheading>{{ __('View and manage license :key', ['key' => $license->key]) }}</flux:subheading>
                 </div>
-                <div class="flex justify-between">
-                    <dt class="text-gray-500">Status</dt>
-                    <dd>
-                        <span class="px-2 py-1 text-xs rounded @if($license->status->value === 'active') bg-green-100 text-green-800 @else bg-red-100 text-red-800 @endif">
-                            {{ $license->status->label() }}
-                        </span>
-                    </dd>
+                <div class="flex gap-2">
+                    @if ($license->status->value !== 'active')
+                        <flux:button variant="primary" icon="check" wire:click="restore">
+                            {{ __('Restore') }}
+                        </flux:button>
+                    @endif
+                    @if ($license->status->value === 'active')
+                        <flux:button variant="filled" icon="pause" wire:click="suspend">
+                            {{ __('Suspend') }}
+                        </flux:button>
+                        <flux:button variant="danger" icon="trash" wire:click="revoke">
+                            {{ __('Revoke') }}
+                        </flux:button>
+                    @endif
                 </div>
-                <div class="flex justify-between">
-                    <dt class="text-gray-500">Mode</dt>
-                    <dd>{{ $license->mode->label() }}</dd>
+            </div>
+
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+                {{-- Info Card --}}
+                <div class="col-span-2 space-y-6">
+                    <div class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-zinc-800 p-6">
+                        <flux:heading size="lg" class="mb-4">{{ __('License Information') }}</flux:heading>
+                        
+                        <div class="grid grid-cols-2 gap-y-4 text-sm">
+                            <div class="text-neutral-500">{{ __('Key') }}</div>
+                            <div class="font-mono bg-neutral-100 dark:bg-zinc-900 px-2 py-1 rounded w-fit">{{ $license->key }}</div>
+                            
+                            <div class="text-neutral-500">{{ __('Status') }}</div>
+                            <div>
+                                <flux:badge :color="$license->status->value === 'active' ? 'green' : 'red'" size="sm">
+                                    {{ $license->status->label() }}
+                                </flux:badge>
+                            </div>
+                            
+                            <div class="text-neutral-500">{{ __('Activation Mode') }}</div>
+                            <div>{{ $license->mode->label() }}</div>
+                            
+                            <div class="text-neutral-500">{{ __('Max Devices') }}</div>
+                            <div>{{ $license->max_devices }}</div>
+                            
+                            <div class="text-neutral-500">{{ __('Expires At') }}</div>
+                            <div>{{ $license->expires_at?->format('d M Y') ?? __('Never') }}</div>
+                        </div>
+                    </div>
+
+                    {{-- Devices Table --}}
+                    <div class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-zinc-800 p-6">
+                        <flux:heading size="lg" class="mb-4">{{ __('Registered Devices') }}</flux:heading>
+                        
+                        @if ($license->devices->isEmpty())
+                            <flux:text class="text-center py-8">{{ __('No devices registered yet.') }}</flux:text>
+                        @else
+                            <flux:table>
+                                <flux:table.columns>
+                                    <flux:table.column>{{ __('Device Name') }}</flux:table.column>
+                                    <flux:table.column>{{ __('Fingerprint') }}</flux:table.column>
+                                    <flux:table.column>{{ __('Platform') }}</flux:table.column>
+                                    <flux:table.column>{{ __('Last Seen') }}</flux:table.column>
+                                </flux:table.columns>
+                                <flux:table.rows>
+                                    @foreach ($license->devices as $device)
+                                        <flux:table.row :key="$device->id">
+                                            <flux:table.cell class="font-medium">{{ $device->name }}</flux:table.cell>
+                                            <flux:table.cell class="font-mono text-xs">{{ Str::limit($device->fingerprint, 16) }}</flux:table.cell>
+                                            <flux:table.cell>{{ $device->platform }}</flux:table.cell>
+                                            <flux:table.cell>{{ $device->last_seen_at?->diffForHumans() ?? '-' }}</flux:table.cell>
+                                        </flux:table.row>
+                                    @endforeach
+                                </flux:table.rows>
+                            </flux:table>
+                        @endif
+                    </div>
                 </div>
-                <div class="flex justify-between">
-                    <dt class="text-gray-500">Max Devices</dt>
-                    <dd>{{ $license->max_devices }}</dd>
+
+                {{-- User/Product Card --}}
+                <div class="space-y-6">
+                    <div class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-zinc-800 p-6">
+                        <flux:heading size="lg" class="mb-4">{{ __('Product & Owner') }}</flux:heading>
+                        
+                        <div class="space-y-4 text-sm">
+                            <div>
+                                <div class="text-neutral-500 text-xs uppercase tracking-wider mb-1">{{ __('Product') }}</div>
+                                <div class="font-medium flex items-center gap-2">
+                                    <flux:icon name="cube" variant="micro" />
+                                    {{ $license->product->name }}
+                                </div>
+                            </div>
+                            
+                            <flux:separator />
+
+                            <div>
+                                <div class="text-neutral-500 text-xs uppercase tracking-wider mb-1">{{ __('Customer') }}</div>
+                                <div class="font-medium">{{ $license->user->name }}</div>
+                                <div class="text-neutral-400 text-xs">{{ $license->user->email }}</div>
+                            </div>
+
+                            <flux:separator />
+
+                            <div>
+                                <div class="text-neutral-500 text-xs uppercase tracking-wider mb-1">{{ __('Subscription Plan') }}</div>
+                                <div class="font-medium">{{ $license->subscriptionPlan?->name ?? __('Custom / Manual') }}</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="flex justify-between">
-                    <dt class="text-gray-500">Expires</dt>
-                    <dd>{{ $license->expires_at?->format('Y-m-d') }}</dd>
-                </div>
-            </dl>
+            </div>
         </div>
-
-        <div class="bg-white rounded-lg shadow p-6">
-            <h2 class="text-lg font-semibold mb-4">Product & User</h2>
-            <dl class="space-y-3">
-                <div class="flex justify-between">
-                    <dt class="text-gray-500">Product</dt>
-                    <dd>{{ $license->product->name }}</dd>
-                </div>
-                <div class="flex justify-between">
-                    <dt class="text-gray-500">User</dt>
-                    <dd>{{ $license->user->name }} ({{ $license->user->email }})</dd>
-                </div>
-                <div class="flex justify-between">
-                    <dt class="text-gray-500">Devices</dt>
-                    <dd>{{ $license->devices->count() }}</dd>
-                </div>
-            </dl>
-        </div>
-    </div>
-
-    <div class="bg-white rounded-lg shadow p-6 mt-6">
-        <h2 class="text-lg font-semibold mb-4">Actions</h2>
-        <div class="flex gap-4">
-            @if ($license->status->value !== 'active')
-                <button wire:click="restore" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
-                    Restore License
-                </button>
-            @endif
-            @if ($license->status->value === 'active')
-                <button wire:click="suspend" class="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700">
-                    Suspend License
-                </button>
-                <button wire:click="revoke" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
-                    Revoke License
-                </button>
-            @endif
-        </div>
-    </div>
-
-    <div class="bg-white rounded-lg shadow p-6 mt-6">
-        <h2 class="text-lg font-semibold mb-4">Devices</h2>
-        @if ($license->devices->isEmpty())
-            <p class="text-gray-500">No devices registered.</p>
-        @else
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead>
-                    <tr>
-                        <th class="px-4 py-2 text-left">Name</th>
-                        <th class="px-4 py-2 text-left">Fingerprint</th>
-                        <th class="px-4 py-2 text-left">Platform</th>
-                        <th class="px-4 py-2 text-left">Last Seen</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($license->devices as $device)
-                        <tr>
-                            <td class="px-4 py-2">{{ $device->name }}</td>
-                            <td class="px-4 py-2"><code class="text-xs">{{ $device->fingerprint }}</code></td>
-                            <td class="px-4 py-2">{{ $device->platform }}</td>
-                            <td class="px-4 py-2">{{ $device->last_seen_at?->format('Y-m-d H:i') }}</td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        @endif
-    </div>
-</div>
+    @endvolt
+</x-layouts::app>

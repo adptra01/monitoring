@@ -3,146 +3,128 @@
 use App\Models\Product;
 use App\Models\SubscriptionPlan;
 use Illuminate\Support\Str;
-use Livewire\Volt\Component;
+use Flux\Flux;
 
-new class extends Component
-{
-    public ?SubscriptionPlan $plan = null;
-    public string $product_id = '';
-    public string $name = '';
-    public string $slug = '';
-    public ?string $description = '';
-    public ?string $monthly_price = '';
-    public ?string $yearly_price = '';
-    public int $max_devices = 1;
-    public bool $is_active = true;
-    public bool $is_default = false;
-    public array $products = [];
+use function Laravel\Folio\name;
+use function Livewire\Volt\{state, mount, computed};
 
-    public function mount(int $plan): void
-    {
-        $this->plan = SubscriptionPlan::findOrFail($plan);
-        $this->product_id = (string) $this->plan->product_id;
-        $this->name = $this->plan->name;
-        $this->slug = $this->plan->slug;
-        $this->description = $this->plan->description;
-        $this->monthly_price = $this->plan->monthly_price;
-        $this->yearly_price = $this->plan->yearly_price;
-        $this->max_devices = $this->plan->max_devices;
-        $this->is_active = $this->plan->is_active;
-        $this->is_default = $this->plan->is_default;
-        $this->products = Product::where('is_active', true)->get()->toArray();
+name('admin.plans.edit');
+
+state([
+    'plan' => null,
+    'product_id' => '',
+    'name' => '',
+    'slug' => '',
+    'description' => '',
+    'monthly_price' => '',
+    'yearly_price' => '',
+    'max_devices' => 1,
+    'is_active' => true,
+    'is_default' => false,
+]);
+
+$products = computed(fn () => Product::where('is_active', true)->get());
+
+mount(function (int $plan) {
+    $this->plan = SubscriptionPlan::findOrFail($plan);
+    $this->product_id = (string) $this->plan->product_id;
+    $this->name = $this->plan->name;
+    $this->slug = $this->plan->slug;
+    $this->description = $this->plan->description;
+    $this->monthly_price = $this->plan->monthly_price;
+    $this->yearly_price = $this->plan->yearly_price;
+    $this->max_devices = $this->plan->max_devices;
+    $this->is_active = $this->plan->is_active;
+    $this->is_default = $this->plan->is_default;
+});
+
+$updatedName = function () {
+    if ($this->name !== $this->plan->name) {
+        $this->slug = Str::slug($this->name);
     }
+};
 
-    public function updatedName(): void
-    {
-        if ($this->name !== $this->plan->name) {
-            $this->slug = Str::slug($this->name);
-        }
-    }
+$save = function () {
+    $this->validate([
+        'product_id' => 'required|exists:products,id',
+        'name' => 'required|string|max:255',
+        'slug' => 'required|string|max:255|unique:subscription_plans,slug,' . $this->plan->id,
+        'monthly_price' => 'nullable|numeric|min:0',
+        'yearly_price' => 'nullable|numeric|min:0',
+        'max_devices' => 'required|integer|min:1',
+        'is_active' => 'boolean',
+        'is_default' => 'boolean',
+    ]);
 
-    public function save(): void
-    {
-        $this->validate([
-            'product_id' => 'required|exists:products,id',
-            'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:subscription_plans,slug,' . $this->plan->id,
-            'monthly_price' => 'nullable|numeric|min:0',
-            'yearly_price' => 'nullable|numeric|min:0',
-            'max_devices' => 'required|integer|min:1',
-            'is_active' => 'boolean',
-            'is_default' => 'boolean',
-        ]);
+    $this->plan->update([
+        'product_id' => $this->product_id,
+        'name' => $this->name,
+        'slug' => $this->slug,
+        'description' => $this->description,
+        'monthly_price' => $this->monthly_price,
+        'yearly_price' => $this->yearly_price,
+        'max_devices' => $this->max_devices,
+        'is_active' => $this->is_active,
+        'is_default' => $this->is_default,
+    ]);
 
-        $this->plan->update([
-            'product_id' => $this->product_id,
-            'name' => $this->name,
-            'slug' => $this->slug,
-            'description' => $this->description,
-            'monthly_price' => $this->monthly_price,
-            'yearly_price' => $this->yearly_price,
-            'max_devices' => $this->max_devices,
-            'is_active' => $this->is_active,
-            'is_default' => $this->is_default,
-        ]);
+    Flux::toast(variant: 'success', text: __('Plan updated successfully.'));
+    
+    $this->redirect('/admin/plans');
+};
 
-        session()->flash('message', 'Plan updated successfully.');
-        $this->redirect('/admin/plans');
-    }
-}; ?>
+?>
 
-<div>
-    <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-900">Edit Subscription Plan</h1>
-    </div>
+<x-layouts::app :title="__('Edit Subscription Plan')">
+    @volt
+        <div class="flex h-full w-full flex-1 flex-col gap-6 rounded-xl">
+            <flux:breadcrumbs>
+                <flux:breadcrumbs.item href="{{ route('dashboard') }}">{{ __('Home') }}</flux:breadcrumbs.item>
+                <flux:breadcrumbs.item href="{{ url('/admin/plans') }}">{{ __('Plans') }}</flux:breadcrumbs.item>
+                <flux:breadcrumbs.item>{{ __('Edit') }}</flux:breadcrumbs.item>
+            </flux:breadcrumbs>
 
-    <form wire:submit="save" class="bg-white rounded-lg shadow p-6 max-w-2xl">
-        <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Product</label>
-            <select wire:model="product_id" class="w-full rounded-md border-gray-300 shadow-sm">
-                <option value="">Select Product</option>
-                @foreach ($products as $product)
-                    <option value="{{ $product['id'] }}">{{ $product['name'] }}</option>
-                @endforeach
-            </select>
-            @error('product_id') <span class="text-red-600 text-sm">{{ $message }}</span> @enderror
-        </div>
-
-        <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
-            <input type="text" wire:model="name"
-                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-            @error('name') <span class="text-red-600 text-sm">{{ $message }}</span> @enderror
-        </div>
-
-        <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Slug</label>
-            <input type="text" wire:model="slug"
-                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-            @error('slug') <span class="text-red-600 text-sm">{{ $message }}</span> @enderror
-        </div>
-
-        <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-            <textarea wire:model="description" rows="3"
-                      class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"></textarea>
-        </div>
-
-        <div class="grid grid-cols-2 gap-4 mb-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Monthly Price</label>
-                <input type="number" step="0.01" wire:model="monthly_price" class="w-full rounded-md border-gray-300 shadow-sm">
+            {{-- Header --}}
+            <div class="flex items-center justify-between">
+                <div>
+                    <flux:heading size="xl">{{ __('Edit Subscription Plan') }}</flux:heading>
+                    <flux:subheading>{{ __('Update details for :name', ['name' => $plan->name]) }}</flux:subheading>
+                </div>
             </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Yearly Price</label>
-                <input type="number" step="0.01" wire:model="yearly_price" class="w-full rounded-md border-gray-300 shadow-sm">
+
+            <div class="max-w-2xl rounded-xl border border-neutral-200 dark:border-neutral-700 p-6 bg-white dark:bg-zinc-800">
+                <form wire:submit="save" class="space-y-6">
+                    <flux:select wire:model="product_id" :label="__('Product')" required autofocus>
+                        <option value="">{{ __('Select Product') }}</option>
+                        @foreach ($this->products as $product)
+                            <option value="{{ $product->id }}">{{ $product->name }}</option>
+                        @endforeach
+                    </flux:select>
+
+                    <flux:input wire:model.live.debounce.500ms="name" :label="__('Plan Name')" required />
+                    
+                    <flux:input wire:model="slug" :label="__('Slug')" required />
+
+                    <flux:textarea wire:model="description" :label="__('Description')" rows="3" />
+
+                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                        <flux:input wire:model="monthly_price" type="number" step="0.01" :label="__('Monthly Price (IDR)')" />
+                        <flux:input wire:model="yearly_price" type="number" step="0.01" :label="__('Yearly Price (IDR)')" />
+                    </div>
+
+                    <flux:input wire:model="max_devices" type="number" min="1" :label="__('Max Devices')" required />
+
+                    <div class="flex gap-6">
+                        <flux:checkbox wire:model="is_active" :label="__('Active')" />
+                        <flux:checkbox wire:model="is_default" :label="__('Default Plan')" />
+                    </div>
+
+                    <div class="flex justify-end gap-2 border-t border-zinc-200 pt-4 dark:border-zinc-700">
+                        <flux:button href="{{ url('/admin/plans') }}" variant="filled">{{ __('Cancel') }}</flux:button>
+                        <flux:button type="submit" variant="primary">{{ __('Update Plan') }}</flux:button>
+                    </div>
+                </form>
             </div>
         </div>
-
-        <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Max Devices</label>
-            <input type="number" wire:model="max_devices" min="1" class="w-full rounded-md border-gray-300 shadow-sm">
-        </div>
-
-        <div class="mb-4">
-            <label class="flex items-center">
-                <input type="checkbox" wire:model="is_active" class="rounded border-gray-300 text-indigo-600 shadow-sm">
-                <span class="ml-2 text-sm text-gray-700">Active</span>
-            </label>
-        </div>
-
-        <div class="mb-4">
-            <label class="flex items-center">
-                <input type="checkbox" wire:model="is_default" class="rounded border-gray-300 text-indigo-600 shadow-sm">
-                <span class="ml-2 text-sm text-gray-700">Default Plan</span>
-            </label>
-        </div>
-
-        <div class="flex justify-end">
-            <a href="{{ url('/admin/plans') }}" class="px-4 py-2 text-gray-700 mr-2">Cancel</a>
-            <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
-                Update Plan
-            </button>
-        </div>
-    </form>
-</div>
+    @endvolt
+</x-layouts::app>

@@ -1,87 +1,87 @@
 <?php
 
-use Livewire\Volt\Component;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Flux\Flux;
 
-new class extends Component
-{
-    public ?Role $role = null;
-    public string $name = '';
-    public string $guard_name = 'web';
-    public array $selectedPermissions = [];
+use function Laravel\Folio\name;
+use function Livewire\Volt\{state, mount};
 
-    public function mount(string $role): void
-    {
-        $this->role = Role::with('permissions')->findOrFail($role);
-        $this->name = $this->role->name;
-        $this->guard_name = $this->role->guard_name;
-        $this->selectedPermissions = $this->role->permissions->pluck('name')->toArray();
-    }
+name('admin.roles.edit');
 
-    public function save(): void
-    {
-        $this->validate([
-            'name' => 'required|string|max:255|unique:roles,name,' . $this->role->id,
-            'guard_name' => 'required|string',
-            'selectedPermissions' => 'nullable|array',
-        ]);
+state([
+    'role' => null,
+    'name' => '',
+    'guard_name' => 'web',
+    'selectedPermissions' => [],
+]);
 
-        $this->role->update([
-            'name' => $this->name,
-            'guard_name' => $this->guard_name,
-        ]);
+mount(function (string $role) {
+    $this->role = Role::with('permissions')->findOrFail($role);
+    $this->name = $this->role->name;
+    $this->guard_name = $this->role->guard_name;
+    $this->selectedPermissions = $this->role->permissions->pluck('name')->toArray();
+});
 
-        $this->role->syncPermissions($this->selectedPermissions);
+$save = function () {
+    $this->validate([
+        'name' => 'required|string|max:255|unique:roles,name,' . $this->role->id,
+        'guard_name' => 'required|string',
+        'selectedPermissions' => 'nullable|array',
+    ]);
 
-        session()->flash('message', 'Role updated successfully.');
-        $this->redirect('/admin/roles');
-    }
-}; ?>
+    $this->role->update([
+        'name' => $this->name,
+        'guard_name' => $this->guard_name,
+    ]);
 
-<div>
-    <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-900">Edit Role</h1>
-    </div>
+    $this->role->syncPermissions($this->selectedPermissions);
 
-    <form wire:submit="save" class="bg-white rounded-lg shadow p-6 max-w-2xl">
-        @if (session()->has('message'))
-            <div class="mb-4 p-4 bg-green-100 text-green-700 rounded">{{ session('message') }}</div>
-        @endif
+    Flux::toast(variant: 'success', text: __('Role updated successfully.'));
+    
+    $this->redirect('/admin/roles');
+};
 
-        <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
-            <input type="text" wire:model="name"
-                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-            @error('name') <span class="text-red-600 text-sm">{{ $message }}</span> @enderror
-        </div>
+?>
 
-        <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Guard Name</label>
-            <input type="text" wire:model="guard_name" readonly
-                   class="w-full rounded-md border-gray-300 bg-gray-50 shadow-sm">
-            @error('guard_name') <span class="text-red-600 text-sm">{{ $message }}</span> @enderror
-        </div>
+<x-layouts::app :title="__('Edit Role')">
+    @volt
+        <div class="flex h-full w-full flex-1 flex-col gap-6 rounded-xl">
+            <flux:breadcrumbs>
+                <flux:breadcrumbs.item href="{{ route('dashboard') }}">{{ __('Home') }}</flux:breadcrumbs.item>
+                <flux:breadcrumbs.item href="{{ url('/admin/roles') }}">{{ __('Roles') }}</flux:breadcrumbs.item>
+                <flux:breadcrumbs.item>{{ __('Edit') }}</flux:breadcrumbs.item>
+            </flux:breadcrumbs>
 
-        <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Permissions</label>
-            <div class="grid grid-cols-2 gap-2">
-                @foreach (\Spatie\Permission\Models\Permission::all() as $perm)
-                    <label class="flex items-center">
-                        <input type="checkbox" wire:model="selectedPermissions" value="{{ $perm->name }}"
-                               class="rounded border-gray-300 text-indigo-600 shadow-sm">
-                        <span class="ml-2 text-sm text-gray-700">{{ $perm->name }}</span>
-                    </label>
-                @endforeach
+            {{-- Header --}}
+            <div class="flex items-center justify-between">
+                <div>
+                    <flux:heading size="xl">{{ __('Edit Role') }}</flux:heading>
+                    <flux:subheading>{{ __('Update details for :name', ['name' => $role->name]) }}</flux:subheading>
+                </div>
             </div>
-            @error('selectedPermissions') <span class="text-red-600 text-sm">{{ $message }}</span> @enderror
-        </div>
 
-        <div class="flex justify-end">
-            <a href="{{ url('/admin/roles') }}" class="px-4 py-2 text-gray-700 mr-2">Cancel</a>
-            <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
-                Update Role
-            </button>
+            <div class="max-w-2xl rounded-xl border border-neutral-200 dark:border-neutral-700 p-6 bg-white dark:bg-zinc-800">
+                <form wire:submit="save" class="space-y-6">
+                    <flux:input wire:model="name" :label="__('Role Name')" required autofocus />
+                    
+                    <flux:input wire:model="guard_name" :label="__('Guard Name')" readonly />
+
+                    <flux:field>
+                        <flux:label>{{ __('Permissions') }}</flux:label>
+                        <div class="grid grid-cols-2 gap-4 mt-2">
+                            @foreach (\Spatie\Permission\Models\Permission::all() as $perm)
+                                <flux:checkbox wire:model="selectedPermissions" :value="$perm->name" :label="$perm->name" />
+                            @endforeach
+                        </div>
+                    </flux:field>
+
+                    <div class="flex justify-end gap-2 border-t border-zinc-200 pt-4 dark:border-zinc-700">
+                        <flux:button href="{{ url('/admin/roles') }}" variant="filled">{{ __('Cancel') }}</flux:button>
+                        <flux:button type="submit" variant="primary">{{ __('Update Role') }}</flux:button>
+                    </div>
+                </form>
+            </div>
         </div>
-    </form>
-</div>
+    @endvolt
+</x-layouts::app>

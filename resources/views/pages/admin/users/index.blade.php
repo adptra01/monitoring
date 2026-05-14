@@ -1,111 +1,117 @@
 <?php
 
 use App\Models\User;
-use Livewire\Volt\Component;
 use Livewire\WithPagination;
 use Spatie\Permission\Models\Role;
+use Flux\Flux;
 
-new class extends Component
-{
-    use WithPagination;
+use function Livewire\Volt\{uses, computed, state};
+use function Laravel\Folio\{name};
 
-    public string $role = '';
+name('admin.users.index');
 
-    public function updatedRole(): void
-    {
-        $this->resetPage();
+uses(WithPagination::class);
+
+state([
+    'role' => '',
+]);
+
+$users = computed(function () {
+    $query = User::with('roles');
+    
+    if ($this->role) {
+        $query->whereHas('roles', fn ($q) => $q->where('name', $this->role));
+    }
+    
+    return $query->latest()->paginate(15);
+});
+
+$delete = function (int $id) {
+    $user = User::findOrFail($id);
+
+    if ($user->isAdmin() && User::role('admin')->count() <= 1) {
+        Flux::toast(variant: 'danger', text: __('Cannot delete the last admin user.'));
+        return;
     }
 
-    public function delete(int $id): void
-    {
-        $user = User::findOrFail($id);
+    $user->delete();
+    
+    Flux::toast(variant: 'success', text: __('User deleted successfully.'));
+};
 
-        if ($user->isAdmin() && User::role('admin')->count() <= 1) {
-            session()->flash('error', 'Cannot delete the last admin user.');
-            return;
-        }
+?>
 
-        $user->delete();
-        session()->flash('message', 'User deleted successfully.');
-    }
-}; ?>
+<x-layouts::app :title="__('Users')">
+    @volt
+        <div class="flex h-full w-full flex-1 flex-col gap-6 rounded-xl">
+            <flux:breadcrumbs>
+                <flux:breadcrumbs.item href="{{ route('dashboard') }}">{{ __('Home') }}</flux:breadcrumbs.item>
+                <flux:breadcrumbs.item>{{ __('Users') }}</flux:breadcrumbs.item>
+            </flux:breadcrumbs>
 
-<div>
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-900">Users</h1>
-        <a href="{{ url('/admin/users/create') }}"
-           class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
-            Add User
-        </a>
-    </div>
+            {{-- Header --}}
+            <div class="flex items-center justify-between">
+                <div>
+                    <flux:heading size="xl">{{ __('Users') }}</flux:heading>
+                    <flux:subheading>{{ __('Manage system users and their roles') }}</flux:subheading>
+                </div>
+                <flux:button variant="primary" icon="plus" href="{{ url('/admin/users/create') }}">
+                    {{ __('Add User') }}
+                </flux:button>
+            </div>
 
-    @if (session()->has('message'))
-        <div class="mb-4 p-4 bg-green-100 text-green-700 rounded">{{ session('message') }}</div>
-    @endif
+            {{-- Filters --}}
+            <div class="flex gap-4">
+                <flux:select wire:model.live="role" class="max-w-xs">
+                    <option value="">{{ __('All Roles') }}</option>
+                    @foreach (\Spatie\Permission\Models\Role::all() as $r)
+                        <option value="{{ $r->name }}">{{ $r->name }}</option>
+                    @endforeach
+                </flux:select>
+            </div>
 
-    @if (session()->has('error'))
-        <div class="mb-4 p-4 bg-red-100 text-red-700 rounded">{{ session('error') }}</div>
-    @endif
+            <div class="relative h-full flex-1 overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
+                <flux:table :paginate="$this->users">
+                    <flux:table.columns>
+                        <flux:table.column>{{ __('ID') }}</flux:table.column>
+                        <flux:table.column>{{ __('Name') }}</flux:table.column>
+                        <flux:table.column>{{ __('Email') }}</flux:table.column>
+                        <flux:table.column>{{ __('Roles') }}</flux:table.column>
+                        <flux:table.column>{{ __('Admin') }}</flux:table.column>
+                        <flux:table.column>{{ __('Actions') }}</flux:table.column>
+                    </flux:table.columns>
 
-    <div class="bg-white rounded-lg shadow p-6 mb-6">
-        <div class="flex gap-4">
-            <select wire:model="role" class="rounded-md border-gray-300 shadow-sm">
-                <option value="">All Roles</option>
-                @foreach (\Spatie\Permission\Models\Role::all() as $r)
-                    <option value="{{ $r->name }}">{{ $r->name }}</option>
-                @endforeach
-            </select>
+                    <flux:table.rows>
+                        @foreach ($this->users as $user)
+                            <flux:table.row :key="$user->id">
+                                <flux:table.cell>{{ $user->id }}</flux:table.cell>
+                                <flux:table.cell class="font-medium">{{ $user->name }}</flux:table.cell>
+                                <flux:table.cell>{{ $user->email }}</flux:table.cell>
+                                <flux:table.cell>
+                                    <div class="flex flex-wrap gap-1">
+                                        @foreach ($user->roles as $role)
+                                            <flux:badge size="sm" inset="top bottom">
+                                                {{ $role->name }}
+                                            </flux:badge>
+                                        @endforeach
+                                    </div>
+                                </flux:table.cell>
+                                <flux:table.cell>
+                                    <flux:badge :color="$user->isAdmin() ? 'green' : 'gray'" size="sm" inset="top bottom">
+                                        {{ $user->isAdmin() ? __('Yes') : __('No') }}
+                                    </flux:badge>
+                                </flux:table.cell>
+                                <flux:table.cell>
+                                    <div class="flex gap-2">
+                                        <flux:button variant="ghost" size="sm" icon="pencil" href="{{ url('/admin/users/' . $user->id . '/edit') }}" />
+                                        <flux:button variant="ghost" size="sm" icon="trash" wire:click="delete({{ $user->id }})" wire:confirm="{{ __('Are you sure you want to delete this user?') }}" />
+                                    </div>
+                                </flux:table.cell>
+                            </flux:table.row>
+                        @endforeach
+                    </flux:table.rows>
+                </flux:table>
+            </div>
         </div>
-    </div>
-
-    <div class="bg-white rounded-lg shadow overflow-hidden">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Roles</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Admin</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                @php
-                    $query = \App\Models\User::with('roles');
-                    if ($role) {
-                        $query = $query->whereHas('roles', fn ($q) => $q->where('name', $role));
-                    }
-                    $users = $query->latest()->paginate(15);
-                @endphp
-                @foreach ($users as $user)
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap">{{ $user->id }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">{{ $user->name }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">{{ $user->email }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            @foreach ($user->roles as $role)
-                                <span class="px-2 py-1 text-xs rounded bg-indigo-100 text-indigo-800">{{ $role->name }}</span>
-                            @endforeach
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            @if ($user->isAdmin())
-                                <span class="px-2 py-1 text-xs rounded bg-green-100 text-green-800">Yes</span>
-                            @else
-                                <span class="px-2 py-1 text-xs rounded bg-gray-100 text-gray-800">No</span>
-                            @endif
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <a href="{{ url('/admin/users/' . $user->id . '/edit') }}"
-                               class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
-                            <button wire:click="delete({{ $user->id }})"
-                                    wire:confirm="Are you sure you want to delete this user?"
-                                    class="text-red-600 hover:text-red-900">Delete</button>
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-        <div class="px-6 py-4">{{ $users->links() }}</div>
-    </div>
-</div>
+    @endvolt
+</x-layouts::app>

@@ -7,169 +7,154 @@ use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Actions\DisableTwoFactorAuthentication;
 use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
-use Livewire\Attributes\On;
-use Livewire\Attributes\Title;
-use Livewire\Component;
 
-new #[Title('Security settings')] class extends Component {
-    use PasswordValidationRules;
+use function Livewire\Volt\{state, on, mount};
 
-    public string $current_password = '';
-    public string $password = '';
-    public string $password_confirmation = '';
+uses([PasswordValidationRules::class]);
 
-    public bool $canManageTwoFactor;
+state([
+    'current_password' => '',
+    'password' => '',
+    'password_confirmation' => '',
+    'canManageTwoFactor' => false,
+    'twoFactorEnabled' => false,
+    'requiresConfirmation' => false,
+]);
 
-    public bool $twoFactorEnabled;
+mount(function (DisableTwoFactorAuthentication $disableTwoFactorAuthentication) {
+    $this->canManageTwoFactor = Features::canManageTwoFactorAuthentication();
 
-    public bool $requiresConfirmation;
-
-    /**
-     * Mount the component.
-     */
-    public function mount(DisableTwoFactorAuthentication $disableTwoFactorAuthentication): void
-    {
-        $this->canManageTwoFactor = Features::canManageTwoFactorAuthentication();
-
-        if ($this->canManageTwoFactor) {
-            if (Fortify::confirmsTwoFactorAuthentication() && is_null(auth()->user()->two_factor_confirmed_at)) {
-                $disableTwoFactorAuthentication(auth()->user());
-            }
-
-            $this->twoFactorEnabled = auth()->user()->hasEnabledTwoFactorAuthentication();
-            $this->requiresConfirmation = Features::optionEnabled(Features::twoFactorAuthentication(), 'confirm');
+    if ($this->canManageTwoFactor) {
+        if (Fortify::confirmsTwoFactorAuthentication() && is_null(auth()->user()->two_factor_confirmed_at)) {
+            $disableTwoFactorAuthentication(auth()->user());
         }
+
+        $this->twoFactorEnabled = auth()->user()->hasEnabledTwoFactorAuthentication();
+        $this->requiresConfirmation = Features::optionEnabled(Features::twoFactorAuthentication(), 'confirm');
     }
+});
 
-    /**
-     * Update the password for the currently authenticated user.
-     */
-    public function updatePassword(): void
-    {
-        try {
-            $validated = $this->validate([
-                'current_password' => $this->currentPasswordRules(),
-                'password' => $this->passwordRules(),
-            ]);
-        } catch (ValidationException $e) {
-            $this->reset('current_password', 'password', 'password_confirmation');
-
-            throw $e;
-        }
-
-        Auth::user()->update([
-            'password' => $validated['password'],
+$updatePassword = function () {
+    try {
+        $validated = $this->validate([
+            'current_password' => $this->currentPasswordRules(),
+            'password' => $this->passwordRules(),
         ]);
-
+    } catch (ValidationException $e) {
         $this->reset('current_password', 'password', 'password_confirmation');
 
-        Flux::toast(variant: 'success', text: __('Password updated.'));
+        throw $e;
     }
 
-    /**
-     * Handle the two-factor authentication enabled event.
-     */
-    #[On('two-factor-enabled')]
-    public function onTwoFactorEnabled(): void
-    {
-        $this->twoFactorEnabled = true;
-    }
+    Auth::user()->update([
+        'password' => $validated['password'],
+    ]);
 
-    /**
-     * Disable two-factor authentication for the user.
-     */
-    public function disable(DisableTwoFactorAuthentication $disableTwoFactorAuthentication): void
-    {
-        $disableTwoFactorAuthentication(auth()->user());
+    $this->reset('current_password', 'password', 'password_confirmation');
 
-        $this->twoFactorEnabled = false;
-    }
-}; ?>
+    Flux::toast(variant: 'success', text: __('Password updated.'));
+};
 
-<section class="w-full">
-    @include('partials.settings-heading')
+on(['two-factor-enabled' => function () {
+    $this->twoFactorEnabled = true;
+}]);
 
-    <flux:heading class="sr-only">{{ __('Security settings') }}</flux:heading>
+$disable = function (DisableTwoFactorAuthentication $disableTwoFactorAuthentication) {
+    $disableTwoFactorAuthentication(auth()->user());
 
-    <x-pages::settings.layout :heading="__('Update password')" :subheading="__('Ensure your account is using a long, random password to stay secure')">
-        <form method="POST" wire:submit="updatePassword" class="mt-6 space-y-6">
-            <flux:input
-                wire:model="current_password"
-                :label="__('Current password')"
-                type="password"
-                required
-                autocomplete="current-password"
-                viewable
-            />
-            <flux:input
-                wire:model="password"
-                :label="__('New password')"
-                type="password"
-                required
-                autocomplete="new-password"
-                passwordrules="{{ \Illuminate\Validation\Rules\Password::defaults()->toPasswordRulesString() }}"
-                viewable
-            />
-            <flux:input
-                wire:model="password_confirmation"
-                :label="__('Confirm password')"
-                type="password"
-                required
-                autocomplete="new-password"
-                passwordrules="{{ \Illuminate\Validation\Rules\Password::defaults()->toPasswordRulesString() }}"
-                viewable
-            />
+    $this->twoFactorEnabled = false;
+};
 
-            <div class="flex items-center gap-4">
-                <flux:button variant="primary" type="submit" data-test="update-password-button">
-                    {{ __('Save') }}
-                </flux:button>
-            </div>
-        </form>
+?>
 
-        @if ($canManageTwoFactor)
-            <section class="mt-12">
-                <flux:heading>{{ __('Two-factor authentication') }}</flux:heading>
-                <flux:subheading>{{ __('Manage your two-factor authentication settings') }}</flux:subheading>
+<x-layouts::app :title="__('Security settings')">
+    @volt
+        <section class="w-full">
+            @include('partials.settings-heading')
 
-                <div class="flex flex-col w-full mx-auto space-y-6 text-sm" wire:cloak>
-                    @if ($twoFactorEnabled)
-                        <div class="space-y-4">
-                            <flux:text>
-                                {{ __('You will be prompted for a secure, random pin during login, which you can retrieve from the TOTP-supported application on your phone.') }}
-                            </flux:text>
+            <flux:heading class="sr-only">{{ __('Security settings') }}</flux:heading>
 
-                            <div class="flex justify-start">
-                                <flux:button
-                                    variant="danger"
-                                    wire:click="disable"
-                                >
-                                    {{ __('Disable 2FA') }}
-                                </flux:button>
-                            </div>
+            <x-pages::settings.layout :heading="__('Update password')" :subheading="__('Ensure your account is using a long, random password to stay secure')">
+                <form method="POST" wire:submit="updatePassword" class="mt-6 space-y-6">
+                    <flux:input
+                        wire:model="current_password"
+                        :label="__('Current password')"
+                        type="password"
+                        required
+                        autocomplete="current-password"
+                        viewable
+                    />
+                    <flux:input
+                        wire:model="password"
+                        :label="__('New password')"
+                        type="password"
+                        required
+                        autocomplete="new-password"
+                        passwordrules="{{ \Illuminate\Validation\Rules\Password::defaults()->toPasswordRulesString() }}"
+                        viewable
+                    />
+                    <flux:input
+                        wire:model="password_confirmation"
+                        :label="__('Confirm password')"
+                        type="password"
+                        required
+                        autocomplete="new-password"
+                        passwordrules="{{ \Illuminate\Validation\Rules\Password::defaults()->toPasswordRulesString() }}"
+                        viewable
+                    />
 
-                            <livewire:pages::settings.two-factor.recovery-codes :$requiresConfirmation />
+                    <div class="flex items-center gap-4">
+                        <flux:button variant="primary" type="submit" data-test="update-password-button">
+                            {{ __('Save') }}
+                        </flux:button>
+                    </div>
+                </form>
+
+                @if ($canManageTwoFactor)
+                    <section class="mt-12">
+                        <flux:heading>{{ __('Two-factor authentication') }}</flux:heading>
+                        <flux:subheading>{{ __('Manage your two-factor authentication settings') }}</flux:subheading>
+
+                        <div class="flex flex-col w-full mx-auto space-y-6 text-sm" wire:cloak>
+                            @if ($twoFactorEnabled)
+                                <div class="space-y-4">
+                                    <flux:text>
+                                        {{ __('You will be prompted for a secure, random pin during login, which you can retrieve from the TOTP-supported application on your phone.') }}
+                                    </flux:text>
+
+                                    <div class="flex justify-start">
+                                        <flux:button
+                                            variant="danger"
+                                            wire:click="disable"
+                                        >
+                                            {{ __('Disable 2FA') }}
+                                        </flux:button>
+                                    </div>
+
+                                    <livewire:pages::settings.two-factor.recovery-codes :$requiresConfirmation />
+                                </div>
+                            @else
+                                <div class="space-y-4">
+                                    <flux:text variant="subtle">
+                                        {{ __('When you enable two-factor authentication, you will be prompted for a secure pin during login. This pin can be retrieved from a TOTP-supported application on your phone.') }}
+                                    </flux:text>
+
+                                    <flux:modal.trigger name="two-factor-setup-modal">
+                                        <flux:button
+                                            variant="primary"
+                                            wire:click="$dispatch('start-two-factor-setup')"
+                                        >
+                                            {{ __('Enable 2FA') }}
+                                        </flux:button>
+                                    </flux:modal.trigger>
+
+                                    <livewire:pages::settings.two-factor-setup-modal :requires-confirmation="$requiresConfirmation" />
+                                </div>
+                            @endif
                         </div>
-                    @else
-                        <div class="space-y-4">
-                            <flux:text variant="subtle">
-                                {{ __('When you enable two-factor authentication, you will be prompted for a secure pin during login. This pin can be retrieved from a TOTP-supported application on your phone.') }}
-                            </flux:text>
-
-                            <flux:modal.trigger name="two-factor-setup-modal">
-                                <flux:button
-                                    variant="primary"
-                                    wire:click="$dispatch('start-two-factor-setup')"
-                                >
-                                    {{ __('Enable 2FA') }}
-                                </flux:button>
-                            </flux:modal.trigger>
-
-                            <livewire:pages::settings.two-factor-setup-modal :requires-confirmation="$requiresConfirmation" />
-                        </div>
-                    @endif
-                </div>
-            </section>
-        @endif
-    </x-pages::settings.layout>
-</section>
+                    </section>
+                @endif
+            </x-pages::settings.layout>
+        </section>
+    @endvolt
+</x-layouts::app>

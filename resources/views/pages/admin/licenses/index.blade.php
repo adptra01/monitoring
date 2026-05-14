@@ -2,99 +2,106 @@
 
 use App\Models\License;
 use App\Enums\LicenseStatus;
-use Livewire\Volt\Component;
+use Flux\Flux;
 use Livewire\WithPagination;
 
-new class extends Component
-{
-    use WithPagination;
+use function Laravel\Folio\name;
+use function Livewire\Volt\{uses, computed, state};
 
-    public string $search = '';
-    public string $status = '';
+name('admin.licenses.index');
 
-    public function updatedSearch(): void
-    {
-        $this->resetPage();
+uses(WithPagination::class);
+
+state([
+    'search' => '',
+    'status' => '',
+]);
+
+$licenses = computed(function () {
+    $query = License::with(['product', 'user', 'devices']);
+
+    if ($this->search) {
+        $query->where('key', 'like', '%' . $this->search . '%');
     }
 
-    public function render(): mixed
-    {
-        $query = License::with(['product', 'user']);
-
-        if ($this->search) {
-            $query->where('key', 'like', '%' . $this->search . '%');
-        }
-
-        if ($this->status) {
-            $query->where('status', $this->status);
-        }
-
-        $licenses = $query->latest()->paginate(15);
-
-        return view('admin.licenses.index', [
-            'licenses' => $licenses,
-            'statuses' => LicenseStatus::cases(),
-        ]);
+    if ($this->status) {
+        $query->where('status', $this->status);
     }
-}; ?>
 
-<div>
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-900">Licenses</h1>
-        <a href="{{ url('/admin/licenses/create') }}"
-           class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
-            Create License
-        </a>
-    </div>
+    return $query->latest()->paginate(15);
+});
 
-    <div class="bg-white rounded-lg shadow p-6 mb-6">
-        <div class="flex gap-4">
-            <input type="text" wire:model="search" placeholder="Search by key..."
-                   class="flex-1 rounded-md border-gray-300 shadow-sm">
-            <select wire:model="status" class="rounded-md border-gray-300 shadow-sm">
-                <option value="">All Status</option>
-                @foreach ($statuses as $status)
-                    <option value="{{ $status->value }}">{{ $status->label() }}</option>
-                @endforeach
-            </select>
+$statuses = computed(fn () => LicenseStatus::cases());
+
+?>
+
+<x-layouts::app :title="__('Licenses')">
+    @volt
+        <div class="flex h-full w-full flex-1 flex-col gap-6 rounded-xl">
+            <flux:breadcrumbs>
+                <flux:breadcrumbs.item href="{{ route('dashboard') }}">{{ __('Home') }}</flux:breadcrumbs.item>
+                <flux:breadcrumbs.item>{{ __('Licenses') }}</flux:breadcrumbs.item>
+            </flux:breadcrumbs>
+
+            {{-- Header --}}
+            <div class="flex items-center justify-between">
+                <div>
+                    <flux:heading size="xl">{{ __('Licenses') }}</flux:heading>
+                    <flux:subheading>{{ __('Manage software license keys and activations') }}</flux:subheading>
+                </div>
+                <flux:button variant="primary" icon="plus" href="{{ url('/admin/licenses/create') }}">
+                    {{ __('Create License') }}
+                </flux:button>
+            </div>
+
+            {{-- Filters --}}
+            <div class="flex gap-4">
+                <flux:input size="md" wire:model.live="search" type="search" placeholder="{{ __('Search by license key...') }}" class="flex-1" />
+                <flux:select wire:model.live="status" class="max-w-xs">
+                    <option value="">{{ __('All Status') }}</option>
+                    @foreach ($this->statuses as $status)
+                        <option value="{{ $status->value }}">{{ $status->label() }}</option>
+                    @endforeach
+                </flux:select>
+            </div>
+
+            <div class="relative h-full flex-1 overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
+                <flux:table :paginate="$this->licenses">
+                    <flux:table.columns>
+                        <flux:table.column>{{ __('License Key') }}</flux:table.column>
+                        <flux:table.column>{{ __('Product') }}</flux:table.column>
+                        <flux:table.column>{{ __('User') }}</flux:table.column>
+                        <flux:table.column>{{ __('Status') }}</flux:table.column>
+                        <flux:table.column>{{ __('Devices') }}</flux:table.column>
+                        <flux:table.column>{{ __('Expires At') }}</flux:table.column>
+                    </flux:table.columns>
+
+                    <flux:table.rows>
+                        @foreach ($this->licenses as $license)
+                            <flux:table.row :key="$license->id">
+                                <flux:table.cell>
+                                    <code class="text-sm font-mono bg-zinc-100 px-2 py-0.5 rounded dark:bg-zinc-800">{{ $license->key }}</code>
+                                </flux:table.cell>
+                                <flux:table.cell>{{ $license->product->name }}</flux:table.cell>
+                                <flux:table.cell>{{ $license->user->email }}</flux:table.cell>
+                                <flux:table.cell>
+                                    <flux:badge :color="$license->status === 'active' ? 'green' : 'red'" size="sm" inset="top bottom">
+                                        {{ $license->status }}
+                                    </flux:badge>
+                                </flux:table.cell>
+                                <flux:table.cell>
+                                    <flux:text size="sm">
+                                        {{ $license->devices->count() }} / {{ $license->max_devices }}
+                                    </flux:text>
+                                </flux:table.cell>
+                                <flux:table.cell>
+                                    {{ $license->expires_at?->format('Y-m-d') ?? __('Never') }}
+                                </flux:table.cell>
+                            </flux:table.row>
+                        @endforeach
+                    </flux:table.rows>
+                </flux:table>
+            </div>
         </div>
-    </div>
-
-    @if (session()->has('message'))
-        <div class="mb-4 p-4 bg-green-100 text-green-700 rounded">{{ session('message') }}</div>
-    @endif
-
-    <div class="bg-white rounded-lg shadow overflow-hidden">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Key</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Devices</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Expires</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                @foreach ($licenses as $license)
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <code class="text-sm">{{ $license->key }}</code>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">{{ $license->product->name }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">{{ $license->user->email }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 py-1 text-xs rounded @if($license->status === 'active') bg-green-100 text-green-800 @else bg-red-100 text-red-800 @endif">
-                                {{ $license->status }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">{{ $license->devices->count() }}/{{ $license->max_devices }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">{{ $license->expires_at?->format('Y-m-d') }}</td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-        <div class="px-6 py-4">{{ $licenses->links() }}</div>
-    </div>
-</div>
+    @endvolt
+</x-layouts::app>

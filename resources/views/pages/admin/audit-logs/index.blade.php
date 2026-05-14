@@ -1,69 +1,111 @@
 <?php
 
 use App\Models\AuditLog;
-use Livewire\Volt\Component;
+use Flux\Flux;
 use Livewire\WithPagination;
 
-new class extends Component
-{
-    use WithPagination;
+use function Laravel\Folio\name;
+use function Livewire\Volt\{uses, computed, state};
 
-    public string $search = '';
-    public string $action = '';
+name('admin.audit-logs.index');
 
-    public function updatedSearch(): void
-    {
-        $this->resetPage();
-    }
-}; ?>
+uses(WithPagination::class);
 
-<div>
-    <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-900">Audit Logs</h1>
-    </div>
+state([
+    'search' => '',
+    'action' => '',
+]);
 
-    <div class="bg-white rounded-lg shadow p-6 mb-6">
-        <div class="flex gap-4">
-            <input type="text" wire:model="search" placeholder="Search..."
-                   class="flex-1 rounded-md border-gray-300 shadow-sm">
-            <select wire:model="action" class="rounded-md border-gray-300 shadow-sm">
-                <option value="">All Actions</option>
-                @foreach (['created', 'device_registered', 'activation_request_created', 'activation_approved', 'activation_rejected', 'suspended', 'revoked', 'restored'] as $act)
-                    <option value="{{ $act }}">{{ $act }}</option>
-                @endforeach
-            </select>
+$logs = computed(function () {
+    return AuditLog::with('user')
+        ->when($this->action, fn ($q) => $q->where('action', $this->action))
+        ->when($this->search, fn ($q) => $q->where('ip_address', 'like', '%' . $this->search . '%')->orWhere('entity_type', 'like', '%' . $this->search . '%'))
+        ->latest()
+        ->paginate(25);
+});
+
+$actions = computed(fn () => [
+    'created', 
+    'device_registered', 
+    'activation_request_created', 
+    'activation_approved', 
+    'activation_rejected', 
+    'suspended', 
+    'revoked', 
+    'restored'
+]);
+
+?>
+
+<x-layouts::app :title="__('Audit Logs')">
+    @volt
+        <div class="flex h-full w-full flex-1 flex-col gap-6 rounded-xl">
+            <flux:breadcrumbs>
+                <flux:breadcrumbs.item href="{{ route('dashboard') }}">{{ __('Home') }}</flux:breadcrumbs.item>
+                <flux:breadcrumbs.item>{{ __('Audit Logs') }}</flux:breadcrumbs.item>
+            </flux:breadcrumbs>
+
+            {{-- Header --}}
+            <div class="flex items-center justify-between">
+                <div>
+                    <flux:heading size="xl">{{ __('Audit Logs') }}</flux:heading>
+                    <flux:subheading>{{ __('Track system activities and resource changes') }}</flux:subheading>
+                </div>
+            </div>
+
+            {{-- Filters --}}
+            <div class="flex gap-4">
+                <flux:input size="md" wire:model.live="search" type="search" placeholder="{{ __('Search by IP or Entity...') }}" class="flex-1" />
+                <flux:select wire:model.live="action" class="max-w-xs">
+                    <option value="">{{ __('All Actions') }}</option>
+                    @foreach ($this->actions as $act)
+                        <option value="{{ $act }}">{{ Str::headline($act) }}</option>
+                    @endforeach
+                </flux:select>
+            </div>
+
+            <div class="relative h-full flex-1 overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
+                <flux:table :paginate="$this->logs">
+                    <flux:table.columns>
+                        <flux:table.column>{{ __('Action') }}</flux:table.column>
+                        <flux:table.column>{{ __('Entity') }}</flux:table.column>
+                        <flux:table.column>{{ __('User') }}</flux:table.column>
+                        <flux:table.column>{{ __('IP Address') }}</flux:table.column>
+                        <flux:table.column>{{ __('Created At') }}</flux:table.column>
+                    </flux:table.columns>
+
+                    <flux:table.rows>
+                        @foreach ($this->logs as $log)
+                            <flux:table.row :key="$log->id">
+                                <flux:table.cell>
+                                    <flux:badge size="sm" inset="top bottom" color="zinc">
+                                        {{ Str::headline($log->action) }}
+                                    </flux:badge>
+                                </flux:table.cell>
+                                <flux:table.cell>
+                                    <flux:text size="sm" class="font-medium">
+                                        {{ class_basename($log->entity_type) }}
+                                    </flux:text>
+                                    <flux:text size="xs" color="zinc">
+                                        #{{ $log->entity_id }}
+                                    </flux:text>
+                                </flux:table.cell>
+                                <flux:table.cell>
+                                    {{ $log->user?->email ?? __('System') }}
+                                </flux:table.cell>
+                                <flux:table.cell>
+                                    <flux:text size="sm" font="mono">
+                                        {{ $log->ip_address }}
+                                    </flux:text>
+                                </flux:table.cell>
+                                <flux:table.cell>
+                                    {{ $log->created_at->format('Y-m-d H:i') }}
+                                </flux:table.cell>
+                            </flux:table.row>
+                        @endforeach
+                    </flux:table.rows>
+                </flux:table>
+            </div>
         </div>
-    </div>
-
-    <div class="bg-white rounded-lg shadow overflow-hidden">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Entity</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">IP</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                @foreach (AuditLog::with('user')->when($action, fn($q) => $q->where('action', 'like', '%' . $action . '%'))->latest()->paginate(25) as $log)
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap">{{ $log->id }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <code class="text-xs bg-gray-100 px-2 py-1 rounded">{{ $log->action }}</code>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            {{ class_basename($log->entity_type) }} #{{ $log->entity_id }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">{{ $log->user?->email ?? 'System' }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">{{ $log->ip_address }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">{{ $log->created_at->format('Y-m-d H:i') }}</td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-        <div class="px-6 py-4">{{ AuditLog::with('user')->when($action, fn($q) => $q->where('action', 'like', '%' . $action . '%'))->latest()->paginate(25)->links() }}</div>
-    </div>
-</div>
+    @endvolt
+</x-layouts::app>
