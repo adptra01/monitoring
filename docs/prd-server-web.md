@@ -103,7 +103,7 @@ Versi awal TIDAK mencakup:
 | Queue       | Redis Queue         |
 | HTTP API    | Laravel API         |
 | Auth        | Laravel Sanctum     |
-| Admin Panel | Breeze and Livewire |
+| Admin Panel | Fortify and Livewire |
 | Logging     | Laravel Log         |
 | Scheduler   | Laravel Scheduler   |
 
@@ -381,7 +381,7 @@ Client boleh offline hingga tanggal tersebut.
 
 # 6.8 Admin Panel
 
-Admin panel menggunakan Breeze and Livewire.
+Admin panel menggunakan Fortify and Livewire.
 
 ---
 

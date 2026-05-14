@@ -37,7 +37,7 @@ Centralized licensing server untuk aplikasi Laravel berbasis subscription. Siste
 - Device validation & activation API
 - Device migration dengan approval flow
 - Semi-offline cache validation (7 hari grace period)
-- Admin panel (Breeze + Livewire + Volt) untuk monitoring & approval
+- Admin panel (Fortify + Livewire + Volt) untuk monitoring & approval
 - Audit logging
 
 **Key Constraints:**
@@ -45,7 +45,7 @@ Centralized licensing server untuk aplikasi Laravel berbasis subscription. Siste
 - 1 license bisa dipasang di multiple devices (max_devices per license)
 - License key format: `LIC-XXXX-XXXX` (random readable)
 - Manual billing — no payment gateway integration
-- Admin menggunakan Breeze auth yang sudah terinstall + Livewire admin
+- Admin menggunakan Fortify auth yang sudah terinstall + Livewire admin
 - Admin panel via Folio pages at `/admin`
 - Client apps consume REST API tanpa auth token — validasi via license_key
 
@@ -74,7 +74,7 @@ Centralized licensing server untuk aplikasi Laravel berbasis subscription. Siste
 │  │  └──────────┘ └──────────┘ └──────────────────┘    │    │
 │  │  ┌──────────┐                                       │    │
 │  │  │Audit Logs│                                       │    │
-│  │  │ (Volt)   │     Breeze sidebar layout             │    │
+│  │  │ (Volt)   │     Fortify sidebar layout             │    │
 │  │  └──────────┘                                       │    │
 │  └─────────────────────────────────────────────────────┘    │
 │  └─────────────────────┘                                      │
@@ -210,7 +210,7 @@ Admin membuka /admin
 Cek session login
     ├── Sudah login → tampilkan dashboard
     ↓ Belum login → redirect ke /login
-Tampilkan form login (Breeze)
+Tampilkan form login (Fortify)
     ↓
 Admin input email + password
     ↓
@@ -223,7 +223,7 @@ Cek is_admin flag
 Redirect ke /admin/dashboard
 ```
 
-Admin authentication menggunakan Breeze yang sudah terinstall. Perbedaan:
+Admin authentication menggunakan Fortify yang sudah terinstall. Perbedaan:
 - Semua user terdaftar via `/register` — hanya admin yang create
 - Hanya user dengan `is_admin = true` yang bisa akses `/admin/*`
 - User biasa (`is_admin = false`) akan ditolak oleh middleware di Folio
@@ -2022,7 +2022,7 @@ Saat ada activation request baru:
 - **No client-side encryption** — server is trusted, client is not
 - **No hardware fingerprinting** — simple UUID from client is sufficient
 - **No anti-tamper** — out of scope, client obfuscation is future work
-- **No OAuth/SSO** — simple admin auth with Breeze is sufficient
+- **No OAuth/SSO** — simple admin auth with Fortify is sufficient
 
 ### 10.4 Rate Limiting Configuration
 
@@ -2061,8 +2061,8 @@ public function boot(): void
 
 ### 11.1 Technology Stack
 
-Sudah terinstall dari Breeze (Livewire stack):
-- **Laravel Breeze** — authentication scaffold (login, register, password reset)
+Sudah terinstall dari Fortify (Livewire stack):
+- **Laravel Fortify** — authentication scaffold (login, register, password reset)
 - **Livewire v3** — reactive UI components
 - **Volt v1** — single-file Livewire components (functional API)
 - **Laravel Folio** — file-based routing untuk halaman admin
@@ -2073,8 +2073,8 @@ Sudah terinstall dari Breeze (Livewire stack):
 
 ```
 resources/views/
-├── components/          # Shared UI components (already from Breeze)
-│   ├── admin-layout.blade.php    # Admin layout (extends Breeze)
+├── components/          # Shared UI components (already from Fortify)
+│   ├── admin-layout.blade.php    # Admin layout (extends Fortify)
 │   ├── admin-nav.blade.php       # Admin sidebar navigation
 │   └── ...
 │
@@ -2106,7 +2106,7 @@ resources/views/
     │   └── audit-logs/
     │       └── index.blade.php   # List audit logs (Volt, read-only)
     │
-    └── ... (existing Breeze pages: dashboard, profile, etc.)
+    └── ... (existing Fortify pages: dashboard, profile, etc.)
 ```
 
 ### 11.3 Custom Middleware: CheckAdmin
@@ -2490,7 +2490,7 @@ $logs = fn() => AuditLog::with('user', 'license')
 
 ### 11.7 Navigation
 
-Admin sidebar navigation component menggunakan Breeze's existing `navigation` slot:
+Admin sidebar navigation component menggunakan Fortify's existing `navigation` slot:
 
 ```blade
 {{-- resources/views/components/admin-nav.blade.php --}}
@@ -2523,7 +2523,7 @@ Admin sidebar navigation component menggunakan Breeze's existing `navigation` sl
 
 Folio akan auto-register semua route berdasarkan struktur folder `resources/views/pages/admin/`. Tidak perlu manual route registration untuk halaman admin.
 
-Breeze auth routes (login, register, dll) tetap menggunakan `routes/auth.php`.
+Fortify auth routes (login, register, dll) tetap menggunakan `routes/auth.php`.
 
 ```php
 // routes/web.php — hanya untuk redirect atau route bantuan
@@ -2547,11 +2547,11 @@ Route::redirect('/admin', '/admin/licenses');
 | Audit Logs          | `/admin/audit-logs`             | Volt (RO)     | Read-only, paginated, filterable  |
 
 Keuntungan pakai Livewire + Volt:
-- Zero additional package install (Breeze sudah include)
+- Zero additional package install (Fortify sudah include)
 - Reactive UI without JavaScript
 - Single-file components (logic + template in one `.blade.php`)
 - Folio auto-routing — no route registration
-- Menggunakan Breeze UI components yang sudah ada
+- Menggunakan Flux UI components yang sudah ada
 - Konsisten dengan stack yang sudah terinstall
 
 ---
@@ -2561,7 +2561,7 @@ Keuntungan pakai Livewire + Volt:
 ### 12.1 Creating a New License
 
 ```
-1. Admin login via Breeze → buka `/admin/licenses`
+1. Admin login via Fortify → buka `/admin/licenses`
 2. Klik "Create License" → `/admin/licenses/create`
 3. Isi form (Livewire Volt component):
    - Product: pilih dari dropdown
@@ -3155,7 +3155,7 @@ ARCHITECTURE & DESIGN ✅ (this document)
 │  MILESTONE 1: Foundation                                         │
 │  Target: 1 session                                               │
 │                                                                  │
-│  [ ] No additional install (Breeze + Livewire + Volt ready)     │
+│  [ ] No additional install (Fortify + Livewire + Volt ready)     │
 │  [ ] Create migrations (8 files)                                 │
 │  [ ] Create models (7 files)                                     │
 │  [ ] Create enums (4 files)                                      │
@@ -3297,7 +3297,7 @@ Milestone 6: Verification  (Testing)             → 1 session
 | 9 | Audit logging | Custom `audit_logs` table | Spatie Activitylog, Laravel Telescope | Lightweight, no extra deps, full control |
 | 10 | Admin permissions | `is_admin` boolean + Gate + CheckAdminMiddleware | Spatie Permission, Filament Shield | Simple for current needs (single admin team) |
 | 11 | Subscription billing | Manual (admin creates record) | Stripe, Midtrans, Laravel Cashier | Phase 1: no payment gateway; add later |
-| 12 | Admin panel | Breeze + Livewire + Volt + Folio | Filament, Nova, Custom Blade | Zero additional install, Breeze already included, reactive UI |
+| 12 | Admin panel | Fortify + Livewire + Volt + Folio | Filament, Nova, Custom Blade | Zero additional install, Fortify already included, reactive UI |
 | 13 | Controllers | Invokable single-action | Resource controllers | Single responsibility, thin controllers |
 | 14 | Business logic | Service class (LicenseService) | Repository pattern, Action classes | Balances simplicity with testability |
 | 15 | Status values | Native PHP enums | Database enum, constant strings | Type-safe, IDE-friendly, serializable |
