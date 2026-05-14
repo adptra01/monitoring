@@ -1856,7 +1856,7 @@ Folio is already installed (see composer.json: `laravel/folio`). Folio uses file
 
 Create the admin pages directory structure first:
 
-Run: `mkdir -p resources/views/pages/admin/{products,plans,licenses,devices,activation-requests,audit-logs}`
+Run: `mkdir -p resources/views/pages/{products,plans,licenses,devices,activation-requests,audit-logs}`
 
 Read `app/Providers/FolioServiceProvider.php` first. If not exists, create it:
 
@@ -1895,10 +1895,10 @@ return [
 ```
 
 **Folio Routing Behavior:**
-- `resources/views/pages/admin/index.blade.php` → Route: `/admin`
-- `resources/views/pages/admin/products/index.blade.php` → Route: `/admin/products`
-- `resources/views/pages/admin/products/create.blade.php` → Route: `/admin/products/create`
-- `resources/views/pages/admin/products/[product]/edit.blade.php` → Route: `/admin/products/{product}/edit` (dynamic segment)
+- `resources/views/pages/index.blade.php` → Route: `/admin`
+- `resources/views/pages/products/index.blade.php` → Route: `/admin/products`
+- `resources/views/pages/products/create.blade.php` → Route: `/admin/products/create`
+- `resources/views/pages/products/[product]/edit.blade.php` → Route: `/admin/products/{product}/edit` (dynamic segment)
 
 The middleware `check.admin` applied in FolioServiceProvider protects ALL pages under `/admin/*`.
 
@@ -1910,7 +1910,7 @@ Create `resources/views/components/admin-nav.blade.php`:
 
 ```blade
 <nav class="space-y-1">
-    <x-nav-link href="{{ route('admin.dashboard') ?? '/admin' }}" :active="request()->is('admin')">
+    <x-nav-link href="{{ route('dashboard') ?? '/admin' }}" :active="request()->is('admin')">
         {{ __('Dashboard') }}
     </x-nav-link>
     <x-nav-link href="{{ url('/admin/licenses') }}" :active="request()->is('admin/licenses*')">
@@ -1979,25 +1979,25 @@ git commit -m "feat: add admin middleware, Folio setup, and navigation"
 ## Task 8: Admin Panel - Volt Pages
 
 **Files:**
-- Create: `resources/views/pages/admin/index.blade.php`
-- Create: `resources/views/pages/admin/products/index.blade.php`
-- Create: `resources/views/pages/admin/products/create.blade.php`
-- Create: `resources/views/pages/admin/products/[product]/edit.blade.php`
-- Create: `resources/views/pages/admin/plans/index.blade.php`
-- Create: `resources/views/pages/admin/plans/create.blade.php`
-- Create: `resources/views/pages/admin/plans/[plan]/edit.blade.php`
-- Create: `resources/views/pages/admin/licenses/index.blade.php`
-- Create: `resources/views/pages/admin/licenses/create.blade.php`
-- Create: `resources/views/pages/admin/licenses/[license]/edit.blade.php`
-- Create: `resources/views/pages/admin/devices/index.blade.php`
-- Create: `resources/views/pages/admin/activation-requests/index.blade.php`
-- Create: `resources/views/pages/admin/audit-logs/index.blade.php`
+- Create: `resources/views/pages/index.blade.php`
+- Create: `resources/views/pages/products/index.blade.php`
+- Create: `resources/views/pages/products/create.blade.php`
+- Create: `resources/views/pages/products/[product]/edit.blade.php`
+- Create: `resources/views/pages/plans/index.blade.php`
+- Create: `resources/views/pages/plans/create.blade.php`
+- Create: `resources/views/pages/plans/[plan]/edit.blade.php`
+- Create: `resources/views/pages/licenses/index.blade.php`
+- Create: `resources/views/pages/licenses/create.blade.php`
+- Create: `resources/views/pages/licenses/[license]/edit.blade.php`
+- Create: `resources/views/pages/devices/index.blade.php`
+- Create: `resources/views/pages/activation-requests/index.blade.php`
+- Create: `resources/views/pages/audit-logs/index.blade.php`
 
 - [ ] **Step 1: Create admin dashboard page**
 
-Run: `mkdir -p resources/views/pages/admin`
+Run: `mkdir -p resources/views/pages`
 
-Create `resources/views/pages/admin/index.blade.php`:
+Create `resources/views/pages/index.blade.php`:
 
 ```blade
 <?php
@@ -2109,7 +2109,7 @@ $mount = function () {
 
 - [ ] **Step 2: Create Products pages**
 
-Create `resources/views/pages/admin/products/index.blade.php`:
+Create `resources/views/pages/products/index.blade.php`:
 
 ```blade
 <?php
@@ -2224,7 +2224,7 @@ $slug = fn() => Str::slug($this->name);
 </x-layouts.admin>
 ```
 
-Create `resources/views/pages/admin/products/[product]/edit.blade.php`:
+Create `resources/views/pages/products/[product]/edit.blade.php`:
 
 ```blade
 <?php
@@ -2291,7 +2291,7 @@ $cancel = fn() => $this->redirect('/admin/products');
 
 - [ ] **Step 3: Create Plans pages**
 
-Create `resources/views/pages/admin/plans/index.blade.php`:
+Create `resources/views/pages/plans/index.blade.php`:
 
 ```blade
 <?php
@@ -2405,7 +2405,7 @@ $delete = function (SubscriptionPlan $plan) {
 </x-layouts.admin>
 ```
 
-Create `resources/views/pages/admin/plans/[plan]/edit.blade.php`:
+Create `resources/views/pages/plans/[plan]/edit.blade.php`:
 
 ```blade
 <?php
@@ -2481,7 +2481,7 @@ $cancel = fn() => $this->redirect('/admin/plans');
 
 - [ ] **Step 4: Create Licenses pages**
 
-Create `resources/views/pages/admin/licenses/index.blade.php`:
+Create `resources/views/pages/licenses/index.blade.php`:
 
 ```blade
 <?php
@@ -2639,7 +2639,7 @@ $save = function () {
 </x-layouts.admin>
 ```
 
-Create `resources/views/pages/admin/licenses/[license]/edit.blade.php`:
+Create `resources/views/pages/licenses/[license]/edit.blade.php`:
 
 ```blade
 <?php
@@ -2783,7 +2783,7 @@ $forceReset = function (License $license) {
 
 - [ ] **Step 5: Create Devices page (read-only)**
 
-Create `resources/views/pages/admin/devices/index.blade.php`:
+Create `resources/views/pages/devices/index.blade.php`:
 
 ```blade
 <?php
@@ -2840,7 +2840,7 @@ $mount = function () {
 
 - [ ] **Step 6: Create Activation Requests page**
 
-Create `resources/views/pages/admin/activation-requests/index.blade.php`:
+Create `resources/views/pages/activation-requests/index.blade.php`:
 
 ```blade
 <?php
@@ -2926,7 +2926,7 @@ $reject = function (ActivationRequest $request) {
 
 - [ ] **Step 7: Create Audit Logs page**
 
-Create `resources/views/pages/admin/audit-logs/index.blade.php`:
+Create `resources/views/pages/audit-logs/index.blade.php`:
 
 ```blade
 <?php
@@ -3011,7 +3011,7 @@ Route::redirect('/admin', '/admin/licenses');
 - [ ] **Step 9: Commit**
 
 ```bash
-git add resources/views/pages/admin/ resources/views/layouts/admin.blade.php routes/web.php
+git add resources/views/pages/ resources/views/layouts/admin.blade.php routes/web.php
 git commit -m "feat: add admin panel Volt pages"
 ```
 
@@ -3586,7 +3586,7 @@ git commit -m "chore: final lint and verification"
 
 **Folio Integration Points:**
 - `FolioServiceProvider` registers path `resources/views/pages` with admin middleware
-- All admin pages live in `resources/views/pages/admin/` - auto-routed by Folio
+- All admin pages live in `resources/views/pages/` - auto-routed by Folio
 - Dynamic routes use `[model]` folder naming convention
 - No manual route registration needed for admin pages
 - Auth + `check.admin` middleware protects entire `/admin/*` route group

@@ -25,6 +25,8 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureDefaults();
 
+        \Livewire\Volt\Volt::mount([resource_path('views/pages')], 'pages');
+
         \Illuminate\Support\Facades\Gate::before(function ($user, $ability) {
             return $user->hasRole('admin') ? true : null;
         });

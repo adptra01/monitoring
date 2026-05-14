@@ -60,8 +60,7 @@ class RolePermissionSeeder extends Seeder
     private function createAdminUsers(): void
     {
         $admins = [
-            ['name' => 'Admin', 'email' => 'admin@admin.com', 'password' => 'password'],
-            ['name' => 'Super Admin', 'email' => 'superadmin@admin.com', 'password' => 'password'],
+            ['name' => 'Super Admin', 'email' => 'admin@testing.com', 'password' => 'password'],
         ];
 
         foreach ($admins as $adminData) {
