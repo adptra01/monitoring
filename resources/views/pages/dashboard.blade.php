@@ -9,7 +9,7 @@ use Flux\Flux;
 use function Laravel\Folio\name;
 use function Livewire\Volt\{computed};
 
-name('index');
+name('dashboard');
 
 $totalProducts = computed(fn() => Product::count());
 $totalLicenses = computed(fn() => License::count());
@@ -19,18 +19,17 @@ $totalDevices = computed(fn() => Device::count());
 
 ?>
 
-<x-layouts::app :title="__('Admin Dashboard')">
+<x-layouts::app :title="__('Dashboard')">
     @volt
     <div class="flex h-full w-full flex-1 flex-col gap-6 rounded-xl">
         <flux:breadcrumbs>
-            <flux:breadcrumbs.item href="{{ route('dashboard') }}">{{ __('Home') }}</flux:breadcrumbs.item>
-            <flux:breadcrumbs.item>{{ __('Admin Dashboard') }}</flux:breadcrumbs.item>
+            <flux:breadcrumbs.item>{{ __('Dashboard') }}</flux:breadcrumbs.item>
         </flux:breadcrumbs>
 
         {{-- Header --}}
         <div class="flex items-center justify-between">
             <div>
-                <flux:heading size="xl">{{ __('Admin Dashboard') }}</flux:heading>
+                <flux:heading size="xl">{{ __('Dashboard') }}</flux:heading>
                 <flux:subheading>{{ __('Overview of your licensing system') }}</flux:subheading>
             </div>
         </div>
@@ -68,10 +67,10 @@ $totalDevices = computed(fn() => Device::count());
 
         {{-- Quick Links --}}
         <div class="grid grid-cols-1 gap-4 md:grid-cols-3 mt-4">
-            <flux:button href="{{ url('/admin/products') }}" icon="shopping-bag">{{ __('Manage Products') }}
+            <flux:button href="{{ url('/products') }}" icon="shopping-bag">{{ __('Manage Products') }}
             </flux:button>
-            <flux:button href="{{ url('/admin/licenses') }}" icon="key">{{ __('View Licenses') }}</flux:button>
-            <flux:button href="{{ url('/admin/activation-requests') }}" icon="check-badge">{{ __('Pending Requests') }}
+            <flux:button href="{{ url('/licenses') }}" icon="key">{{ __('View Licenses') }}</flux:button>
+            <flux:button href="{{ url('/activation-requests') }}" icon="check-badge">{{ __('Pending Requests') }}
             </flux:button>
         </div>
     </div>

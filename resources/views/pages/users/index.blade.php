@@ -6,9 +6,10 @@ use Spatie\Permission\Models\Role;
 use Flux\Flux;
 
 use function Livewire\Volt\{uses, computed, state};
-use function Laravel\Folio\{name};
+use function Laravel\Folio\{name, middleware};
 
 name('users.index');
+
 
 uses(WithPagination::class);
 
@@ -55,7 +56,7 @@ $delete = function (int $id) {
                 <flux:heading size="xl">{{ __('Users') }}</flux:heading>
                 <flux:subheading>{{ __('Manage system users and their roles') }}</flux:subheading>
             </div>
-            <flux:button variant="primary" icon="plus" href="{{ url('/admin/users/create') }}">
+            <flux:button variant="primary" icon="plus" href="{{ url('/users/create') }}">
                 {{ __('Add User') }}
             </flux:button>
         </div>
@@ -105,7 +106,7 @@ $delete = function (int $id) {
                             <flux:table.cell>
                                 <div class="flex gap-2">
                                     <flux:button variant="ghost" size="sm" icon="pencil"
-                                        href="{{ url('/admin/users/' . $user->id . '/edit') }}" />
+                                        href="{{ url('/users/' . $user->id . '/edit') }}" />
                                     <flux:button variant="ghost" size="sm" icon="trash" wire:click="delete({{ $user->id }})"
                                         wire:confirm="{{ __('Are you sure you want to delete this user?') }}" />
                                 </div>

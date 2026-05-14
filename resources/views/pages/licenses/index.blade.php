@@ -5,10 +5,11 @@ use App\Enums\LicenseStatus;
 use Flux\Flux;
 use Livewire\WithPagination;
 
-use function Laravel\Folio\name;
+use function Laravel\Folio\{name, middleware};
 use function Livewire\Volt\{uses, computed, state};
 
 name('licenses.index');
+
 
 uses(WithPagination::class);
 
@@ -49,7 +50,7 @@ $statuses = computed(fn() => LicenseStatus::cases());
                 <flux:heading size="xl">{{ __('Licenses') }}</flux:heading>
                 <flux:subheading>{{ __('Manage software license keys and activations') }}</flux:subheading>
             </div>
-            <flux:button variant="primary" icon="plus" href="{{ url('/admin/licenses/create') }}">
+            <flux:button variant="primary" icon="plus" href="{{ url('/licenses/create') }}">
                 {{ __('Create License') }}
             </flux:button>
         </div>

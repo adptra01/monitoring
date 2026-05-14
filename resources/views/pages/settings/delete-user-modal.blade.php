@@ -4,7 +4,7 @@ use App\Concerns\PasswordValidationRules;
 use App\Livewire\Actions\Logout;
 use Illuminate\Support\Facades\Auth;
 
-use function Livewire\Volt\{state};
+use function Livewire\Volt\{state, uses};
 
 uses([PasswordValidationRules::class]);
 

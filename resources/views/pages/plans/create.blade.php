@@ -55,7 +55,7 @@ $save = function () {
 
     Flux::toast(variant: 'success', text: __('Plan created successfully.'));
 
-    $this->redirect('/admin/plans');
+    $this->redirect('/plans');
 };
 
 ?>
@@ -65,7 +65,7 @@ $save = function () {
     <div class="flex h-full w-full flex-1 flex-col gap-6 rounded-xl">
         <flux:breadcrumbs>
             <flux:breadcrumbs.item href="{{ route('dashboard') }}">{{ __('Home') }}</flux:breadcrumbs.item>
-            <flux:breadcrumbs.item href="{{ url('/admin/plans') }}">{{ __('Plans') }}</flux:breadcrumbs.item>
+            <flux:breadcrumbs.item href="{{ url('/plans') }}">{{ __('Plans') }}</flux:breadcrumbs.item>
             <flux:breadcrumbs.item>{{ __('Create') }}</flux:breadcrumbs.item>
         </flux:breadcrumbs>
 
@@ -107,7 +107,7 @@ $save = function () {
                 </div>
 
                 <div class="flex justify-end gap-2 border-t border-zinc-200 pt-4 dark:border-zinc-700">
-                    <flux:button href="{{ url('/admin/plans') }}" variant="filled">{{ __('Cancel') }}</flux:button>
+                    <flux:button href="{{ url('/plans') }}" variant="filled">{{ __('Cancel') }}</flux:button>
                     <flux:button type="submit" variant="primary">{{ __('Create Plan') }}</flux:button>
                 </div>
             </form>

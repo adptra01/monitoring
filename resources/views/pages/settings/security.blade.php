@@ -8,7 +8,7 @@ use Laravel\Fortify\Actions\DisableTwoFactorAuthentication;
 use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
 
-use function Livewire\Volt\{state, on, mount};
+use function Livewire\Volt\{state, on, mount, uses};
 
 uses([PasswordValidationRules::class]);
 
@@ -68,7 +68,6 @@ $disable = function (DisableTwoFactorAuthentication $disableTwoFactorAuthenticat
 ?>
 
 <x-layouts::app :title="__('Security settings')">
-    @volt
         <section class="w-full">
             @include('partials.settings-heading')
 
@@ -156,5 +155,4 @@ $disable = function (DisableTwoFactorAuthentication $disableTwoFactorAuthenticat
                 @endif
             </x-pages::settings.layout>
         </section>
-    @endvolt
 </x-layouts::app>

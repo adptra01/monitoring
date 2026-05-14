@@ -33,7 +33,7 @@ $save = function () {
 
     Flux::toast(variant: 'success', text: __('Role created successfully.'));
 
-    $this->redirect('/admin/roles');
+    $this->redirect('/roles');
 };
 
 ?>
@@ -43,7 +43,7 @@ $save = function () {
     <div class="flex h-full w-full flex-1 flex-col gap-6 rounded-xl">
         <flux:breadcrumbs>
             <flux:breadcrumbs.item href="{{ route('dashboard') }}">{{ __('Home') }}</flux:breadcrumbs.item>
-            <flux:breadcrumbs.item href="{{ url('/admin/roles') }}">{{ __('Roles') }}</flux:breadcrumbs.item>
+            <flux:breadcrumbs.item href="{{ url('/roles') }}">{{ __('Roles') }}</flux:breadcrumbs.item>
             <flux:breadcrumbs.item>{{ __('Create') }}</flux:breadcrumbs.item>
         </flux:breadcrumbs>
 
@@ -72,7 +72,7 @@ $save = function () {
                 </flux:field>
 
                 <div class="flex justify-end gap-2 border-t border-zinc-200 pt-4 dark:border-zinc-700">
-                    <flux:button href="{{ url('/admin/roles') }}" variant="filled">{{ __('Cancel') }}</flux:button>
+                    <flux:button href="{{ url('/roles') }}" variant="filled">{{ __('Cancel') }}</flux:button>
                     <flux:button type="submit" variant="primary">{{ __('Create Role') }}</flux:button>
                 </div>
             </form>

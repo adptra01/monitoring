@@ -5,10 +5,11 @@ use App\Services\LicenseService;
 use Flux\Flux;
 use Livewire\WithPagination;
 
-use function Laravel\Folio\name;
+use function Laravel\Folio\{name, middleware};
 use function Livewire\Volt\{uses, computed, state};
 
 name('activation-requests.index');
+
 
 uses(WithPagination::class);
 

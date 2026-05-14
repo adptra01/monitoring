@@ -5,7 +5,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 
-use function Livewire\Volt\{state, computed, on, mount};
+use function Livewire\Volt\{state, computed, on, mount, uses};
 
 uses([ProfileValidationRules::class]);
 

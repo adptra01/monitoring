@@ -4,10 +4,11 @@ use App\Models\AuditLog;
 use Flux\Flux;
 use Livewire\WithPagination;
 
-use function Laravel\Folio\name;
+use function Laravel\Folio\{name, middleware};
 use function Livewire\Volt\{uses, computed, state};
 
 name('audit-logs.index');
+
 
 uses(WithPagination::class);
 

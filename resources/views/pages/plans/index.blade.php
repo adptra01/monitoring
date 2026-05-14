@@ -5,12 +5,11 @@ use App\Models\Product;
 use Flux\Flux;
 use Livewire\WithPagination;
 
-use function Laravel\Folio\name;
-use function Livewire\Volt\computed;
-use function Livewire\Volt\state;
-use function Livewire\Volt\uses;
+use function Laravel\Folio\{name, middleware};
+use function Livewire\Volt\{computed, state, uses};
 
 name('plans.index');
+
 
 uses(WithPagination::class);
 
@@ -57,7 +56,7 @@ $delete = function () {
                 <flux:heading size="xl">{{ __('Subscription Plans') }}</flux:heading>
                 <flux:subheading>{{ __('Manage pricing plans for your products') }}</flux:subheading>
             </div>
-            <flux:button variant="primary" icon="plus" href="{{ url('/admin/plans/create') }}">
+            <flux:button variant="primary" icon="plus" href="{{ url('/plans/create') }}">
                 {{ __('Add Plan') }}
             </flux:button>
         </div>
@@ -92,7 +91,7 @@ $delete = function () {
                             <flux:table.cell>
                                 <div class="flex gap-2">
                                     <flux:button variant="ghost" size="sm" icon="pencil"
-                                        href="{{ url('/admin/plans/' . $plan->id . '/edit') }}" />
+                                        href="{{ url('/plans/' . $plan->id . '/edit') }}" />
                                     <flux:button variant="ghost" size="sm" icon="trash"
                                         wire:click="confirmDelete({{ $plan->id }})" />
                                 </div>

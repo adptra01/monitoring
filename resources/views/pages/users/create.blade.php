@@ -41,7 +41,7 @@ $save = function () {
 
     Flux::toast(variant: 'success', text: __('User created successfully.'));
 
-    $this->redirect('/admin/users');
+    $this->redirect('/users');
 };
 
 ?>
@@ -51,7 +51,7 @@ $save = function () {
     <div class="flex h-full w-full flex-1 flex-col gap-6 rounded-xl">
         <flux:breadcrumbs>
             <flux:breadcrumbs.item href="{{ route('dashboard') }}">{{ __('Home') }}</flux:breadcrumbs.item>
-            <flux:breadcrumbs.item href="{{ url('/admin/users') }}">{{ __('Users') }}</flux:breadcrumbs.item>
+            <flux:breadcrumbs.item href="{{ url('/users') }}">{{ __('Users') }}</flux:breadcrumbs.item>
             <flux:breadcrumbs.item>{{ __('Create') }}</flux:breadcrumbs.item>
         </flux:breadcrumbs>
 
@@ -88,7 +88,7 @@ $save = function () {
                 <flux:checkbox wire:model="is_admin" :label="__('Administrator Access')" />
 
                 <div class="flex justify-end gap-2 border-t border-zinc-200 pt-4 dark:border-zinc-700">
-                    <flux:button href="{{ url('/admin/users') }}" variant="filled">{{ __('Cancel') }}</flux:button>
+                    <flux:button href="{{ url('/users') }}" variant="filled">{{ __('Cancel') }}</flux:button>
                     <flux:button type="submit" variant="primary">{{ __('Create User') }}</flux:button>
                 </div>
             </form>
