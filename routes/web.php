@@ -1,17 +1,21 @@
 <?php
 
+use App\Http\Middleware\EnsureTeamMembership;
 use Illuminate\Support\Facades\Route;
+use Laravel\Fortify\Features;
 
-Route::view('/', 'welcome');
+Route::view('/', 'welcome', [
+    'canRegister' => Features::enabled(Features::registration()),
+])->name('home');
 
-Route::view('dashboard', 'dashboard')
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
+Route::prefix('{current_team}')
+    ->middleware(['auth', 'verified', EnsureTeamMembership::class])
+    ->group(function () {
+        Route::view('dashboard', 'dashboard')->name('dashboard');
+    });
 
-Route::redirect('/admin', '/admin/licenses');
+Route::middleware(['auth'])->group(function () {
+    Route::livewire('invitations/{invitation}/accept', 'pages::teams.accept-invitation')->name('invitations.accept');
+});
 
-Route::view('profile', 'profile')
-    ->middleware(['auth'])
-    ->name('profile');
-
-require __DIR__.'/auth.php';
+require __DIR__.'/settings.php';

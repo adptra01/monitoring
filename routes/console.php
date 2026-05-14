@@ -1,6 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Schedule;
+use Illuminate\Foundation\Inspiring;
+use Illuminate\Support\Facades\Artisan;
 
-Schedule::command('licenses:check-expired')->daily();
-Schedule::command('licenses:notify-expiring')->daily();
+Artisan::command('inspire', function () {
+    $this->comment(Inspiring::quote());
+})->purpose('Display an inspiring quote');
