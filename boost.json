@@ -10,8 +10,8 @@
     "sail": false,
     "skills": [
         "folio-routing",
-        "fortify-development",
         "laravel-best-practices",
+        "livewire-development",
         "volt-development",
         "tailwindcss-development",
         "laravel-api",
