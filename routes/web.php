@@ -8,6 +8,8 @@ Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
+Route::redirect('/admin', '/admin/licenses');
+
 Route::view('profile', 'profile')
     ->middleware(['auth'])
     ->name('profile');
