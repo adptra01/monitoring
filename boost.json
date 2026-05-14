@@ -1,11 +1,14 @@
 {
     "agents": [
-        "opencode"
+        "gemini"
     ],
     "cloud": false,
     "guidelines": true,
     "mcp": true,
     "nightwatch": false,
+    "packages": [
+        "spatie/laravel-permission"
+    ],
     "sail": false,
     "skills": [
         "folio-routing",
@@ -15,6 +18,7 @@
         "livewire-development",
         "volt-development",
         "tailwindcss-development",
+        "laravel-permission-development",
         "laravel-brainstorming",
         "laravel-expert",
         "php-api",

@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Concerns\HasTeams;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,13 +12,11 @@ use Illuminate\Support\Str;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['name', 'email', 'password', 'current_team_id', 'is_admin'])]
+#[Fillable(['name', 'email', 'password', 'is_admin'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable
 {
-    use HasFactory, HasRoles, HasTeams, Notifiable, TwoFactorAuthenticatable {
-        HasRoles::teams as spatieTeams;
-    }
+    use HasFactory, HasRoles, Notifiable, TwoFactorAuthenticatable;
 
     protected function casts(): array
     {
@@ -29,11 +26,6 @@ class User extends Authenticatable
             'two_factor_confirmed_at' => 'datetime',
             'is_admin' => 'boolean',
         ];
-    }
-
-    public function teams(...$args): mixed
-    {
-        return $this->userTeams(...$args);
     }
 
     public function licenses(): HasMany

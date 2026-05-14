@@ -6,15 +6,12 @@ use App\Enums\ActivationRequestStatus;
 use App\Enums\LicenseMode;
 use App\Enums\LicenseStatus;
 use App\Enums\SubscriptionStatus;
-use App\Enums\TeamRole;
 use App\Models\ActivationRequest;
 use App\Models\Device;
 use App\Models\License;
-use App\Models\Membership;
 use App\Models\Product;
 use App\Models\Subscription;
 use App\Models\SubscriptionPlan;
-use App\Models\Team;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
@@ -23,9 +20,7 @@ class LicenseSeeder extends Seeder
 {
     public function run(): void
     {
-        $this->createAdminUser();
-        $this->createRegularUsers();
-
+        $this->createUsers();
         $this->createProducts();
         $this->createSubscriptionPlans();
         $this->createLicenses();
@@ -34,29 +29,13 @@ class LicenseSeeder extends Seeder
         $this->createSubscriptions();
     }
 
-    private function createAdminUser(): void
-    {
-        $admin = User::updateOrCreate(
-            ['email' => 'admin@example.com'],
-            [
-                'name' => 'Admin User',
-                'email' => 'admin@example.com',
-                'password' => bcrypt('password'),
-                'email_verified_at' => now(),
-                'is_admin' => true,
-            ]
-        );
-        $admin->assignRole('admin');
-
-        $this->createTeamForUser($admin, 'Admin Team');
-    }
-
-    private function createRegularUsers(): void
+    private function createUsers(): void
     {
         $users = [
-            ['name' => 'John Doe', 'email' => 'john@example.com'],
-            ['name' => 'Jane Smith', 'email' => 'jane@example.com'],
-            ['name' => 'Bob Wilson', 'email' => 'bob@example.com'],
+            ['name' => 'Admin User', 'email' => 'admin@example.com', 'role' => 'admin', 'is_admin' => true],
+            ['name' => 'John Doe', 'email' => 'john@example.com', 'role' => 'user', 'is_admin' => false],
+            ['name' => 'Jane Smith', 'email' => 'jane@example.com', 'role' => 'user', 'is_admin' => false],
+            ['name' => 'Bob Wilson', 'email' => 'bob@example.com', 'role' => 'user', 'is_admin' => false],
         ];
 
         foreach ($users as $userData) {
@@ -67,33 +46,11 @@ class LicenseSeeder extends Seeder
                     'email' => $userData['email'],
                     'password' => bcrypt('password'),
                     'email_verified_at' => now(),
-                    'is_admin' => false,
+                    'is_admin' => $userData['is_admin'],
                 ]
             );
-            $user->assignRole('user');
-
-            $this->createTeamForUser($user, $userData['name']."'s Team");
+            $user->assignRole($userData['role']);
         }
-    }
-
-    private function createTeamForUser(User $user, string $teamName): void
-    {
-        $team = Team::updateOrCreate(
-            ['name' => $teamName],
-            [
-                'name' => $teamName,
-                'slug' => Str::slug($teamName),
-                'is_personal' => true,
-            ]
-        );
-
-        $user->current_team_id = $team->id;
-        $user->save();
-
-        Membership::updateOrCreate(
-            ['user_id' => $user->id, 'team_id' => $team->id],
-            ['role' => TeamRole::Owner]
-        );
     }
 
     private function createProducts(): void
