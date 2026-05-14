@@ -2,12 +2,6 @@
 
 namespace App\Services;
 
-use App\Enums\LicenseStatus;
-use App\Enums\LicenseMode;
-use App\Models\License;
-use App\Models\Device;
-use App\Models\ActivationRequest;
-use App\Enums\ActivationRequestStatus;
 use Illuminate\Support\Str;
 
 class LicenseKeyService
@@ -15,9 +9,9 @@ class LicenseKeyService
     public function generate(): string
     {
         return strtoupper(
-            Str::random(4) . '-' .
-            Str::random(4) . '-' .
-            Str::random(4) . '-' .
+            Str::random(4).'-'.
+            Str::random(4).'-'.
+            Str::random(4).'-'.
             Str::random(4)
         );
     }
@@ -34,6 +28,6 @@ class LicenseKeyService
             return '****-****-****-****';
         }
 
-        return $parts[0] . '-****-****-' . $parts[3];
+        return $parts[0].'-****-****-'.$parts[3];
     }
 }

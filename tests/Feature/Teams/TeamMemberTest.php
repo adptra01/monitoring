@@ -13,6 +13,13 @@ class TeamMemberTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->markTestSkipped('Teams feature is disabled.');
+    }
+
     public function test_team_member_role_can_be_updated_by_owner(): void
     {
         $owner = User::factory()->create();

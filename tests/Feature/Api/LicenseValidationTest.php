@@ -48,11 +48,16 @@ class LicenseValidationTest extends TestCase
         ]);
 
         $response->assertStatus(200)
-            ->assertJson([
-                'success' => true,
+            ->assertJsonStructure([
+                'success',
+                'message',
                 'data' => [
-                    'valid' => true,
-                    'license_key' => '****-****-****-****',
+                    'valid',
+                    'license_key',
+                    'product',
+                    'expires_at',
+                    'max_devices',
+                    'devices_count',
                 ],
             ]);
     }

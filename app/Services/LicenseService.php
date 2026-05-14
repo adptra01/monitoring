@@ -4,11 +4,10 @@ namespace App\Services;
 
 use App\Enums\ActivationRequestStatus;
 use App\Enums\LicenseStatus;
-use App\Models\License;
-use App\Models\Device;
 use App\Models\ActivationRequest;
 use App\Models\AuditLog;
-use Illuminate\Support\Carbon;
+use App\Models\Device;
+use App\Models\License;
 
 class LicenseService
 {
@@ -30,7 +29,7 @@ class LicenseService
     public function validate(License $license): array
     {
         if ($license->status !== LicenseStatus::Active) {
-            return ['valid' => false, 'reason' => 'License is ' . $license->status->value];
+            return ['valid' => false, 'reason' => 'License is '.$license->status->value];
         }
 
         if ($license->expires_at && $license->expires_at->isPast()) {
@@ -132,6 +131,7 @@ class LicenseService
     {
         $license->update(['status' => LicenseStatus::Suspended]);
         $this->log($license, 'suspended', ['previous_status' => 'active']);
+
         return true;
     }
 
@@ -139,6 +139,7 @@ class LicenseService
     {
         $license->update(['status' => LicenseStatus::Revoked]);
         $this->log($license, 'revoked', ['previous_status' => $license->getOriginal('status')]);
+
         return true;
     }
 
@@ -146,6 +147,7 @@ class LicenseService
     {
         $license->update(['status' => LicenseStatus::Active]);
         $this->log($license, 'restored', ['previous_status' => $license->getOriginal('status')]);
+
         return true;
     }
 
@@ -159,6 +161,7 @@ class LicenseService
 
         if ($request) {
             $device->update(['last_seen_at' => now()]);
+
             return ['valid' => true, 'offline_until' => $request->activated_at->addDays(7)];
         }
 

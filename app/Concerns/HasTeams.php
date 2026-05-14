@@ -22,11 +22,16 @@ trait HasTeams
      *
      * @return BelongsToMany<Team, $this>
      */
-    public function teams(): BelongsToMany
+    public function userTeams(): BelongsToMany
     {
         return $this->belongsToMany(Team::class, 'team_members', 'user_id', 'team_id')
             ->withPivot(['role'])
             ->withTimestamps();
+    }
+
+    public function teams(): BelongsToMany
+    {
+        return $this->userTeams();
     }
 
     /**
@@ -71,7 +76,7 @@ trait HasTeams
      */
     public function personalTeam(): ?Team
     {
-        return $this->teams()
+        return $this->userTeams()
             ->where('is_personal', true)
             ->first();
     }
@@ -98,7 +103,7 @@ trait HasTeams
      */
     public function belongsToTeam(Team $team): bool
     {
-        return $this->teams()->where('teams.id', $team->id)->exists();
+        return $this->userTeams()->where('teams.id', $team->id)->exists();
     }
 
     /**
@@ -180,7 +185,7 @@ trait HasTeams
 
     public function fallbackTeam(?Team $excluding = null): ?Team
     {
-        return $this->teams()
+        return $this->userTeams()
             ->when($excluding, fn ($query) => $query->where('teams.id', '!=', $excluding->id))
             ->orderByRaw('LOWER(teams.name)')
             ->first();

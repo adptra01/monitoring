@@ -81,7 +81,7 @@ class LicenseActivationTest extends TestCase
         ]);
     }
 
-    public function test_activate_returns_error_when_device_limit_reached(): void
+    public function test_activate_returns_pending_status_when_device_limit_reached(): void
     {
         $product = Product::factory()->create();
         $user = User::factory()->create();
@@ -101,8 +101,10 @@ class LicenseActivationTest extends TestCase
             ],
         ]);
 
-        $response->assertStatus(403)
-            ->assertJson(['success' => false, 'message' => 'Device limit reached']);
+        $response->assertStatus(200);
+        $data = $response->json();
+        $this->assertTrue($data['data']['requires_approval'] ?? false);
+        $this->assertArrayHasKey('activation_code', $data['data']);
     }
 
     public function test_activate_returns_pending_status_for_approval_mode(): void
@@ -160,7 +162,7 @@ class LicenseActivationTest extends TestCase
             'user_id' => $user->id,
         ]);
 
-        $response = $this->getJson("/api/v1/status/{$license->key}/" . str_repeat('x', 64));
+        $response = $this->getJson("/api/v1/status/{$license->key}/".str_repeat('x', 64));
 
         $response->assertStatus(404)
             ->assertJson(['success' => false, 'message' => 'Device not registered']);

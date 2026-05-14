@@ -24,7 +24,7 @@ class LicenseServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new LicenseService(new LicenseKeyService());
+        $this->service = new LicenseService(new LicenseKeyService);
     }
 
     public function test_create_generates_key_if_not_provided(): void

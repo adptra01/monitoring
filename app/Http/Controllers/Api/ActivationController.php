@@ -18,12 +18,12 @@ class ActivationController extends ApiController
     {
         $license = License::where('key', $request->validated('license_key'))->first();
 
-        if (!$license) {
+        if (! $license) {
             return $this->error('Invalid license key', 404);
         }
 
         $validation = $this->licenseService->validate($license);
-        if (!$validation['valid']) {
+        if (! $validation['valid']) {
             return $this->error($validation['reason'], 403);
         }
 
@@ -56,8 +56,18 @@ class ActivationController extends ApiController
             ], 'Device already activated');
         }
 
-        if (!$this->licenseService->checkDeviceLimit($license)) {
-            return $this->error('Device limit reached', 403);
+        if (! $this->licenseService->checkDeviceLimit($license)) {
+            $device = $this->licenseService->registerDevice($license, $deviceData);
+            $activationRequest = $this->licenseService->createActivationRequest($device);
+
+            if ($activationRequest) {
+                return $this->success([
+                    'device_id' => $device->id,
+                    'requires_approval' => true,
+                    'activation_code' => $activationRequest->code,
+                    'expires_at' => $activationRequest->expires_at->toIso8601String(),
+                ], 'Device limit reached, activation required');
+            }
         }
 
         $device = $this->licenseService->registerDevice($license, $deviceData);
@@ -85,7 +95,7 @@ class ActivationController extends ApiController
     {
         $license = License::where('key', $key)->first();
 
-        if (!$license) {
+        if (! $license) {
             return $this->error('Invalid license key', 404);
         }
 
@@ -93,7 +103,7 @@ class ActivationController extends ApiController
             ->where('license_id', $license->id)
             ->first();
 
-        if (!$device) {
+        if (! $device) {
             return $this->error('Device not registered', 404);
         }
 
@@ -106,7 +116,7 @@ class ActivationController extends ApiController
     {
         $license = License::where('key', $key)->first();
 
-        if (!$license) {
+        if (! $license) {
             return $this->error('Invalid license key', 404);
         }
 
@@ -114,7 +124,7 @@ class ActivationController extends ApiController
             ->where('license_id', $license->id)
             ->first();
 
-        if (!$device) {
+        if (! $device) {
             return $this->error('Device not registered', 404);
         }
 

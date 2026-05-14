@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Concerns\HasTeams;
-use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -18,7 +17,9 @@ use Spatie\Permission\Traits\HasRoles;
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable
 {
-    use HasFactory, HasTeams, Notifiable, TwoFactorAuthenticatable, HasRoles;
+    use HasFactory, HasRoles, HasTeams, Notifiable, TwoFactorAuthenticatable {
+        HasRoles::teams as spatieTeams;
+    }
 
     protected function casts(): array
     {
@@ -28,6 +29,11 @@ class User extends Authenticatable
             'two_factor_confirmed_at' => 'datetime',
             'is_admin' => 'boolean',
         ];
+    }
+
+    public function teams(...$args): mixed
+    {
+        return $this->userTeams(...$args);
     }
 
     public function licenses(): HasMany
@@ -47,7 +53,7 @@ class User extends Authenticatable
 
     public function isAdmin(): bool
     {
-        return $this->is_admin || $this->hasRole('admin');
+        return (bool) $this->is_admin || $this->hasRole('admin');
     }
 
     public function initials(): string

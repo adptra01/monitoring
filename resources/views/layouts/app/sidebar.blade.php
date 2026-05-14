@@ -18,6 +18,84 @@
                         {{ __('Dashboard') }}
                     </flux:sidebar.item>
                 </flux:sidebar.group>
+
+                @if(auth()->user()?->isAdmin())
+                    <flux:sidebar.group :heading="__('Licensing')" class="grid">
+                        <flux:sidebar.item 
+                            icon="key" 
+                            :href="url('/admin')" 
+                            :current="request()->routeIs('admin') || request()->is('admin')"
+                            wire:navigate>
+                            {{ __('Dashboard') }}
+                        </flux:sidebar.item>
+
+                        <flux:sidebar.item 
+                            icon="cube" 
+                            :href="url('/admin/licenses')" 
+                            :current="request()->is('admin/licenses*')"
+                            wire:navigate>
+                            {{ __('Licenses') }}
+                        </flux:sidebar.item>
+
+                        <flux:sidebar.item 
+                            icon="cube" 
+                            :href="url('/admin/products')" 
+                            :current="request()->is('admin/products*')"
+                            wire:navigate>
+                            {{ __('Products') }}
+                        </flux:sidebar.item>
+
+                        <flux:sidebar.item 
+                            icon="currency-dollar" 
+                            :href="url('/admin/plans')" 
+                            :current="request()->is('admin/plans*')"
+                            wire:navigate>
+                            {{ __('Subscription Plans') }}
+                        </flux:sidebar.item>
+
+                        <flux:sidebar.item 
+                            icon="check-circle" 
+                            :href="url('/admin/activation-requests')" 
+                            :current="request()->is('admin/activation-requests*')"
+                            wire:navigate>
+                            {{ __('Activation Requests') }}
+                        </flux:sidebar.item>
+
+                        <flux:sidebar.item 
+                            icon="computer-desktop" 
+                            :href="url('/admin/devices')" 
+                            :current="request()->is('admin/devices*')"
+                            wire:navigate>
+                            {{ __('Devices') }}
+                        </flux:sidebar.item>
+
+                        <flux:sidebar.item 
+                            icon="clipboard-document-list" 
+                            :href="url('/admin/audit-logs')" 
+                            :current="request()->is('admin/audit-logs*')"
+                            wire:navigate>
+                            {{ __('Audit Logs') }}
+                        </flux:sidebar.item>
+                    </flux:sidebar.group>
+
+                    <flux:sidebar.group :heading="__('Access Control')" class="grid">
+                        <flux:sidebar.item 
+                            icon="users" 
+                            :href="url('/admin/users')" 
+                            :current="request()->is('admin/users*')"
+                            wire:navigate>
+                            {{ __('Users') }}
+                        </flux:sidebar.item>
+
+                        <flux:sidebar.item 
+                            icon="shield-check" 
+                            :href="url('/admin/roles')" 
+                            :current="request()->is('admin/roles*')"
+                            wire:navigate>
+                            {{ __('Roles') }}
+                        </flux:sidebar.item>
+                    </flux:sidebar.group>
+                @endif
             </flux:sidebar.nav>
 
             <flux:spacer />
@@ -59,6 +137,9 @@
                                 <div class="grid flex-1 text-start text-sm leading-tight">
                                     <flux:heading class="truncate">{{ auth()->user()->name }}</flux:heading>
                                     <flux:text class="truncate">{{ auth()->user()->email }}</flux:text>
+                                    @if(auth()->user()?->isAdmin())
+                                        <flux:badge variant="primary" size="sm" class="mt-1">Admin</flux:badge>
+                                    @endif
                                 </div>
                             </div>
                         </div>

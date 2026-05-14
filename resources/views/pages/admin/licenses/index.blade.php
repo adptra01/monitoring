@@ -17,7 +17,7 @@ new class extends Component
         $this->resetPage();
     }
 
-    public function render()
+    public function render(): mixed
     {
         $query = License::with(['product', 'user']);
 

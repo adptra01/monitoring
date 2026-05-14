@@ -12,7 +12,7 @@ class LicenseKeyServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new LicenseKeyService();
+        $this->service = new LicenseKeyService;
     }
 
     public function test_generate_returns_correct_format(): void

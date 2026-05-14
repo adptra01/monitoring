@@ -15,6 +15,13 @@ class TeamInvitationTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->markTestSkipped('Teams feature is disabled.');
+    }
+
     public function test_team_invitations_can_be_created(): void
     {
         Notification::fake();

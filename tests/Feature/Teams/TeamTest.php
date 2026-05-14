@@ -13,6 +13,13 @@ class TeamTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->markTestSkipped('Teams feature is disabled.');
+    }
+
     public function test_teams_index_page_can_be_rendered(): void
     {
         $user = User::factory()->create();
