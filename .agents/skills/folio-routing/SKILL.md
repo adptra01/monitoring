@@ -125,7 +125,7 @@ For routes without parameters, the helper works as usual: `{{ route('posts.index
 <?php
 use function Laravel\Folio\{name, middleware};
 
-name('products');
+name('admin.products');
 middleware(['auth', 'verified']);
 ?>
 ```
