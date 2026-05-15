@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'github' => [
+        'token' => env('GITHUB_TOKEN'),
+        'usernames' => array_filter(explode(',', env('GITHUB_USERNAMES', ''))),
+    ],
+
 ];

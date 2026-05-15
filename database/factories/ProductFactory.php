@@ -22,6 +22,17 @@ class ProductFactory extends Factory
         ];
     }
 
+    public function withGitHubRepo(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'github_repo_id' => fake()->unique()->randomNumber(8),
+            'github_repo_full_name' => fake()->userName().'/'.fake()->slug(2),
+            'github_repo_url' => 'https://github.com/'.fake()->userName().'/'.fake()->slug(2),
+            'github_repo_description' => fake()->sentence(),
+            'github_default_branch' => 'main',
+        ]);
+    }
+
     public function inactive(): static
     {
         return $this->state(fn (array $attributes) => ['is_active' => false]);

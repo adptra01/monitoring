@@ -5,7 +5,7 @@ use Illuminate\Support\Str;
 use Flux\Flux;
 
 use function Laravel\Folio\{name, middleware};
-use function Livewire\Volt\{state, on};
+use function Livewire\Volt\{state};
 
 name('products.create');
 middleware('check.admin');
@@ -70,6 +70,10 @@ $save = function () {
                 <flux:textarea wire:model="description" :label="__('Description')" rows="4" />
 
                 <flux:checkbox wire:model="is_active" :label="__('Active')" />
+
+                <p class="text-xs text-zinc-400">
+                    {{ __('Tip: Use "Sync GitHub" on the products page to auto-import repositories as products.') }}
+                </p>
 
                 <div class="flex justify-end gap-2">
                     <flux:button href="{{ url('/products') }}" variant="filled">{{ __('Cancel') }}</flux:button>

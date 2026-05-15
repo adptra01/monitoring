@@ -15,6 +15,11 @@ class Product extends Model
         'slug',
         'description',
         'is_active',
+        'github_repo_id',
+        'github_repo_full_name',
+        'github_repo_url',
+        'github_repo_description',
+        'github_default_branch',
     ];
 
     protected function casts(): array

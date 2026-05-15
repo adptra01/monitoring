@@ -1,7 +1,9 @@
 <?php
 
 use App\Models\Product;
+use App\Services\GitHubService;
 use Flux\Flux;
+use Illuminate\Support\Str;
 use Livewire\WithPagination;
 
 use function Laravel\Folio\{name, middleware};
@@ -57,6 +59,13 @@ $confirmDelete = function ($id) {
     $this->showDeleteModal = true;
 };
 
+$toggleStatus = function ($id) {
+    $product = Product::findOrFail($id);
+    $product->update(['is_active' => ! $product->is_active]);
+
+    Flux::toast(duration: 1500, variant: 'success', text: $product->is_active ? __('Product activated.') : __('Product deactivated.'));
+};
+
 $viewProduct = function ($id) {
     $this->detailProduct = Product::findOrFail($id);
     $this->showDetailModal = true;
@@ -70,6 +79,44 @@ $delete = function () {
     $this->showDeleteModal = false;
 
     Flux::toast(duration: 1500, variant: 'success', text: __('Product deleted.'));
+};
+
+$syncRepos = function () {
+    $gitHub = app(GitHubService::class);
+    $repos = $gitHub->fetchRepos();
+
+    if (empty($repos)) {
+        Flux::toast(duration: 3000, variant: 'warning', text: __('No repositories found. Check your GitHub token.'));
+
+        return;
+    }
+
+    $gitHub->clearCache();
+    $gitHub->listRepos();
+
+    $created = 0;
+
+    foreach ($repos as $repo) {
+        $product = Product::where('github_repo_id', $repo['id'])->first();
+
+        if ($product === null) {
+            Product::create([
+                'name' => $repo['full_name'],
+                'slug' => Str::slug($repo['full_name']),
+                'description' => $repo['description'],
+                'is_active' => true,
+                'github_repo_id' => $repo['id'],
+                'github_repo_full_name' => $repo['full_name'],
+                'github_repo_url' => $repo['url'],
+                'github_repo_description' => $repo['description'],
+                'github_default_branch' => $repo['default_branch'],
+            ]);
+
+            $created++;
+        }
+    }
+
+    Flux::toast(duration: 3000, variant: 'success', text: __(':count repositories synced as products.', ['count' => $created]));
 };
 
 ?>
@@ -88,9 +135,14 @@ $delete = function () {
                 <flux:heading size="xl">{{ __('Products') }}</flux:heading>
                 <flux:subheading>{{ __('Manage your product inventory') }}</flux:subheading>
             </div>
-            <flux:button variant="primary" icon="plus" href="{{ route('products.create') }}">
-                {{ __('Add Product') }}
-            </flux:button>
+            <div class="flex items-center gap-2">
+                <flux:button variant="ghost" icon="arrow-path" wire:click="syncRepos">
+                    {{ __('Sync GitHub') }}
+                </flux:button>
+                <flux:button variant="primary" icon="plus" href="{{ route('products.create') }}">
+                    {{ __('Add Product') }}
+                </flux:button>
+            </div>
         </div>
 
         {{-- Stats --}}
@@ -126,6 +178,10 @@ $delete = function () {
                         {{ __('Slug') }}
                     </flux:table.column>
 
+                    <flux:table.column>
+                        {{ __('GitHub Repository') }}
+                    </flux:table.column>
+
                     <flux:table.column sortable :sorted="$sortBy === 'is_active'" :direction="$sortDirection"
                         wire:click="sort('is_active')">
                         {{ __('Status') }}
@@ -146,9 +202,23 @@ $delete = function () {
                             </flux:table.cell>
 
                             <flux:table.cell>
-                                <flux:badge :color="$product->is_active ? 'green' : 'red'" size="sm" inset="top bottom">
+                                @if ($product->github_repo_full_name)
+                                    <a href="{{ $product->github_repo_url }}" target="_blank"
+                                        class="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                                        <flux:icon name="folder" variant="micro" class="size-3.5" />
+                                        {{ $product->github_repo_full_name }}
+                                    </a>
+                                @else
+                                    <span
+                                        class="text-xs text-zinc-400">{{ __('Not linked') }}</span>
+                                @endif
+                            </flux:table.cell>
+
+                            <flux:table.cell>
+                                <flux:button size="sm" variant="primary" :color="$product->is_active ? 'emerald' : 'red'"
+                                    wire:click="toggleStatus({{ $product->id }})">
                                     {{ $product->is_active ? __('Active') : __('Inactive') }}
-                                </flux:badge>
+                                </flux:button>
                             </flux:table.cell>
 
                             <flux:table.cell>
@@ -205,9 +275,35 @@ $delete = function () {
 
                         @if ($detailProduct->description)
                             <div>
-                                <p class="text-xs font-medium uppercase tracking-wider text-zinc-400">{{ __('Description') }}
+                                <p class="text-xs font-medium uppercase tracking-wider text-zinc-400">
+                                    {{ __('Description') }}
                                 </p>
                                 <p class="mt-1.5 text-sm">{{ $detailProduct->description }}</p>
+                            </div>
+                        @endif
+
+                        @if ($detailProduct->github_repo_full_name)
+                            <div>
+                                <p class="text-xs font-medium uppercase tracking-wider text-zinc-400">
+                                    {{ __('GitHub Repository') }}
+                                </p>
+                                <p class="mt-1.5">
+                                    <a href="{{ $detailProduct->github_repo_url }}" target="_blank"
+                                        class="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                                        <flux:icon name="github-logo" variant="micro" class="size-4" />
+                                        {{ $detailProduct->github_repo_full_name }}
+                                    </a>
+                                </p>
+                                @if ($detailProduct->github_repo_description)
+                                    <p class="mt-1 text-sm text-zinc-500">
+                                        {{ $detailProduct->github_repo_description }}
+                                    </p>
+                                @endif
+                                <p class="mt-1 text-xs text-zinc-400">
+                                    {{ __('Default branch') }}:
+                                    <code
+                                        class="rounded bg-zinc-100 px-1 py-0.5 dark:bg-zinc-700">{{ $detailProduct->github_default_branch ?? 'main' }}</code>
+                                </p>
                             </div>
                         @endif
                     </div>

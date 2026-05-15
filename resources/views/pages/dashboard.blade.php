@@ -6,9 +6,10 @@ use App\Models\ActivationRequest;
 use App\Models\Product;
 use Flux\Flux;
 
-use function Laravel\Folio\name;
+use function Laravel\Folio\{name, middleware};
 use function Livewire\Volt\{computed};
 
+middleware('auth');
 name('dashboard');
 
 $totalProducts = computed(fn() => Product::count());

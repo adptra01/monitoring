@@ -10,3 +10,4 @@ Artisan::command('inspire', function () {
 
 Schedule::command('licenses:check-expired')->daily();
 Schedule::command('licenses:notify-expiring')->daily();
+Schedule::command('github:sync-products')->daily();
