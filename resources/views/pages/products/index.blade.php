@@ -4,13 +4,11 @@ use App\Models\Product;
 use Flux\Flux;
 use Livewire\WithPagination;
 
-use function Laravel\Folio\middleware;
-use function Laravel\Folio\name;
-use function Livewire\Volt\computed;
-use function Livewire\Volt\state;
-use function Livewire\Volt\uses;
+use function Laravel\Folio\{name, middleware};
+use function Livewire\Volt\{computed, state, uses};
 
 name('products.index');
+middleware('check.admin');
 
 
 uses(WithPagination::class);

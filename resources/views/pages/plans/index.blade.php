@@ -9,6 +9,7 @@ use function Laravel\Folio\{name, middleware};
 use function Livewire\Volt\{computed, state, uses};
 
 name('plans.index');
+middleware('check.admin');
 
 
 uses(WithPagination::class);

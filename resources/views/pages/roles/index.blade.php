@@ -8,6 +8,7 @@ use function Livewire\Volt\{uses, computed};
 use function Laravel\Folio\{name, middleware};
 
 name('roles.index');
+middleware('check.admin');
 
 
 uses(WithPagination::class);

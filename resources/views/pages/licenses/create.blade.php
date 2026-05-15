@@ -8,10 +8,11 @@ use App\Enums\LicenseStatus;
 use App\Enums\LicenseMode;
 use Flux\Flux;
 
-use function Laravel\Folio\name;
+use function Laravel\Folio\{name, middleware};
 use function Livewire\Volt\{state, mount, computed};
 
 name('licenses.create');
+middleware('check.admin');
 
 state([
     'product_id' => '',

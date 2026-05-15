@@ -4,10 +4,11 @@ use App\Models\Product;
 use Illuminate\Support\Str;
 use Flux\Flux;
 
-use function Laravel\Folio\name;
+use function Laravel\Folio\{name, middleware};
 use function Livewire\Volt\{state, on};
 
 name('products.create');
+middleware('check.admin');
 
 state([
     'name' => '',

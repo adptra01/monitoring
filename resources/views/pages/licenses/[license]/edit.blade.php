@@ -4,10 +4,11 @@ use App\Models\License;
 use App\Services\LicenseService;
 use Flux\Flux;
 
-use function Laravel\Folio\name;
+use function Laravel\Folio\{name, middleware};
 use function Livewire\Volt\{state, mount};
 
 name('licenses.edit');
+middleware('check.admin');
 
 state([
     'license' => null,
@@ -42,7 +43,7 @@ $restore = function (LicenseService $licenseService) {
         <div class="flex h-full w-full flex-1 flex-col gap-6 rounded-xl">
             <flux:breadcrumbs>
                 <flux:breadcrumbs.item href="{{ route('dashboard') }}">{{ __('Home') }}</flux:breadcrumbs.item>
-                <flux:breadcrumbs.item href="{{ url('/admin/licenses') }}">{{ __('Licenses') }}</flux:breadcrumbs.item>
+                <flux:breadcrumbs.item href="{{ url('/licenses') }}">{{ __('Licenses') }}</flux:breadcrumbs.item>
                 <flux:breadcrumbs.item>{{ __('Details') }}</flux:breadcrumbs.item>
             </flux:breadcrumbs>
 

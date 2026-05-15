@@ -4,10 +4,11 @@ use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use Flux\Flux;
 
-use function Laravel\Folio\name;
+use function Laravel\Folio\{name, middleware};
 use function Livewire\Volt\{state, mount};
 
 name('roles.edit');
+middleware('check.admin');
 
 state([
     'role' => null,
@@ -39,7 +40,7 @@ $save = function () {
 
     Flux::toast(variant: 'success', text: __('Role updated successfully.'));
 
-    $this->redirect('/admin/roles');
+    $this->redirect('/roles');
 };
 
 ?>
@@ -49,7 +50,7 @@ $save = function () {
     <div class="flex h-full w-full flex-1 flex-col gap-6 rounded-xl">
         <flux:breadcrumbs>
             <flux:breadcrumbs.item href="{{ route('dashboard') }}">{{ __('Home') }}</flux:breadcrumbs.item>
-            <flux:breadcrumbs.item href="{{ url('/admin/roles') }}">{{ __('Roles') }}</flux:breadcrumbs.item>
+            <flux:breadcrumbs.item href="{{ url('/roles') }}">{{ __('Roles') }}</flux:breadcrumbs.item>
             <flux:breadcrumbs.item>{{ __('Edit') }}</flux:breadcrumbs.item>
         </flux:breadcrumbs>
 
@@ -78,7 +79,7 @@ $save = function () {
                 </flux:field>
 
                 <div class="flex justify-end gap-2 border-t border-zinc-200 pt-4 dark:border-zinc-700">
-                    <flux:button href="{{ url('/admin/roles') }}" variant="filled">{{ __('Cancel') }}</flux:button>
+                    <flux:button href="{{ url('/roles') }}" variant="filled">{{ __('Cancel') }}</flux:button>
                     <flux:button type="submit" variant="primary">{{ __('Update Role') }}</flux:button>
                 </div>
             </form>

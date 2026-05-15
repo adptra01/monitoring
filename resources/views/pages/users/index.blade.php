@@ -9,6 +9,7 @@ use function Livewire\Volt\{uses, computed, state};
 use function Laravel\Folio\{name, middleware};
 
 name('users.index');
+middleware('check.admin');
 
 
 uses(WithPagination::class);

@@ -4,10 +4,11 @@ use App\Models\Product;
 use Illuminate\Support\Str;
 use Flux\Flux;
 
-use function Laravel\Folio\name;
+use function Laravel\Folio\{name, middleware};
 use function Livewire\Volt\{state, mount};
 
 name('products.edit');
+middleware('check.admin');
 
 
 state([

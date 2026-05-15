@@ -5,10 +5,11 @@ use App\Models\SubscriptionPlan;
 use Illuminate\Support\Str;
 use Flux\Flux;
 
-use function Laravel\Folio\name;
+use function Laravel\Folio\{name, middleware};
 use function Livewire\Volt\{state, mount, computed};
 
-name('plans.create');
+name('plans.edit');
+middleware('check.admin');
 
 state([
     'product_id' => '',
@@ -55,7 +56,7 @@ $save = function () {
 
     Flux::toast(variant: 'success', text: __('Plan created successfully.'));
 
-    $this->redirect('/plans');
+    $this->redirect('/roles');
 };
 
 ?>
@@ -107,7 +108,7 @@ $save = function () {
                 </div>
 
                 <div class="flex justify-end gap-2 border-t border-zinc-200 pt-4 dark:border-zinc-700">
-                    <flux:button href="{{ url('/plans') }}" variant="filled">{{ __('Cancel') }}</flux:button>
+                    <flux:button href="{{ url('/roles') }}" variant="filled">{{ __('Cancel') }}</flux:button>
                     <flux:button type="submit" variant="primary">{{ __('Create Plan') }}</flux:button>
                 </div>
             </form>

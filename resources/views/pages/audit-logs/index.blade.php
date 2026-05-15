@@ -8,6 +8,7 @@ use function Laravel\Folio\{name, middleware};
 use function Livewire\Volt\{uses, computed, state};
 
 name('audit-logs.index');
+middleware('check.admin');
 
 
 uses(WithPagination::class);

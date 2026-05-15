@@ -4,10 +4,11 @@ use App\Models\User;
 use Spatie\Permission\Models\Role;
 use Flux\Flux;
 
-use function Laravel\Folio\name;
+use function Laravel\Folio\{name, middleware};
 use function Livewire\Volt\{state};
 
 name('users.create');
+middleware('check.admin');
 
 state([
     'name' => '',
