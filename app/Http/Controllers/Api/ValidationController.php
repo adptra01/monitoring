@@ -20,7 +20,7 @@ class ValidationController extends ApiController
         $license = License::where('key', $request->validated('license_key'))->first();
 
         if (! $license) {
-            return $this->error('Invalid license key', 404);
+            return $this->error('Kunci lisensi tidak valid', 404);
         }
 
         $validation = $this->licenseService->validate($license);
@@ -34,7 +34,7 @@ class ValidationController extends ApiController
         $device = $license->devices()->where('fingerprint', $fingerprint)->first();
 
         if (! $device) {
-            return $this->error('Device not registered', 403);
+            return $this->error('Perangkat tidak terdaftar', 403);
         }
 
         $this->licenseService->verifyActivation($device, '');
@@ -48,7 +48,7 @@ class ValidationController extends ApiController
             'product' => $license->product->name,
             'expires_at' => $license->expires_at?->format('Y-m-d'),
             'cache_until' => now()->addDays(7)->format('Y-m-d'),
-            'message' => 'License valid',
+            'message' => 'Lisensi valid',
         ]);
     }
 }

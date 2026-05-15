@@ -12,10 +12,10 @@ enum LicenseStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::Active => 'Active',
-            self::Suspended => 'Suspended',
-            self::Expired => 'Expired',
-            self::Revoked => 'Revoked',
+            self::Active => 'Aktif',
+            self::Suspended => 'Ditangguhkan',
+            self::Expired => 'Kedaluwarsa',
+            self::Revoked => 'Dicabut',
         };
     }
 

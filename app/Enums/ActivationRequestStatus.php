@@ -12,10 +12,10 @@ enum ActivationRequestStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::Pending => 'Pending',
-            self::Approved => 'Approved',
-            self::Rejected => 'Rejected',
-            self::Expired => 'Expired',
+            self::Pending => 'Tertunda',
+            self::Approved => 'Disetujui',
+            self::Rejected => 'Ditolak',
+            self::Expired => 'Kedaluwarsa',
         };
     }
 

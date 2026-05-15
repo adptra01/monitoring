@@ -27,10 +27,10 @@ class ActivateDeviceRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'license_key.required' => 'License key is required',
-            'license_key.size' => 'License key must be in format XXXX-XXXX-XXXX-XXXX',
-            'device.fingerprint.required' => 'Device fingerprint is required',
-            'device.fingerprint.min' => 'Device fingerprint must be at least 32 characters',
+            'license_key.required' => 'Kunci lisensi wajib diisi',
+            'license_key.size' => 'Kunci lisensi harus dalam format XXXX-XXXX-XXXX-XXXX',
+            'device.fingerprint.required' => 'Sidik jari perangkat wajib diisi',
+            'device.fingerprint.min' => 'Sidik jari perangkat minimal 32 karakter',
         ];
     }
 }

@@ -19,7 +19,7 @@ class ActivationController extends ApiController
         $license = License::where('key', $request->validated('license_key'))->first();
 
         if (! $license) {
-            return $this->error('Invalid license key', 404);
+            return $this->error('Kunci lisensi tidak valid', 404);
         }
 
         $validation = $this->licenseService->validate($license);
@@ -42,10 +42,10 @@ class ActivationController extends ApiController
                         'requires_approval' => true,
                         'activation_code' => $activationRequest->code,
                         'expires_at' => $activationRequest->expires_at->toIso8601String(),
-                    ], 'Activation code generated');
+                    ], 'Kode aktivasi dibuat');
                 }
 
-                return $this->error('Pending activation request exists', 409);
+                return $this->error('Permintaan aktivasi tertunda sudah ada', 409);
             }
 
             $existingDevice->update(['last_seen_at' => now()]);
@@ -53,7 +53,7 @@ class ActivationController extends ApiController
             return $this->success([
                 'device_id' => $existingDevice->id,
                 'offline_until' => now()->addDays(7)->toIso8601String(),
-            ], 'Device already activated');
+            ], 'Perangkat sudah diaktifkan');
         }
 
         $device = $this->licenseService->registerDevice($license, $deviceData);
@@ -68,15 +68,15 @@ class ActivationController extends ApiController
                     'activation_code' => $activationRequest->code,
                     'expires_at' => $activationRequest->expires_at->toIso8601String(),
                 ], ! $this->licenseService->checkDeviceLimit($license)
-                    ? 'Device limit reached, activation required'
-                    : 'Device registered, activation required');
+                    ? 'Batas perangkat tercapai, aktivasi diperlukan'
+                    : 'Perangkat terdaftar, aktivasi diperlukan');
             }
         }
 
         return $this->success([
             'device_id' => $device->id,
             'offline_until' => now()->addDays(7)->toIso8601String(),
-        ], 'Device activated successfully');
+        ], 'Perangkat berhasil diaktifkan');
     }
 
     public function verify(string $key, string $fingerprint): JsonResponse
@@ -84,7 +84,7 @@ class ActivationController extends ApiController
         $license = License::where('key', $key)->first();
 
         if (! $license) {
-            return $this->error('Invalid license key', 404);
+            return $this->error('Kunci lisensi tidak valid', 404);
         }
 
         $device = Device::where('fingerprint', $fingerprint)
@@ -92,7 +92,7 @@ class ActivationController extends ApiController
             ->first();
 
         if (! $device) {
-            return $this->error('Device not registered', 404);
+            return $this->error('Perangkat tidak terdaftar', 404);
         }
 
         $result = $this->licenseService->verifyActivation($device, request('code', ''));
@@ -105,7 +105,7 @@ class ActivationController extends ApiController
         $license = License::where('key', $key)->first();
 
         if (! $license) {
-            return $this->error('Invalid license key', 404);
+            return $this->error('Kunci lisensi tidak valid', 404);
         }
 
         $device = Device::where('fingerprint', $fingerprint)
@@ -113,7 +113,7 @@ class ActivationController extends ApiController
             ->first();
 
         if (! $device) {
-            return $this->error('Device not registered', 404);
+            return $this->error('Perangkat tidak terdaftar', 404);
         }
 
         $validation = $this->licenseService->validate($license);

@@ -24,7 +24,7 @@ class LicenseValidationTest extends TestCase
         ]);
 
         $response->assertStatus(404)
-            ->assertJson(['success' => false, 'message' => 'Invalid license key']);
+            ->assertJson(['success' => false, 'message' => 'Kunci lisensi tidak valid']);
     }
 
     public function test_validate_returns_success_for_valid_license(): void
@@ -80,7 +80,7 @@ class LicenseValidationTest extends TestCase
         ]);
 
         $response->assertStatus(403)
-            ->assertJson(['success' => false, 'message' => 'Device not registered']);
+            ->assertJson(['success' => false, 'message' => 'Perangkat tidak terdaftar']);
     }
 
     public function test_validate_returns_error_for_suspended_license(): void

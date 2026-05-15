@@ -12,7 +12,7 @@ class LicensesCheckExpired extends Command
 {
     protected $signature = 'licenses:check-expired';
 
-    protected $description = 'Check for expired licenses and update their status';
+    protected $description = 'Periksa lisensi yang kedaluwarsa dan perbarui statusnya';
 
     public function handle(): int
     {
@@ -24,7 +24,7 @@ class LicensesCheckExpired extends Command
             ->chunk(100, function ($licenses) use (&$expiredCount) {
                 foreach ($licenses as $license) {
                     $license->update(['status' => LicenseStatus::Expired]);
-                    $this->info("License {$license->key} marked as expired.");
+                    $this->info("Lisensi {$license->key} ditandai sebagai kedaluwarsa.");
                     $expiredCount++;
                 }
             });
@@ -34,12 +34,12 @@ class LicensesCheckExpired extends Command
             ->chunk(100, function ($requests) use (&$requestExpiredCount) {
                 foreach ($requests as $request) {
                     $request->update(['status' => ActivationRequestStatus::Expired]);
-                    $this->info("Activation request #{$request->id} marked as expired.");
+                    $this->info("Permintaan aktivasi #{$request->id} ditandai sebagai kedaluwarsa.");
                     $requestExpiredCount++;
                 }
             });
 
-        $this->info("Processed {$expiredCount} expired licenses and {$requestExpiredCount} expired activation requests.");
+        $this->info("Diproses {$expiredCount} lisensi kedaluwarsa dan {$requestExpiredCount} permintaan aktivasi kedaluwarsa.");
 
         return Command::SUCCESS;
     }

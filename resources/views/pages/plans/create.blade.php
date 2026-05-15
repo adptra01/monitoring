@@ -49,7 +49,7 @@ $save = function () {
         'monthly_price' => $this->monthly_price,
         'yearly_price' => $this->yearly_price,
         'max_devices' => $this->max_devices,
-        'features' => ['Feature 1', 'Feature 2'],
+        'features' => ['Fitur 1', 'Fitur 2'],
         'is_active' => $this->is_active,
         'is_default' => $this->is_default,
     ]);

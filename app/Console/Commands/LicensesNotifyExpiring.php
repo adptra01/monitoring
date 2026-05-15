@@ -10,7 +10,7 @@ class LicensesNotifyExpiring extends Command
 {
     protected $signature = 'licenses:notify-expiring {--days=7 : Days before expiration to notify}';
 
-    protected $description = 'Notify users about licenses expiring soon';
+    protected $description = 'Beritahu pengguna tentang lisensi yang akan segera kedaluwarsa';
 
     public function handle(): int
     {
@@ -24,18 +24,18 @@ class LicensesNotifyExpiring extends Command
                 foreach ($licenses as $license) {
                     $daysUntil = now()->diffInDays($license->expires_at);
 
-                    Log::info("License {$license->key} expires in {$daysUntil} days", [
+                    Log::info("Lisensi {$license->key} kedaluwarsa dalam {$daysUntil} hari", [
                         'license_id' => $license->id,
                         'user_id' => $license->user_id,
                         'expires_at' => $license->expires_at->toIso8601String(),
                     ]);
 
-                    $this->info("License {$license->key} expiring in {$daysUntil} days.");
+                    $this->info("Lisensi {$license->key} akan kedaluwarsa dalam {$daysUntil} hari.");
                     $notifyCount++;
                 }
             });
 
-        $this->info("Notified about {$notifyCount} licenses expiring within {$days} days.");
+        $this->info("Memberitahu {$notifyCount} lisensi yang akan kedaluwarsa dalam {$days} hari.");
 
         return Command::SUCCESS;
     }

@@ -29,11 +29,11 @@ class LicenseService
     public function validate(License $license): array
     {
         if ($license->status !== LicenseStatus::Active) {
-            return ['valid' => false, 'reason' => 'License is '.$license->status->value];
+            return ['valid' => false, 'reason' => 'Lisensi adalah '.$license->status->value];
         }
 
         if ($license->expires_at && $license->expires_at->isPast()) {
-            return ['valid' => false, 'reason' => 'License has expired'];
+            return ['valid' => false, 'reason' => 'Lisensi telah kedaluwarsa'];
         }
 
         return ['valid' => true, 'reason' => null];
@@ -114,7 +114,7 @@ class LicenseService
     {
         $request->update([
             'status' => ActivationRequestStatus::Rejected,
-            'rejection_reason' => $reason,
+            'rejection_reason' => $reason ?: 'Ditolak oleh admin',
         ]);
 
         $this->log($request->license, 'activation_rejected', [
@@ -169,7 +169,7 @@ class LicenseService
             return ['valid' => true, 'offline_until' => $device->last_seen_at->addDays(7)];
         }
 
-        return ['valid' => false, 'reason' => 'Device not activated or offline grace period expired'];
+        return ['valid' => false, 'reason' => 'Perangkat tidak diaktifkan atau masa tenggang offline telah kedaluwarsa'];
     }
 
     protected function log(License $license, string $action, array $changes = [], ?int $userId = null): void

@@ -17,19 +17,18 @@ class CheckUpdateController extends ApiController
         $license = License::where('key', $licenseKey)->first();
 
         if (! $license || $license->status !== LicenseStatus::Active) {
-            return $this->error('License not valid for update check', 403);
+            return $this->error('Lisensi tidak valid untuk pemeriksaan pembaruan', 403);
         }
 
         if ($license->expires_at && $license->expires_at->isPast()) {
-            return $this->error('License has expired', 403);
+            return $this->error('Lisensi telah kedaluwarsa', 403);
         }
 
-        // Logic for update can be expanded here. For now, returning no update.
         return $this->success([
             'update_available' => false,
             'latest_version' => $currentVersion,
             'download_url' => null,
-            'message' => 'You are using the latest version',
+            'message' => 'Anda menggunakan versi terbaru',
             'release_notes' => null,
         ]);
     }

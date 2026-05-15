@@ -79,7 +79,7 @@ class LicenseServiceTest extends TestCase
         $result = $this->service->validate($license);
 
         $this->assertFalse($result['valid']);
-        $this->assertStringContainsString('expired', $result['reason']);
+        $this->assertStringContainsString('kedaluwarsa', $result['reason']);
     }
 
     public function test_check_device_limit_returns_true_when_under_limit(): void

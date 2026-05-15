@@ -7,7 +7,7 @@ use Illuminate\Http\JsonResponse;
 
 abstract class ApiController extends Controller
 {
-    protected function success(mixed $data = null, string $message = 'Success', int $code = 200): JsonResponse
+    protected function success(mixed $data = null, string $message = 'Sukses', int $code = 200): JsonResponse
     {
         return response()->json([
             'success' => true,

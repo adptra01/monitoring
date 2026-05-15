@@ -25,7 +25,7 @@ class LicenseActivationTest extends TestCase
         ]);
 
         $response->assertStatus(404)
-            ->assertJson(['success' => false, 'message' => 'Invalid license key']);
+            ->assertJson(['success' => false, 'message' => 'Kunci lisensi tidak valid']);
     }
 
     public function test_activate_returns_error_for_expired_license(): void
@@ -165,6 +165,6 @@ class LicenseActivationTest extends TestCase
         $response = $this->getJson("/api/v1/status/{$license->key}/".str_repeat('x', 64));
 
         $response->assertStatus(404)
-            ->assertJson(['success' => false, 'message' => 'Device not registered']);
+            ->assertJson(['success' => false, 'message' => 'Perangkat tidak terdaftar']);
     }
 }

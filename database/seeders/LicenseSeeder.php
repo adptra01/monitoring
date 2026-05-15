@@ -56,9 +56,9 @@ class LicenseSeeder extends Seeder
     private function createProducts(): void
     {
         $products = [
-            ['name' => 'Laravel Monitor Pro', 'slug' => 'laravel-monitor-pro', 'description' => 'Professional monitoring solution for Laravel applications'],
-            ['name' => 'Analytics Dashboard', 'slug' => 'analytics-dashboard', 'description' => 'Real-time analytics and reporting dashboard'],
-            ['name' => 'API Gateway', 'slug' => 'api-gateway', 'description' => 'Enterprise API management and rate limiting'],
+            ['name' => 'Laravel Monitor Pro', 'slug' => 'laravel-monitor-pro', 'description' => 'Solusi monitoring profesional untuk aplikasi Laravel'],
+            ['name' => 'Analytics Dashboard', 'slug' => 'analytics-dashboard', 'description' => 'Dasbor analitik dan pelaporan waktu nyata'],
+            ['name' => 'API Gateway', 'slug' => 'api-gateway', 'description' => 'Manajemen API enterprise dan pembatasan kecepatan'],
         ];
 
         foreach ($products as $productData) {
@@ -101,7 +101,7 @@ class LicenseSeeder extends Seeder
                     'monthly_price' => $planData['monthly'],
                     'yearly_price' => $planData['yearly'],
                     'max_devices' => $planData['devices'],
-                    'features' => ['Feature 1', 'Feature 2', 'Feature 3'],
+                    'features' => ['Fitur 1', 'Fitur 2', 'Fitur 3'],
                     'is_active' => true,
                     'is_default' => $planData['slug'] === 'professional' || $planData['slug'] === 'basic',
                 ]
@@ -171,7 +171,7 @@ class LicenseSeeder extends Seeder
     {
         $licenses = License::where('status', LicenseStatus::Active)->get();
         $platforms = ['windows', 'macos', 'linux', 'ios', 'android'];
-        $deviceNames = ['Development PC', 'Laptop', 'Server', 'Production Box', 'Mobile Device', 'CI/CD Runner'];
+        $deviceNames = ['PC Pengembangan', 'Laptop', 'Server', 'Produksi', 'Perangkat Seluler', 'Runner CI/CD'];
 
         foreach ($licenses as $license) {
             $deviceCount = rand(1, min(3, $license->max_devices));
