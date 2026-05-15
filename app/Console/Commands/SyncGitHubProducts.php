@@ -37,11 +37,13 @@ class SyncGitHubProducts extends Command
         foreach ($repos as $repo) {
             $product = Product::where('github_repo_id', $repo['id'])->first();
 
+            $readme = $gitHub->fetchReadme($repo['full_name']);
+
             if ($product === null) {
                 Product::create([
                     'name' => $repo['full_name'],
                     'slug' => Str::slug($repo['full_name']),
-                    'description' => $repo['description'],
+                    'description' => $readme ?? $repo['description'],
                     'is_active' => true,
                     'github_repo_id' => $repo['id'],
                     'github_repo_full_name' => $repo['full_name'],
@@ -58,6 +60,10 @@ class SyncGitHubProducts extends Command
                     'github_repo_url' => $repo['url'],
                     'github_default_branch' => $repo['default_branch'],
                 ]);
+
+                if ($readme !== null) {
+                    $product->update(['description' => $readme]);
+                }
 
                 $updated++;
             }

@@ -108,6 +108,30 @@ class GitHubService
         Cache::forget('github_repos');
     }
 
+    public function fetchReadme(string $fullName): ?string
+    {
+        if (empty($this->token)) {
+            return null;
+        }
+
+        $response = Http::withToken($this->token)
+            ->withHeaders(['Accept' => 'application/vnd.github.raw'])
+            ->get("{$this->apiUrl}/repos/{$fullName}/readme");
+
+        if (! $response->successful()) {
+            return null;
+        }
+
+        $content = $response->body();
+
+        $content = preg_replace('/^#\s+.*$/m', '', $content, 1);
+        $content = preg_replace('/<!--.*?-->/s', '', $content);
+        $content = strip_tags($content);
+        $content = preg_replace('/\n{3,}/', "\n\n", $content);
+
+        return trim(mb_substr($content, 0, 2000));
+    }
+
     public function syncProductMetadata(Product $product): ?array
     {
         if (empty($product->github_repo_full_name)) {
