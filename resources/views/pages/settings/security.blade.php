@@ -101,7 +101,7 @@ $disable = function (DisableTwoFactorAuthentication $disableTwoFactorAuthenticat
                     <flux:heading>{{ __('Two-factor authentication') }}</flux:heading>
                     <flux:subheading>{{ __('Manage your two-factor authentication settings') }}</flux:subheading>
 
-                    <div class="flex flex-col w-full mx-auto space-y-6 text-sm" wire:cloak>
+                    <div class="flex flex-col space-y-6 text-sm" wire:cloak>
                         @if ($twoFactorEnabled)
                             <div class="space-y-4">
                                 <flux:text>

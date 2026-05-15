@@ -112,7 +112,7 @@ $save = function () {
 
                 <flux:checkbox wire:model="is_admin" :label="__('Administrator Access')" />
 
-                <div class="flex justify-end gap-2 ">
+                <div class="flex justify-end gap-2">
                     <flux:button href="{{ url('/users') }}" variant="filled">{{ __('Cancel') }}</flux:button>
                     <flux:button type="submit" variant="primary">{{ __('Update User') }}</flux:button>
                 </div>

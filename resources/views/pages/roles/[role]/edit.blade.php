@@ -78,7 +78,7 @@ $save = function () {
                     </div>
                 </flux:field>
 
-                <div class="flex justify-end gap-2 ">
+                <div class="flex justify-end gap-2">
                     <flux:button href="{{ url('/roles') }}" variant="filled">{{ __('Cancel') }}</flux:button>
                     <flux:button type="submit" variant="primary">{{ __('Update Role') }}</flux:button>
                 </div>

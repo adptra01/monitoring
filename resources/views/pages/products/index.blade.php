@@ -94,7 +94,7 @@ $delete = function () {
         </div>
 
         {{-- Stats --}}
-        <div class="grid grid-cols-2 gap-4 lg:grid-cols-2">
+        <div class="grid grid-cols-2 gap-4">
             <div class="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-800">
                 <p class="text-xs font-medium uppercase tracking-wider text-zinc-500">{{ __('Total Products') }}</p>
                 <p class="mt-1 text-2xl font-semibold">{{ $this->totalProducts }}</p>
@@ -193,19 +193,27 @@ $delete = function () {
                     </div>
 
                     {{-- Info Grid --}}
-                    <div class="grid grid-cols-2 gap-x-10 gap-y-8">
+                    <div class="grid grid-cols-1 gap-y-6">
                         <div>
                             <p class="text-xs font-medium uppercase tracking-wider text-zinc-400">{{ __('Slug') }}
                             </p>
-                            <p class="mt-1.5 text-base font-medium">
+                            <p class="mt-1.5">
                                 <code
                                     class="rounded-md bg-zinc-100 px-2 py-0.5 text-sm dark:bg-zinc-700">{{ $detailProduct->slug }}</code>
                             </p>
                         </div>
+
+                        @if ($detailProduct->description)
+                            <div>
+                                <p class="text-xs font-medium uppercase tracking-wider text-zinc-400">{{ __('Description') }}
+                                </p>
+                                <p class="mt-1.5 text-sm">{{ $detailProduct->description }}</p>
+                            </div>
+                        @endif
                     </div>
 
                     {{-- Footer --}}
-                    <div class="flex items-center justify-between ">
+                    <div class="flex items-center justify-between">
                         <div class="flex gap-6 text-xs text-zinc-400">
                             <span>{{ __('Created') }} {{ $detailProduct->created_at->format('d M Y, H:i') }}</span>
                             <span>{{ __('Updated') }} {{ $detailProduct->updated_at->format('d M Y, H:i') }}</span>
@@ -234,7 +242,7 @@ $delete = function () {
                     </div>
                 </div>
 
-                <div class="flex justify-end gap-2 ">
+                <div class="flex justify-end gap-2">
                     <flux:modal.close>
                         <flux:button variant="filled">{{ __('Cancel') }}</flux:button>
                     </flux:modal.close>

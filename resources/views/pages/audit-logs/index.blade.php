@@ -58,7 +58,7 @@ $actions = computed(fn() => [
         {{-- Filters --}}
         <div class="grid grid-cols-2 gap-4">
             <flux:input size="md" wire:model.live="search" type="search"
-                placeholder="{{ __('Search by IP or Entity...') }}" class="flex-1" />
+                placeholder="{{ __('Search by IP or Entity...') }}" />
             <flux:select wire:model.live="action" class="max-w-xs">
                 <option value="">{{ __('All Actions') }}</option>
                 @foreach ($this->actions as $act)

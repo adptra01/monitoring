@@ -83,7 +83,7 @@ $save = function () {
 
                 <flux:checkbox wire:model="is_active" :label="__('Active')" />
 
-                <div class="flex justify-end gap-2 ">
+                <div class="flex justify-end gap-2">
                     <flux:button href="{{ route('products.index') }}" variant="filled">{{ __('Cancel') }}</flux:button>
                     <flux:button type="submit" variant="primary">{{ __('Update Product') }}</flux:button>
                 </div>
