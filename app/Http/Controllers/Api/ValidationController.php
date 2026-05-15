@@ -43,11 +43,12 @@ class ValidationController extends ApiController
 
         return $this->success([
             'valid' => true,
+            'status' => $license->status->value,
             'license_key' => $this->keyService->mask($license->key),
             'product' => $license->product->name,
-            'expires_at' => $license->expires_at?->toIso8601String(),
-            'max_devices' => $license->max_devices,
-            'devices_count' => $license->devices()->count(),
+            'expires_at' => $license->expires_at?->format('Y-m-d'),
+            'cache_until' => now()->addDays(7)->format('Y-m-d'),
+            'message' => 'License valid',
         ]);
     }
 }

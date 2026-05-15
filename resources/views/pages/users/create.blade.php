@@ -42,7 +42,7 @@ $save = function () {
 
     Flux::toast(variant: 'success', text: __('User created successfully.'));
 
-    $this->redirect('/users');
+    $this->redirect(route('users.index'));
 };
 
 ?>

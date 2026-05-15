@@ -51,7 +51,7 @@ $save = function () {
 
     Flux::toast(variant: 'success', text: __('License created successfully: :key', ['key' => $license->key]));
 
-    $this->redirect('/licenses');
+    $this->redirect(route('licenses.index'));
 };
 
 ?>
@@ -61,7 +61,7 @@ $save = function () {
     <div class="flex h-full w-full flex-1 flex-col gap-6 rounded-xl">
         <flux:breadcrumbs>
             <flux:breadcrumbs.item href="{{ route('dashboard') }}">{{ __('Home') }}</flux:breadcrumbs.item>
-            <flux:breadcrumbs.item href="{{ url('/licenses') }}">{{ __('Licenses') }}</flux:breadcrumbs.item>
+            <flux:breadcrumbs.item href="{{ route('licenses.index') }}">{{ __('Licenses') }}</flux:breadcrumbs.item>
             <flux:breadcrumbs.item>{{ __('Create') }}</flux:breadcrumbs.item>
         </flux:breadcrumbs>
 
@@ -119,7 +119,7 @@ $save = function () {
                 </div>
 
                 <div class="flex justify-end gap-2 border-t border-zinc-200 pt-4 dark:border-zinc-700">
-                    <flux:button href="{{ url('/licenses') }}" variant="filled">{{ __('Cancel') }}</flux:button>
+                    <flux:button href="{{ route('licenses.index') }}" variant="filled">{{ __('Cancel') }}</flux:button>
                     <flux:button type="submit" variant="primary">{{ __('Create License') }}</flux:button>
                 </div>
             </form>

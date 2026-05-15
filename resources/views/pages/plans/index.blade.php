@@ -57,7 +57,7 @@ $delete = function () {
                 <flux:heading size="xl">{{ __('Subscription Plans') }}</flux:heading>
                 <flux:subheading>{{ __('Manage pricing plans for your products') }}</flux:subheading>
             </div>
-            <flux:button variant="primary" icon="plus" href="{{ url('/plans/create') }}">
+            <flux:button variant="primary" icon="plus" href="{{ route('plans.create') }}">
                 {{ __('Add Plan') }}
             </flux:button>
         </div>
@@ -92,7 +92,7 @@ $delete = function () {
                             <flux:table.cell>
                                 <div class="flex gap-2">
                                     <flux:button variant="ghost" size="sm" icon="pencil"
-                                        href="{{ url('/plans/' . $plan->id . '/edit') }}" />
+                                        href="{{ route('plans.edit', ['plan' => $plan->id]) }}" />
                                     <flux:button variant="ghost" size="sm" icon="trash"
                                         wire:click="confirmDelete({{ $plan->id }})" />
                                 </div>

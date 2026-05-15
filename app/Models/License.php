@@ -23,7 +23,9 @@ class License extends Model
         'mode',
         'max_devices',
         'expires_at',
+        'activated_at',
         'metadata',
+        'notes',
     ];
 
     protected function casts(): array
@@ -33,6 +35,7 @@ class License extends Model
             'mode' => LicenseMode::class,
             'max_devices' => 'integer',
             'expires_at' => 'datetime',
+            'activated_at' => 'datetime',
             'metadata' => 'array',
         ];
     }

@@ -56,23 +56,9 @@ class ActivationController extends ApiController
             ], 'Device already activated');
         }
 
-        if (! $this->licenseService->checkDeviceLimit($license)) {
-            $device = $this->licenseService->registerDevice($license, $deviceData);
-            $activationRequest = $this->licenseService->createActivationRequest($device);
-
-            if ($activationRequest) {
-                return $this->success([
-                    'device_id' => $device->id,
-                    'requires_approval' => true,
-                    'activation_code' => $activationRequest->code,
-                    'expires_at' => $activationRequest->expires_at->toIso8601String(),
-                ], 'Device limit reached, activation required');
-            }
-        }
-
         $device = $this->licenseService->registerDevice($license, $deviceData);
 
-        if ($license->mode->requiresActivation()) {
+        if (! $this->licenseService->checkDeviceLimit($license) || $license->mode->requiresActivation()) {
             $activationRequest = $this->licenseService->createActivationRequest($device);
 
             if ($activationRequest) {
@@ -81,7 +67,9 @@ class ActivationController extends ApiController
                     'requires_approval' => true,
                     'activation_code' => $activationRequest->code,
                     'expires_at' => $activationRequest->expires_at->toIso8601String(),
-                ], 'Device registered, activation required');
+                ], ! $this->licenseService->checkDeviceLimit($license)
+                    ? 'Device limit reached, activation required'
+                    : 'Device registered, activation required');
             }
         }
 

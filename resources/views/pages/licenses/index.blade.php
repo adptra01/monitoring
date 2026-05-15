@@ -51,7 +51,7 @@ $statuses = computed(fn() => LicenseStatus::cases());
                 <flux:heading size="xl">{{ __('Licenses') }}</flux:heading>
                 <flux:subheading>{{ __('Manage software license keys and activations') }}</flux:subheading>
             </div>
-            <flux:button variant="primary" icon="plus" href="{{ url('/licenses/create') }}">
+            <flux:button variant="primary" icon="plus" href="{{ route('licenses.create') }}">
                 {{ __('Create License') }}
             </flux:button>
         </div>

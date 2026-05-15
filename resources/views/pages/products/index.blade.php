@@ -88,7 +88,7 @@ $delete = function () {
                 <flux:heading size="xl">{{ __('Products') }}</flux:heading>
                 <flux:subheading>{{ __('Manage your product inventory') }}</flux:subheading>
             </div>
-            <flux:button variant="primary" icon="plus" href="{{ url('/products/create') }}">
+            <flux:button variant="primary" icon="plus" href="{{ route('products.create') }}">
                 {{ __('Add Product') }}
             </flux:button>
         </div>
@@ -159,7 +159,7 @@ $delete = function () {
                                             {{ __('View') }}
                                         </flux:menu.item>
                                         <flux:menu.item icon="pencil"
-                                            href="{{ url('/products/' . $product->slug . '/edit') }}">
+                                            href="{{ route('products.edit', ['product' => $product->slug]) }}">
                                             {{ __('Edit') }}
                                         </flux:menu.item>
                                         <flux:menu.separator />

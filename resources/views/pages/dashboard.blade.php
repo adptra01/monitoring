@@ -67,10 +67,10 @@ $totalDevices = computed(fn() => Device::count());
 
         {{-- Quick Links --}}
         <div class="grid grid-cols-1 gap-4 md:grid-cols-3 mt-4">
-            <flux:button href="{{ url('/products') }}" icon="shopping-bag">{{ __('Manage Products') }}
+            <flux:button href="{{ route('products.index') }}" icon="shopping-bag">{{ __('Manage Products') }}
             </flux:button>
-            <flux:button href="{{ url('/licenses') }}" icon="key">{{ __('View Licenses') }}</flux:button>
-            <flux:button href="{{ url('/activation-requests') }}" icon="check-badge">{{ __('Pending Requests') }}
+            <flux:button href="{{ route('licenses.index') }}" icon="key">{{ __('View Licenses') }}</flux:button>
+            <flux:button href="{{ route('activation-requests.index') }}" icon="check-badge">{{ __('Pending Requests') }}
             </flux:button>
         </div>
     </div>

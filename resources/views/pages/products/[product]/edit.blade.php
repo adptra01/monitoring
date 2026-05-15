@@ -50,7 +50,7 @@ $save = function () {
 
     Flux::toast(variant: 'success', text: __('Product updated successfully.'));
 
-    $this->redirect('/products');
+    $this->redirect(route('products.index'));
 };
 
 ?>
@@ -60,7 +60,7 @@ $save = function () {
     <div class="flex h-full w-full flex-1 flex-col gap-6 rounded-xl">
         <flux:breadcrumbs>
             <flux:breadcrumbs.item href="{{ route('dashboard') }}">{{ __('Home') }}</flux:breadcrumbs.item>
-            <flux:breadcrumbs.item href="{{ url('/products') }}">{{ __('Products') }}</flux:breadcrumbs.item>
+            <flux:breadcrumbs.item href="{{ route('products.index') }}">{{ __('Products') }}</flux:breadcrumbs.item>
             <flux:breadcrumbs.item>{{ __('Edit') }}</flux:breadcrumbs.item>
         </flux:breadcrumbs>
 
@@ -84,7 +84,7 @@ $save = function () {
                 <flux:checkbox wire:model="is_active" :label="__('Active')" />
 
                 <div class="flex justify-end gap-2 border-t border-zinc-200 pt-4 dark:border-zinc-700">
-                    <flux:button href="{{ url('/products') }}" variant="filled">{{ __('Cancel') }}</flux:button>
+                    <flux:button href="{{ route('products.index') }}" variant="filled">{{ __('Cancel') }}</flux:button>
                     <flux:button type="submit" variant="primary">{{ __('Update Product') }}</flux:button>
                 </div>
             </form>

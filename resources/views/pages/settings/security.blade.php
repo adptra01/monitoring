@@ -68,6 +68,7 @@ $disable = function (DisableTwoFactorAuthentication $disableTwoFactorAuthenticat
 ?>
 
 <x-layouts::app :title="__('Security settings')">
+    @volt
         <section class="w-full">
             @include('partials.settings-heading')
 
@@ -155,4 +156,5 @@ $disable = function (DisableTwoFactorAuthentication $disableTwoFactorAuthenticat
                 @endif
             </x-pages::settings.layout>
         </section>
+    @endvolt
 </x-layouts::app>
