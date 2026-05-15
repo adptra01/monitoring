@@ -21,17 +21,19 @@
             </flux:sidebar.group>
 
             @if(auth()->user()?->isAdmin())
-                <flux:sidebar.group :heading="__('Licensing')" class="grid">
-                    <flux:sidebar.item icon="key" :href="url('/licenses')" :current="request()->is('licenses*')">
-                        {{ __('Licenses') }}
-                    </flux:sidebar.item>
-
+                <flux:sidebar.group :heading="__('Catalog')" class="grid">
                     <flux:sidebar.item icon="cube" :href="url('/products')" :current="request()->is('products*')">
                         {{ __('Products') }}
                     </flux:sidebar.item>
 
                     <flux:sidebar.item icon="currency-dollar" :href="url('/plans')" :current="request()->is('plans*')">
                         {{ __('Subscription Plans') }}
+                    </flux:sidebar.item>
+                </flux:sidebar.group>
+
+                <flux:sidebar.group :heading="__('Licensing')" class="grid">
+                    <flux:sidebar.item icon="key" :href="url('/licenses')" :current="request()->is('licenses*')">
+                        {{ __('Licenses') }}
                     </flux:sidebar.item>
 
                     <flux:sidebar.item icon="check-circle" :href="url('/activation-requests')"
@@ -42,11 +44,6 @@
                     <flux:sidebar.item icon="computer-desktop" :href="url('/devices')" :current="request()->is('devices*')">
                         {{ __('Devices') }}
                     </flux:sidebar.item>
-
-                    <flux:sidebar.item icon="clipboard-document-list" :href="url('/audit-logs')"
-                        :current="request()->is('audit-logs*')">
-                        {{ __('Audit Logs') }}
-                    </flux:sidebar.item>
                 </flux:sidebar.group>
 
                 <flux:sidebar.group :heading="__('Access Control')" class="grid">
@@ -56,6 +53,13 @@
 
                     <flux:sidebar.item icon="shield-check" :href="url('/roles')" :current="request()->is('roles*')">
                         {{ __('Roles') }}
+                    </flux:sidebar.item>
+                </flux:sidebar.group>
+
+                <flux:sidebar.group :heading="__('Monitoring')" class="grid">
+                    <flux:sidebar.item icon="clipboard-document-list" :href="url('/audit-logs')"
+                        :current="request()->is('audit-logs*')">
+                        {{ __('Audit Logs') }}
                     </flux:sidebar.item>
                 </flux:sidebar.group>
             @endif
