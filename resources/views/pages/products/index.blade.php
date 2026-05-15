@@ -294,7 +294,7 @@ $syncRepos = function () {
                                 <p class="mt-1.5">
                                     <a href="{{ $detailProduct->github_repo_url }}" target="_blank"
                                         class="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
-                                        <flux:icon name="github-logo" variant="micro" class="size-4" />
+                                        <flux:icon name="folder" variant="micro" class="size-4" />
                                         {{ $detailProduct->github_repo_full_name }}
                                     </a>
                                 </p>
