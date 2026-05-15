@@ -32,7 +32,7 @@ $save = function () {
         $role->syncPermissions($this->selectedPermissions);
     }
 
-    Flux::toast(variant: 'success', text: __('Role created successfully.'));
+    Flux::toast(duration: 1500, variant: 'success', text: __('Role created successfully.'));
 
     $this->redirect('/roles');
 };
@@ -72,7 +72,7 @@ $save = function () {
                     </div>
                 </flux:field>
 
-                <div class="flex justify-end gap-2 border-t border-zinc-200 pt-4 dark:border-zinc-700">
+                <div class="flex justify-end gap-2 ">
                     <flux:button href="{{ url('/roles') }}" variant="filled">{{ __('Cancel') }}</flux:button>
                     <flux:button type="submit" variant="primary">{{ __('Create Role') }}</flux:button>
                 </div>

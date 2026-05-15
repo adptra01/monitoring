@@ -21,19 +21,19 @@ mount(function (string $license) {
 $suspend = function (LicenseService $licenseService) {
     $licenseService->suspend($this->license);
     $this->license->refresh();
-    Flux::toast(variant: 'warning', text: __('License suspended.'));
+    Flux::toast(duration: 1500, variant: 'warning', text: __('License suspended.'));
 };
 
 $revoke = function (LicenseService $licenseService) {
     $licenseService->revoke($this->license);
     $this->license->refresh();
-    Flux::toast(variant: 'danger', text: __('License revoked.'));
+    Flux::toast(duration: 1500, variant: 'danger', text: __('License revoked.'));
 };
 
 $restore = function (LicenseService $licenseService) {
     $licenseService->restore($this->license);
     $this->license->refresh();
-    Flux::toast(variant: 'success', text: __('License restored.'));
+    Flux::toast(duration: 1500, variant: 'success', text: __('License restored.'));
 };
 
 ?>

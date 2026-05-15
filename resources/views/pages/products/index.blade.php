@@ -69,7 +69,7 @@ $delete = function () {
     $this->deletingProductId = null;
     $this->showDeleteModal = false;
 
-    Flux::toast(variant: 'success', text: __('Product deleted.'));
+    Flux::toast(duration: 1500, variant: 'success', text: __('Product deleted.'));
 };
 
 ?>
@@ -205,7 +205,7 @@ $delete = function () {
                     </div>
 
                     {{-- Footer --}}
-                    <div class="flex items-center justify-between border-t border-zinc-200 pt-4 dark:border-zinc-700">
+                    <div class="flex items-center justify-between ">
                         <div class="flex gap-6 text-xs text-zinc-400">
                             <span>{{ __('Created') }} {{ $detailProduct->created_at->format('d M Y, H:i') }}</span>
                             <span>{{ __('Updated') }} {{ $detailProduct->updated_at->format('d M Y, H:i') }}</span>
@@ -234,7 +234,7 @@ $delete = function () {
                     </div>
                 </div>
 
-                <div class="flex justify-end gap-2 border-t border-zinc-200 pt-4 dark:border-zinc-700">
+                <div class="flex justify-end gap-2 ">
                     <flux:modal.close>
                         <flux:button variant="filled">{{ __('Cancel') }}</flux:button>
                     </flux:modal.close>

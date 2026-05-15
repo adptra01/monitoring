@@ -40,7 +40,7 @@ $save = function () {
         $user->assignRole($this->selectedRoles);
     }
 
-    Flux::toast(variant: 'success', text: __('User created successfully.'));
+    Flux::toast(duration: 1500, variant: 'success', text: __('User created successfully.'));
 
     $this->redirect(route('users.index'));
 };
@@ -88,7 +88,7 @@ $save = function () {
 
                 <flux:checkbox wire:model="is_admin" :label="__('Administrator Access')" />
 
-                <div class="flex justify-end gap-2 border-t border-zinc-200 pt-4 dark:border-zinc-700">
+                <div class="flex justify-end gap-2 ">
                     <flux:button href="{{ url('/users') }}" variant="filled">{{ __('Cancel') }}</flux:button>
                     <flux:button type="submit" variant="primary">{{ __('Create User') }}</flux:button>
                 </div>

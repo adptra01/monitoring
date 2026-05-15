@@ -57,10 +57,10 @@ $statuses = computed(fn() => LicenseStatus::cases());
         </div>
 
         {{-- Filters --}}
-        <div class="flex gap-4">
+        <div class="grid grid-cols-2 gap-4">
             <flux:input size="md" wire:model.live="search" type="search"
-                placeholder="{{ __('Search by license key...') }}" class="flex-1" />
-            <flux:select wire:model.live="status" class="max-w-xs">
+                placeholder="{{ __('Search by license key...') }}" />
+            <flux:select wire:model.live="status">
                 <option value="">{{ __('All Status') }}</option>
                 @foreach ($this->statuses as $status)
                     <option value="{{ $status->value }}">{{ $status->label() }}</option>

@@ -32,13 +32,13 @@ $delete = function (int $id) {
     $user = User::findOrFail($id);
 
     if ($user->isAdmin() && User::role('admin')->count() <= 1) {
-        Flux::toast(variant: 'danger', text: __('Cannot delete the last admin user.'));
+        Flux::toast(duration: 1500, variant: 'danger', text: __('Cannot delete the last admin user.'));
         return;
     }
 
     $user->delete();
 
-    Flux::toast(variant: 'success', text: __('User deleted successfully.'));
+    Flux::toast(duration: 1500, variant: 'success', text: __('User deleted successfully.'));
 };
 
 ?>

@@ -54,7 +54,7 @@ $save = function () {
     $this->user->syncRoles($this->selectedRoles);
     $this->user->syncPermissions($this->directPermissions);
 
-    Flux::toast(variant: 'success', text: __('User updated successfully.'));
+    Flux::toast(duration: 1500, variant: 'success', text: __('User updated successfully.'));
 
     $this->redirect('/users');
 };
@@ -112,7 +112,7 @@ $save = function () {
 
                 <flux:checkbox wire:model="is_admin" :label="__('Administrator Access')" />
 
-                <div class="flex justify-end gap-2 border-t border-zinc-200 pt-4 dark:border-zinc-700">
+                <div class="flex justify-end gap-2 ">
                     <flux:button href="{{ url('/users') }}" variant="filled">{{ __('Cancel') }}</flux:button>
                     <flux:button type="submit" variant="primary">{{ __('Update User') }}</flux:button>
                 </div>

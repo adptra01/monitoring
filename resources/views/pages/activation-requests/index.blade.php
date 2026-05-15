@@ -29,14 +29,14 @@ $approve = function (int $id) {
     $request = ActivationRequest::findOrFail($id);
     app(LicenseService::class)->approveActivationRequest($request, auth()->id());
 
-    Flux::toast(variant: 'success', text: __('Activation request approved.'));
+    Flux::toast(duration: 1500, variant: 'success', text: __('Activation request approved.'));
 };
 
 $reject = function (int $id) {
     $request = ActivationRequest::findOrFail($id);
     app(LicenseService::class)->rejectActivationRequest($request, 'Rejected by admin', auth()->id());
 
-    Flux::toast(variant: 'success', text: __('Activation request rejected.'));
+    Flux::toast(duration: 1500, variant: 'success', text: __('Activation request rejected.'));
 };
 
 ?>

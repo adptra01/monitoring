@@ -22,18 +22,15 @@
 
             @if(auth()->user()?->isAdmin())
                 <flux:sidebar.group :heading="__('Licensing')" class="grid">
-                    <flux:sidebar.item icon="cube" :href="url('/licenses')"
-                        :current="request()->is('licenses*')">
+                    <flux:sidebar.item icon="key" :href="url('/licenses')" :current="request()->is('licenses*')">
                         {{ __('Licenses') }}
                     </flux:sidebar.item>
 
-                    <flux:sidebar.item icon="cube" :href="url('/products')"
-                        :current="request()->is('products*')">
+                    <flux:sidebar.item icon="cube" :href="url('/products')" :current="request()->is('products*')">
                         {{ __('Products') }}
                     </flux:sidebar.item>
 
-                    <flux:sidebar.item icon="currency-dollar" :href="url('/plans')"
-                        :current="request()->is('plans*')">
+                    <flux:sidebar.item icon="currency-dollar" :href="url('/plans')" :current="request()->is('plans*')">
                         {{ __('Subscription Plans') }}
                     </flux:sidebar.item>
 
@@ -42,8 +39,7 @@
                         {{ __('Activation Requests') }}
                     </flux:sidebar.item>
 
-                    <flux:sidebar.item icon="computer-desktop" :href="url('/devices')"
-                        :current="request()->is('devices*')">
+                    <flux:sidebar.item icon="computer-desktop" :href="url('/devices')" :current="request()->is('devices*')">
                         {{ __('Devices') }}
                     </flux:sidebar.item>
 
@@ -58,8 +54,7 @@
                         {{ __('Users') }}
                     </flux:sidebar.item>
 
-                    <flux:sidebar.item icon="shield-check" :href="url('/roles')"
-                        :current="request()->is('roles*')">
+                    <flux:sidebar.item icon="shield-check" :href="url('/roles')" :current="request()->is('roles*')">
                         {{ __('Roles') }}
                     </flux:sidebar.item>
                 </flux:sidebar.group>
@@ -133,7 +128,7 @@
     {{ $slot }}
 
     @persist('toast')
-    <flux:toast.group>
+    <flux:toast.group position="top end">
         <flux:toast />
     </flux:toast.group>
     @endpersist

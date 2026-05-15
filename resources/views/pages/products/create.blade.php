@@ -36,7 +36,7 @@ $save = function () {
         'is_active' => $this->is_active,
     ]);
 
-    Flux::toast(variant: 'success', text: __('Product created successfully.'));
+    Flux::toast(duration: 1500, variant: 'success', text: __('Product created successfully.'));
 
     $this->redirect('/products');
 };
@@ -71,7 +71,7 @@ $save = function () {
 
                 <flux:checkbox wire:model="is_active" :label="__('Active')" />
 
-                <div class="flex justify-end gap-2 border-t border-zinc-200 pt-4 dark:border-zinc-700">
+                <div class="flex justify-end gap-2 ">
                     <flux:button href="{{ url('/products') }}" variant="filled">{{ __('Cancel') }}</flux:button>
                     <flux:button type="submit" variant="primary">{{ __('Create Product') }}</flux:button>
                 </div>

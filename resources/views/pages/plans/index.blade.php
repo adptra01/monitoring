@@ -38,7 +38,7 @@ $delete = function () {
     $this->deletingPlanId = null;
     $this->showDeleteModal = false;
 
-    Flux::toast(variant: 'success', text: __('Plan deleted successfully.'));
+    Flux::toast(duration: 1500, variant: 'success', text: __('Plan deleted successfully.'));
 };
 
 ?>
@@ -119,7 +119,7 @@ $delete = function () {
                     </div>
                 </div>
 
-                <div class="flex justify-end gap-2 border-t border-zinc-200 pt-4 dark:border-zinc-700">
+                <div class="flex justify-end gap-2 ">
                     <flux:modal.close>
                         <flux:button variant="filled">{{ __('Cancel') }}</flux:button>
                     </flux:modal.close>

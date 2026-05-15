@@ -49,7 +49,7 @@ $save = function () {
         'expires_at' => $this->expires_at ?: null,
     ]);
 
-    Flux::toast(variant: 'success', text: __('License created successfully: :key', ['key' => $license->key]));
+    Flux::toast(duration: 1500, variant: 'success', text: __('License created successfully: :key', ['key' => $license->key]));
 
     $this->redirect(route('licenses.index'));
 };
@@ -118,7 +118,7 @@ $save = function () {
                     <flux:input wire:model="expires_at" type="date" :label="__('Expires At')" />
                 </div>
 
-                <div class="flex justify-end gap-2 border-t border-zinc-200 pt-4 dark:border-zinc-700">
+                <div class="flex justify-end gap-2">
                     <flux:button href="{{ route('licenses.index') }}" variant="filled">{{ __('Cancel') }}</flux:button>
                     <flux:button type="submit" variant="primary">{{ __('Create License') }}</flux:button>
                 </div>

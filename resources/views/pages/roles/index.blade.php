@@ -21,13 +21,13 @@ $delete = function (int $id) {
     $role = Role::findOrFail($id);
 
     if ($role->name === 'admin') {
-        Flux::toast(variant: 'danger', text: __('Cannot delete the admin role.'));
+        Flux::toast(duration: 1500, variant: 'danger', text: __('Cannot delete the admin role.'));
         return;
     }
 
     $role->delete();
 
-    Flux::toast(variant: 'success', text: __('Role deleted successfully.'));
+    Flux::toast(duration: 1500, variant: 'success', text: __('Role deleted successfully.'));
 };
 
 ?>
