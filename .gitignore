@@ -24,3 +24,4 @@ yarn-error.log
 /.zed
 /test-results
 /tmp
+.env.before_lerd

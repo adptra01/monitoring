@@ -17,7 +17,6 @@ state([
     'email' => '',
     'password' => '',
     'password_confirmation' => '',
-    'is_admin' => false,
     'selectedRoles' => [],
     'directPermissions' => [],
 ]);
@@ -26,7 +25,6 @@ mount(function (string $user) {
     $this->user = User::with('roles', 'permissions')->findOrFail($user);
     $this->name = $this->user->name;
     $this->email = $this->user->email;
-    $this->is_admin = $this->user->is_admin;
     $this->selectedRoles = $this->user->roles->pluck('name')->toArray();
     $this->directPermissions = $this->user->permissions->pluck('name')->toArray();
 });
@@ -36,7 +34,6 @@ $save = function () {
         'name' => 'required|string|max:255',
         'email' => 'required|email|max:255|unique:users,email,' . $this->user->id,
         'password' => 'nullable|string|min:8|confirmed',
-        'is_admin' => 'boolean',
         'selectedRoles' => 'nullable|array',
         'directPermissions' => 'nullable|array',
     ]);
@@ -44,7 +41,6 @@ $save = function () {
     $this->user->update([
         'name' => $this->name,
         'email' => $this->email,
-        'is_admin' => $this->is_admin,
     ]);
 
     if ($this->password) {
@@ -109,8 +105,6 @@ $save = function () {
                         @endforeach
                     </div>
                 </flux:field>
-
-                <flux:checkbox wire:model="is_admin" :label="__('Administrator Access')" />
 
                 <div class="flex justify-end gap-2">
                     <flux:button href="{{ url('/users') }}" variant="filled">{{ __('Cancel') }}</flux:button>

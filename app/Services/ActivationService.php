@@ -3,11 +3,12 @@
 namespace App\Services;
 
 use App\Enums\ActivationRequestStatus;
+use App\Events\ActivationApproved;
+use App\Events\ActivationRejected;
 use App\Models\ActivationRequest;
-use App\Models\AuditLog;
 use App\Models\Device;
-use App\Models\License;
 use Carbon\CarbonInterface;
+use Illuminate\Support\Facades\Event;
 
 class ActivationService
 {
@@ -41,17 +42,6 @@ class ActivationService
             'expires_at' => now()->addMinutes(30),
         ]);
 
-        AuditLog::create([
-            'action' => 'activation_request_created',
-            'entity_type' => License::class,
-            'entity_id' => $license->id,
-            'new_values' => [
-                'request_id' => $request->id,
-                'device_id' => $device->id,
-            ],
-            'created_at' => now(),
-        ]);
-
         return $request;
     }
 
@@ -64,17 +54,7 @@ class ActivationService
 
         $request->device->update(['last_seen_at' => now()]);
 
-        AuditLog::create([
-            'action' => 'activation_approved',
-            'entity_type' => License::class,
-            'entity_id' => $request->license_id,
-            'new_values' => [
-                'request_id' => $request->id,
-                'device_id' => $request->device_id,
-                'approved_by' => $userId,
-            ],
-            'created_at' => now(),
-        ]);
+        Event::dispatch(new ActivationApproved($request, $userId));
 
         return true;
     }
@@ -86,18 +66,7 @@ class ActivationService
             'rejection_reason' => $reason ?: 'Ditolak oleh admin',
         ]);
 
-        AuditLog::create([
-            'action' => 'activation_rejected',
-            'entity_type' => License::class,
-            'entity_id' => $request->license_id,
-            'new_values' => [
-                'request_id' => $request->id,
-                'device_id' => $request->device_id,
-                'reason' => $reason,
-                'rejected_by' => $userId,
-            ],
-            'created_at' => now(),
-        ]);
+        Event::dispatch(new ActivationRejected($request, $reason, $userId));
 
         return true;
     }

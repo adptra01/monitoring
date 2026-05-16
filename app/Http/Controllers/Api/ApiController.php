@@ -7,12 +7,21 @@ use Illuminate\Http\JsonResponse;
 
 abstract class ApiController extends Controller
 {
+    protected function meta(): array
+    {
+        return [
+            'timestamp' => now()->toIso8601String(),
+            'api_version' => 'v1',
+        ];
+    }
+
     protected function success(mixed $data = null, string $message = 'Sukses', int $code = 200): JsonResponse
     {
         return response()->json([
             'success' => true,
             'message' => $message,
             'data' => $data,
+            'meta' => $this->meta(),
         ], $code);
     }
 
@@ -21,6 +30,7 @@ abstract class ApiController extends Controller
         $response = [
             'success' => false,
             'message' => $message,
+            'meta' => $this->meta(),
         ];
 
         if ($errors) {

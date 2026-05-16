@@ -8,15 +8,23 @@ use App\Models\License;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\SignsApiRequests;
 use Tests\TestCase;
 
 class LicenseActivationTest extends TestCase
 {
     use RefreshDatabase;
+    use SignsApiRequests;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->setUpHmac();
+    }
 
     public function test_activate_returns_error_for_invalid_license_key(): void
     {
-        $response = $this->postJson('/api/v1/activate', [
+        $response = $this->signedJson('POST', '/api/v1/activate', [
             'license_key' => 'XXXX-XXXX-XXXX-XXXX',
             'device' => [
                 'fingerprint' => str_repeat('a', 64),
@@ -39,7 +47,7 @@ class LicenseActivationTest extends TestCase
             'expires_at' => now()->subDay(),
         ]);
 
-        $response = $this->postJson('/api/v1/activate', [
+        $response = $this->signedJson('POST', '/api/v1/activate', [
             'license_key' => $license->key,
             'device' => [
                 'fingerprint' => str_repeat('b', 64),
@@ -63,7 +71,7 @@ class LicenseActivationTest extends TestCase
             'expires_at' => now()->addMonth(),
         ]);
 
-        $response = $this->postJson('/api/v1/activate', [
+        $response = $this->signedJson('POST', '/api/v1/activate', [
             'license_key' => $license->key,
             'device' => [
                 'fingerprint' => str_repeat('c', 64),
@@ -93,7 +101,7 @@ class LicenseActivationTest extends TestCase
         ]);
         Device::factory()->create(['license_id' => $license->id]);
 
-        $response = $this->postJson('/api/v1/activate', [
+        $response = $this->signedJson('POST', '/api/v1/activate', [
             'license_key' => $license->key,
             'device' => [
                 'fingerprint' => str_repeat('d', 64),
@@ -119,7 +127,7 @@ class LicenseActivationTest extends TestCase
         ]);
         Device::factory()->create(['license_id' => $license->id]);
 
-        $response = $this->postJson('/api/v1/activate', [
+        $response = $this->signedJson('POST', '/api/v1/activate', [
             'license_key' => $license->key,
             'device' => [
                 'fingerprint' => str_repeat('e', 64),
@@ -147,7 +155,7 @@ class LicenseActivationTest extends TestCase
             'last_seen_at' => now(),
         ]);
 
-        $response = $this->getJson("/api/v1/status/{$license->key}/{$device->fingerprint}");
+        $response = $this->signedGet("/api/v1/status/{$license->key}/{$device->fingerprint}");
 
         $response->assertStatus(200)
             ->assertJson(['success' => true]);
@@ -162,9 +170,49 @@ class LicenseActivationTest extends TestCase
             'user_id' => $user->id,
         ]);
 
-        $response = $this->getJson("/api/v1/status/{$license->key}/".str_repeat('x', 64));
+        $response = $this->signedGet("/api/v1/status/{$license->key}/".str_repeat('x', 64));
 
         $response->assertStatus(404)
             ->assertJson(['success' => false, 'message' => 'Perangkat tidak terdaftar']);
+    }
+
+    public function test_deactivate_returns_success(): void
+    {
+        $product = Product::factory()->create();
+        $user = User::factory()->create();
+        $license = License::factory()->create([
+            'product_id' => $product->id,
+            'user_id' => $user->id,
+            'status' => LicenseStatus::Active,
+        ]);
+        $device = Device::factory()->create(['license_id' => $license->id]);
+
+        $response = $this->signedJson('POST', '/api/v1/deactivate', [
+            'license_key' => $license->key,
+            'device' => ['fingerprint' => $device->fingerprint],
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJson(['success' => true]);
+
+        $this->assertFalse($device->fresh()->is_active);
+    }
+
+    public function test_deactivate_returns_error_for_unknown_device(): void
+    {
+        $product = Product::factory()->create();
+        $user = User::factory()->create();
+        $license = License::factory()->create([
+            'product_id' => $product->id,
+            'user_id' => $user->id,
+        ]);
+
+        $response = $this->signedJson('POST', '/api/v1/deactivate', [
+            'license_key' => $license->key,
+            'device' => ['fingerprint' => str_repeat('x', 64)],
+        ]);
+
+        $response->assertStatus(404)
+            ->assertJson(['success' => false]);
     }
 }

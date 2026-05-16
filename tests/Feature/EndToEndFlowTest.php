@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Livewire\Volt\Volt;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class EndToEndFlowTest extends TestCase
@@ -19,7 +20,9 @@ class EndToEndFlowTest extends TestCase
     public function test_complete_crud_and_activation_flow(): void
     {
         // 1. Setup Admin User
-        $admin = User::factory()->create(['is_admin' => true]);
+        Role::create(['name' => 'admin']);
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
         $this->actingAs($admin);
 
         // 2. Product CRUD Flow

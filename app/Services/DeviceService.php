@@ -2,9 +2,11 @@
 
 namespace App\Services;
 
-use App\Models\AuditLog;
+use App\Events\DeviceDeactivated;
+use App\Events\DeviceRegistered;
 use App\Models\Device;
 use App\Models\License;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 
 class DeviceService
@@ -15,13 +17,7 @@ class DeviceService
 
         $device = $license->devices()->create($data);
 
-        AuditLog::create([
-            'action' => 'device_registered',
-            'entity_type' => License::class,
-            'entity_id' => $license->id,
-            'new_values' => ['device_id' => $device->id],
-            'created_at' => now(),
-        ]);
+        Event::dispatch(new DeviceRegistered($device));
 
         return $device;
     }
@@ -45,12 +41,6 @@ class DeviceService
     {
         $device->update(['is_active' => false]);
 
-        AuditLog::create([
-            'action' => 'device_deactivated',
-            'entity_type' => License::class,
-            'entity_id' => $device->license_id,
-            'new_values' => ['device_id' => $device->id],
-            'created_at' => now(),
-        ]);
+        Event::dispatch(new DeviceDeactivated($device));
     }
 }

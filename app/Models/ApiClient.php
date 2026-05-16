@@ -15,6 +15,7 @@ class ApiClient extends Model
         'api_key',
         'api_secret',
         'is_active',
+        'rate_limit',
         'last_used_at',
     ];
 
@@ -22,6 +23,7 @@ class ApiClient extends Model
     {
         return [
             'is_active' => 'boolean',
+            'rate_limit' => 'integer',
             'last_used_at' => 'datetime',
         ];
     }

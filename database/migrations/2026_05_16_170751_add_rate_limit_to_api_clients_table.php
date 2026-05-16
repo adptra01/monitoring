@@ -8,15 +8,15 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->boolean('is_admin')->default(false)->after('email');
+        Schema::table('api_clients', function (Blueprint $table) {
+            $table->integer('rate_limit')->default(60)->after('api_secret');
         });
     }
 
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('is_admin');
+        Schema::table('api_clients', function (Blueprint $table) {
+            $table->dropColumn('rate_limit');
         });
     }
 };

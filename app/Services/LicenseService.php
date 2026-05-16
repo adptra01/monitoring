@@ -3,8 +3,12 @@
 namespace App\Services;
 
 use App\Enums\LicenseStatus;
-use App\Models\AuditLog;
+use App\Events\LicenseCreated;
+use App\Events\LicenseRestored;
+use App\Events\LicenseRevoked;
+use App\Events\LicenseSuspended;
 use App\Models\License;
+use Illuminate\Support\Facades\Event;
 
 class LicenseService
 {
@@ -18,7 +22,7 @@ class LicenseService
 
         $license = License::create($data);
 
-        $this->log($license, 'created', $license->toArray());
+        Event::dispatch(new LicenseCreated($license));
 
         return $license;
     }
@@ -39,7 +43,8 @@ class LicenseService
     public function suspend(License $license): bool
     {
         $license->update(['status' => LicenseStatus::Suspended]);
-        $this->log($license, 'suspended', ['previous_status' => 'active']);
+
+        Event::dispatch(new LicenseSuspended($license));
 
         return true;
     }
@@ -47,7 +52,8 @@ class LicenseService
     public function revoke(License $license): bool
     {
         $license->update(['status' => LicenseStatus::Revoked]);
-        $this->log($license, 'revoked', ['previous_status' => $license->getOriginal('status')]);
+
+        Event::dispatch(new LicenseRevoked($license));
 
         return true;
     }
@@ -55,22 +61,9 @@ class LicenseService
     public function restore(License $license): bool
     {
         $license->update(['status' => LicenseStatus::Active]);
-        $this->log($license, 'restored', ['previous_status' => $license->getOriginal('status')]);
+
+        Event::dispatch(new LicenseRestored($license));
 
         return true;
-    }
-
-    protected function log(License $license, string $action, array $changes = [], ?int $userId = null): void
-    {
-        AuditLog::create([
-            'action' => $action,
-            'entity_type' => License::class,
-            'entity_id' => $license->id,
-            'user_id' => $userId,
-            'new_values' => $changes,
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-            'created_at' => now(),
-        ]);
     }
 }

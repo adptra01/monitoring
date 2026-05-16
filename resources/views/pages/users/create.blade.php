@@ -15,7 +15,6 @@ state([
     'email' => '',
     'password' => '',
     'password_confirmation' => '',
-    'is_admin' => false,
     'selectedRoles' => [],
 ]);
 
@@ -24,7 +23,6 @@ $save = function () {
         'name' => 'required|string|max:255',
         'email' => 'required|email|max:255|unique:users,email',
         'password' => 'required|string|min:8|confirmed',
-        'is_admin' => 'boolean',
         'selectedRoles' => 'nullable|array',
     ]);
 
@@ -33,7 +31,6 @@ $save = function () {
         'email' => $this->email,
         'password' => bcrypt($this->password),
         'email_verified_at' => now(),
-        'is_admin' => $this->is_admin,
     ]);
 
     if (!empty($this->selectedRoles)) {
@@ -85,8 +82,6 @@ $save = function () {
                         @endforeach
                     </div>
                 </flux:field>
-
-                <flux:checkbox wire:model="is_admin" :label="__('Administrator Access')" />
 
                 <div class="flex justify-end gap-2">
                     <flux:button href="{{ url('/users') }}" variant="filled">{{ __('Cancel') }}</flux:button>

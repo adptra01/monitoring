@@ -8,15 +8,23 @@ use App\Models\License;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\SignsApiRequests;
 use Tests\TestCase;
 
 class LicenseValidationTest extends TestCase
 {
     use RefreshDatabase;
+    use SignsApiRequests;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->setUpHmac();
+    }
 
     public function test_validate_returns_error_for_invalid_license_key(): void
     {
-        $response = $this->postJson('/api/v1/validate', [
+        $response = $this->signedJson('POST', '/api/v1/validate', [
             'license_key' => 'XXXX-XXXX-XXXX-XXXX',
             'device' => [
                 'fingerprint' => str_repeat('a', 64),
@@ -40,7 +48,7 @@ class LicenseValidationTest extends TestCase
         ]);
         $device = Device::factory()->create(['license_id' => $license->id]);
 
-        $response = $this->postJson('/api/v1/validate', [
+        $response = $this->signedJson('POST', '/api/v1/validate', [
             'license_key' => $license->key,
             'device' => [
                 'fingerprint' => $device->fingerprint,
@@ -72,7 +80,7 @@ class LicenseValidationTest extends TestCase
             'status' => LicenseStatus::Active,
         ]);
 
-        $response = $this->postJson('/api/v1/validate', [
+        $response = $this->signedJson('POST', '/api/v1/validate', [
             'license_key' => $license->key,
             'device' => [
                 'fingerprint' => str_repeat('b', 64),
@@ -94,7 +102,7 @@ class LicenseValidationTest extends TestCase
         ]);
         $device = Device::factory()->create(['license_id' => $license->id]);
 
-        $response = $this->postJson('/api/v1/validate', [
+        $response = $this->signedJson('POST', '/api/v1/validate', [
             'license_key' => $license->key,
             'device' => [
                 'fingerprint' => $device->fingerprint,
@@ -117,7 +125,7 @@ class LicenseValidationTest extends TestCase
         ]);
         $device = Device::factory()->create(['license_id' => $license->id]);
 
-        $response = $this->postJson('/api/v1/validate', [
+        $response = $this->signedJson('POST', '/api/v1/validate', [
             'license_key' => $license->key,
             'device' => [
                 'fingerprint' => $device->fingerprint,
@@ -130,7 +138,7 @@ class LicenseValidationTest extends TestCase
 
     public function test_validate_requires_valid_fingerprint_format(): void
     {
-        $response = $this->postJson('/api/v1/validate', [
+        $response = $this->signedJson('POST', '/api/v1/validate', [
             'license_key' => 'XXXX-XXXX-XXXX-XXXX',
             'device' => [
                 'fingerprint' => 'too-short',

@@ -5,7 +5,9 @@ use App\Exceptions\InvalidActivationCodeException;
 use App\Exceptions\LicenseExpiredException;
 use App\Exceptions\LicenseNotFoundException;
 use App\Exceptions\LicenseSuspendedException;
+use App\Http\Middleware\BruteForceMiddleware;
 use App\Http\Middleware\CheckAdminMiddleware;
+use App\Http\Middleware\VerifyApiClientMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -21,6 +23,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'check.admin' => CheckAdminMiddleware::class,
+            'api-client' => VerifyApiClientMiddleware::class,
+            'brute-force' => BruteForceMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
@@ -29,6 +33,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 return response()->json([
                     'success' => false,
                     'message' => $e->getMessage(),
+                    'meta' => ['timestamp' => now()->toIso8601String(), 'api_version' => 'v1'],
                 ], $e->getCode() ?: 404);
             }
         });
@@ -38,6 +43,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 return response()->json([
                     'success' => false,
                     'message' => $e->getMessage(),
+                    'meta' => ['timestamp' => now()->toIso8601String(), 'api_version' => 'v1'],
                 ], $e->getCode() ?: 403);
             }
         });
@@ -47,6 +53,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 return response()->json([
                     'success' => false,
                     'message' => $e->getMessage(),
+                    'meta' => ['timestamp' => now()->toIso8601String(), 'api_version' => 'v1'],
                 ], $e->getCode() ?: 403);
             }
         });
@@ -56,6 +63,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 return response()->json([
                     'success' => false,
                     'message' => $e->getMessage(),
+                    'meta' => ['timestamp' => now()->toIso8601String(), 'api_version' => 'v1'],
                 ], $e->getCode() ?: 400);
             }
         });
@@ -65,6 +73,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 return response()->json([
                     'success' => false,
                     'message' => $e->getMessage(),
+                    'meta' => ['timestamp' => now()->toIso8601String(), 'api_version' => 'v1'],
                 ], $e->getCode() ?: 403);
             }
         });

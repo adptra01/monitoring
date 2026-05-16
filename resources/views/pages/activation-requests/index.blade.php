@@ -1,7 +1,7 @@
 <?php
 
 use App\Models\ActivationRequest;
-use App\Services\LicenseService;
+use App\Services\ActivationService;
 use Flux\Flux;
 use Livewire\WithPagination;
 
@@ -27,14 +27,14 @@ $requests = computed(function () {
 
 $approve = function (int $id) {
     $request = ActivationRequest::findOrFail($id);
-    app(LicenseService::class)->approveActivationRequest($request, auth()->id());
+    app(ActivationService::class)->approveRequest($request, (string) auth()->id());
 
     Flux::toast(duration: 1500, variant: 'success', text: __('Activation request approved.'));
 };
 
 $reject = function (int $id) {
     $request = ActivationRequest::findOrFail($id);
-    app(LicenseService::class)->rejectActivationRequest($request, 'Rejected by admin', auth()->id());
+    app(ActivationService::class)->rejectRequest($request, 'Rejected by admin', (string) auth()->id());
 
     Flux::toast(duration: 1500, variant: 'success', text: __('Activation request rejected.'));
 };

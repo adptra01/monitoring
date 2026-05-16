@@ -54,6 +54,10 @@
                     <flux:sidebar.item icon="shield-check" :href="url('/roles')" :current="request()->is('roles*')">
                         {{ __('Roles') }}
                     </flux:sidebar.item>
+
+                    <flux:sidebar.item icon="server" :href="url('/api-clients')" :current="request()->is('api-clients*')">
+                        {{ __('API Clients') }}
+                    </flux:sidebar.item>
                 </flux:sidebar.group>
 
                 <flux:sidebar.group :heading="__('Monitoring')" class="grid">

@@ -32,10 +32,10 @@ class LicenseSeeder extends Seeder
     private function createUsers(): void
     {
         $users = [
-            ['name' => 'Admin User', 'email' => 'admin@example.com', 'role' => 'admin', 'is_admin' => true],
-            ['name' => 'John Doe', 'email' => 'john@example.com', 'role' => 'user', 'is_admin' => false],
-            ['name' => 'Jane Smith', 'email' => 'jane@example.com', 'role' => 'user', 'is_admin' => false],
-            ['name' => 'Bob Wilson', 'email' => 'bob@example.com', 'role' => 'user', 'is_admin' => false],
+            ['name' => 'Admin User', 'email' => 'admin@example.com', 'role' => 'admin'],
+            ['name' => 'John Doe', 'email' => 'john@example.com', 'role' => 'user'],
+            ['name' => 'Jane Smith', 'email' => 'jane@example.com', 'role' => 'user'],
+            ['name' => 'Bob Wilson', 'email' => 'bob@example.com', 'role' => 'user'],
         ];
 
         foreach ($users as $userData) {
@@ -46,7 +46,6 @@ class LicenseSeeder extends Seeder
                     'email' => $userData['email'],
                     'password' => bcrypt('password'),
                     'email_verified_at' => now(),
-                    'is_admin' => $userData['is_admin'],
                 ]
             );
             $user->assignRole($userData['role']);
@@ -126,7 +125,7 @@ class LicenseSeeder extends Seeder
 
     private function createLicenses(): void
     {
-        $users = User::where('is_admin', false)->get();
+        $users = User::role('user')->get();
         $products = Product::all();
 
         $statuses = [LicenseStatus::Active, LicenseStatus::Active, LicenseStatus::Active, LicenseStatus::Suspended, LicenseStatus::Expired];
@@ -158,7 +157,7 @@ class LicenseSeeder extends Seeder
             }
         }
 
-        $admin = User::where('is_admin', true)->first();
+        $admin = User::role('admin')->first();
         $proProduct = Product::where('slug', 'laravel-monitor-pro')->first();
         $proPlan = $proProduct?->subscriptionPlans()->where('slug', 'enterprise')->first();
 

@@ -71,7 +71,6 @@ class RolePermissionSeeder extends Seeder
                     'email' => $adminData['email'],
                     'password' => bcrypt($adminData['password']),
                     'email_verified_at' => now(),
-                    'is_admin' => true,
                 ]
             );
             $admin->assignRole('admin');
