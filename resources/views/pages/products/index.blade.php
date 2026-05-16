@@ -251,80 +251,181 @@ $syncRepos = function () {
 
         </div>
 
-        {{-- Detail Modal --}}
-        <flux:modal wire:model.self="showDetailModal" class="max-w-4xl w-full">
-            @if ($detailProduct)
-                <div class="space-y-8">
-                    {{-- Header --}}
-                    <div class="flex items-start justify-between gap-4">
-                        <div class="min-w-0 flex-1">
-                            <flux:heading size="xl" class="truncate">{{ $detailProduct->name }}</flux:heading>
-                            <flux:subheading>{{ __('Product details') }}</flux:subheading>
-                        </div>
-                        <flux:badge :color="$detailProduct->is_active ? 'emerald' : 'red'" size="lg">
-                            {{ $detailProduct->is_active ? __('Active') : __('Inactive') }}
-                        </flux:badge>
+       {{-- Detail Modal --}}
+<flux:modal wire:model.self="showDetailModal" class="max-w-4xl w-full">
+    @if ($detailProduct)
+        <div class="space-y-6">
+
+            {{-- Header --}}
+            <div class="flex items-start justify-between gap-4">
+                <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-2">
+                        <flux:icon name="cube" class="size-5 text-zinc-400" />
+
+                        <flux:heading size="xl" class="truncate">
+                            {{ $detailProduct->name }}
+                        </flux:heading>
                     </div>
 
-                    {{-- Info Grid --}}
-                    <div class="grid grid-cols-1 gap-y-6">
+                    <flux:subheading class="mt-1">
+                        {{ __('Product details and GitHub repository information') }}
+                    </flux:subheading>
+                </div>
+
+                <flux:badge :color="$detailProduct->is_active ? 'emerald' : 'red'" size="lg">
+                    {{ $detailProduct->is_active ? __('Active') : __('Inactive') }}
+                </flux:badge>
+            </div>
+
+            {{-- Content --}}
+            <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+
+                {{-- Product Information --}}
+                <div class="rounded-2xl">
+                    <div class="mb-5 flex items-center gap-2">
+                        <flux:icon name="information-circle" class="size-5 text-zinc-400" />
+
+                        <h3 class="text-sm font-semibold text-zinc-900 dark:text-white">
+                            {{ __('Product Information') }}
+                        </h3>
+                    </div>
+
+                    <div class="space-y-5">
+
+                        {{-- Slug --}}
                         <div>
-                            <p class="text-xs font-medium uppercase tracking-wider text-zinc-400">{{ __('Slug') }}
+                            <p class="text-xs font-medium uppercase tracking-wider text-zinc-400">
+                                {{ __('Slug') }}
                             </p>
-                            <p class="mt-1.5">
-                                <code
-                                    class="rounded-md bg-zinc-100 px-2 py-0.5 text-sm dark:bg-zinc-700">{{ $detailProduct->slug }}</code>
-                            </p>
+
+                            <code
+                                class="mt-1 inline-flex rounded-lg bg-white px-2.5 py-1 text-xs dark:bg-zinc-900">
+                                {{ $detailProduct->slug }}
+                            </code>
                         </div>
 
+                        {{-- Description --}}
                         @if ($detailProduct->description)
                             <div>
                                 <p class="text-xs font-medium uppercase tracking-wider text-zinc-400">
                                     {{ __('Description') }}
                                 </p>
-                                <p class="mt-1.5 text-sm">{{ $detailProduct->description }}</p>
+
+                                <p class="mt-1.5 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
+                                    {{ $detailProduct->description }}
+                                </p>
                             </div>
                         @endif
 
-                        @if ($detailProduct->github_repo_full_name)
-                            <div>
-                                <p class="text-xs font-medium uppercase tracking-wider text-zinc-400">
-                                    {{ __('GitHub Repository') }}
-                                </p>
-                                <p class="mt-1.5">
-                                    <a href="{{ $detailProduct->github_repo_url }}" target="_blank"
-                                        class="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
-                                        <flux:icon name="folder" variant="micro" class="size-4" />
-                                        {{ $detailProduct->github_repo_full_name }}
-                                    </a>
-                                </p>
-                                @if ($detailProduct->github_repo_description)
-                                    <p class="mt-1 text-sm text-zinc-500">
-                                        {{ $detailProduct->github_repo_description }}
-                                    </p>
-                                @endif
-                                <p class="mt-1 text-xs text-zinc-400">
-                                    {{ __('Default branch') }}:
-                                    <code
-                                        class="rounded bg-zinc-100 px-1 py-0.5 dark:bg-zinc-700">{{ $detailProduct->github_default_branch ?? 'main' }}</code>
-                                </p>
-                            </div>
-                        @endif
-                    </div>
-
-                    {{-- Footer --}}
-                    <div class="flex items-center justify-between">
-                        <div class="flex gap-6 text-xs text-zinc-400">
-                            <span>{{ __('Created') }} {{ $detailProduct->created_at->format('d M Y, H:i') }}</span>
-                            <span>{{ __('Updated') }} {{ $detailProduct->updated_at->format('d M Y, H:i') }}</span>
-                        </div>
-                        <flux:modal.close>
-                            <flux:button variant="filled">{{ __('Close') }}</flux:button>
-                        </flux:modal.close>
                     </div>
                 </div>
-            @endif
-        </flux:modal>
+
+                {{-- GitHub Information --}}
+                <div class="rounded-2xl">
+                    <div class="mb-5 flex items-center gap-2">
+                        <flux:icon name="folder" class="size-5 text-zinc-400" />
+
+                        <h3 class="text-sm font-semibold text-zinc-900 dark:text-white">
+                            {{ __('GitHub Repository') }}
+                        </h3>
+                    </div>
+
+                    @if ($detailProduct->github_repo_full_name)
+                        <div class="space-y-5">
+
+                            {{-- Repository --}}
+                            <div>
+                                <p class="text-xs font-medium uppercase tracking-wider text-zinc-400">
+                                    {{ __('Repository') }}
+                                </p>
+
+                                <a href="{{ $detailProduct->github_repo_url }}" target="_blank"
+                                    class="mt-1.5 inline-flex items-center gap-2 text-sm font-medium text-blue-600 transition hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                                    <flux:icon name="folder" variant="micro" class="size-4" />
+
+                                    <span class="break-all">
+                                        {{ $detailProduct->github_repo_full_name }}
+                                    </span>
+                                </a>
+                            </div>
+
+                            {{-- Repository Description --}}
+                            @if ($detailProduct->github_repo_description)
+                                <div>
+                                    <p class="text-xs font-medium uppercase tracking-wider text-zinc-400">
+                                        {{ __('Repository Description') }}
+                                    </p>
+
+                                    <p class="mt-1.5 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
+                                        {{ $detailProduct->github_repo_description }}
+                                    </p>
+                                </div>
+                            @endif
+
+                            {{-- Default Branch --}}
+                            <div>
+                                <p class="text-xs font-medium uppercase tracking-wider text-zinc-400">
+                                    {{ __('Default Branch') }}
+                                </p>
+
+                                <code
+                                    class="mt-1 inline-flex rounded-lg bg-white px-2.5 py-1 text-xs dark:bg-zinc-900">
+                                    {{ $detailProduct->github_default_branch ?? 'main' }}
+                                </code>
+                            </div>
+
+                        </div>
+                    @else
+                        <div class="flex flex-col items-center justify-center py-10 text-center">
+                            <flux:icon name="folder" class="size-10 text-zinc-300 dark:text-zinc-600" />
+
+                            <p class="mt-3 text-sm font-medium text-zinc-500">
+                                {{ __('No GitHub repository linked') }}
+                            </p>
+
+                            <p class="mt-1 text-xs text-zinc-400">
+                                {{ __('This product is not connected to any repository.') }}
+                            </p>
+                        </div>
+                    @endif
+                </div>
+
+            </div>
+
+            {{-- Footer --}}
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+
+                <div class="flex flex-wrap gap-4 text-xs text-zinc-400">
+                    <span>
+                        {{ __('Created') }}:
+                        {{ $detailProduct->created_at->format('d M Y, H:i') }}
+                    </span>
+
+                    <span>
+                        {{ __('Updated') }}:
+                        {{ $detailProduct->updated_at->format('d M Y, H:i') }}
+                    </span>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    @if ($detailProduct->github_repo_url)
+                        <flux:button variant="ghost" href="{{ $detailProduct->github_repo_url }}"
+                            target="_blank" icon="arrow-top-right-on-square">
+                            {{ __('Open Repository') }}
+                        </flux:button>
+                    @endif
+
+                    <flux:modal.close>
+                        <flux:button variant="primary">
+                            {{ __('Close') }}
+                        </flux:button>
+                    </flux:modal.close>
+                </div>
+            </div>
+
+        </div>
+    @endif
+</flux:modal>
 
         {{-- Delete Confirmation Modal --}}
         <flux:modal wire:model.self="showDeleteModal" class="max-w-lg">

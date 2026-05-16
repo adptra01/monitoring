@@ -3,15 +3,18 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Requests\ActivateDeviceRequest;
-use App\Models\Device;
 use App\Models\License;
+use App\Services\ActivationService;
+use App\Services\DeviceService;
 use App\Services\LicenseService;
 use Illuminate\Http\JsonResponse;
 
 class ActivationController extends ApiController
 {
     public function __construct(
-        protected LicenseService $licenseService
+        protected LicenseService $licenseService,
+        protected DeviceService $deviceService,
+        protected ActivationService $activationService,
     ) {}
 
     public function activate(ActivateDeviceRequest $request): JsonResponse
@@ -29,13 +32,11 @@ class ActivationController extends ApiController
 
         $deviceData = $request->validated('device');
 
-        $existingDevice = Device::where('fingerprint', $deviceData['fingerprint'])
-            ->where('license_id', $license->id)
-            ->first();
+        $existingDevice = $this->deviceService->findByFingerprint($license, $deviceData['fingerprint']);
 
         if ($existingDevice) {
             if ($license->mode->requiresActivation()) {
-                $activationRequest = $this->licenseService->createActivationRequest($existingDevice);
+                $activationRequest = $this->activationService->createRequest($existingDevice);
 
                 if ($activationRequest) {
                     return $this->success([
@@ -48,7 +49,7 @@ class ActivationController extends ApiController
                 return $this->error('Permintaan aktivasi tertunda sudah ada', 409);
             }
 
-            $existingDevice->update(['last_seen_at' => now()]);
+            $this->deviceService->touch($existingDevice);
 
             return $this->success([
                 'device_id' => $existingDevice->id,
@@ -56,10 +57,10 @@ class ActivationController extends ApiController
             ], 'Perangkat sudah diaktifkan');
         }
 
-        $device = $this->licenseService->registerDevice($license, $deviceData);
+        $device = $this->deviceService->register($license, $deviceData);
 
-        if (! $this->licenseService->checkDeviceLimit($license) || $license->mode->requiresActivation()) {
-            $activationRequest = $this->licenseService->createActivationRequest($device);
+        if (! $this->deviceService->checkDeviceLimit($license) || $license->mode->requiresActivation()) {
+            $activationRequest = $this->activationService->createRequest($device);
 
             if ($activationRequest) {
                 return $this->success([
@@ -67,7 +68,7 @@ class ActivationController extends ApiController
                     'requires_approval' => true,
                     'activation_code' => $activationRequest->code,
                     'expires_at' => $activationRequest->expires_at->toIso8601String(),
-                ], ! $this->licenseService->checkDeviceLimit($license)
+                ], ! $this->deviceService->checkDeviceLimit($license)
                     ? 'Batas perangkat tercapai, aktivasi diperlukan'
                     : 'Perangkat terdaftar, aktivasi diperlukan');
             }
@@ -87,15 +88,13 @@ class ActivationController extends ApiController
             return $this->error('Kunci lisensi tidak valid', 404);
         }
 
-        $device = Device::where('fingerprint', $fingerprint)
-            ->where('license_id', $license->id)
-            ->first();
+        $device = $this->deviceService->findByFingerprint($license, $fingerprint);
 
         if (! $device) {
             return $this->error('Perangkat tidak terdaftar', 404);
         }
 
-        $result = $this->licenseService->verifyActivation($device, request('code', ''));
+        $result = $this->activationService->verifyActivation($device, request('code', ''));
 
         return $this->success($result);
     }
@@ -108,27 +107,14 @@ class ActivationController extends ApiController
             return $this->error('Kunci lisensi tidak valid', 404);
         }
 
-        $device = Device::where('fingerprint', $fingerprint)
-            ->where('license_id', $license->id)
-            ->first();
+        $device = $this->deviceService->findByFingerprint($license, $fingerprint);
 
         if (! $device) {
             return $this->error('Perangkat tidak terdaftar', 404);
         }
 
         $validation = $this->licenseService->validate($license);
-
-        $activationRequest = $device->activationRequest()
-            ->where('status', 'approved')
-            ->orderByDesc('activated_at')
-            ->first();
-
-        $offlineUntil = null;
-        if ($activationRequest) {
-            $offlineUntil = $activationRequest->activated_at->addDays(7);
-        } elseif ($device->last_seen_at?->isAfter(now()->subDays(7))) {
-            $offlineUntil = $device->last_seen_at->addDays(7);
-        }
+        $offlineUntil = $this->activationService->calculateOfflineUntil($device);
 
         return $this->success([
             'license_valid' => $validation['valid'],
