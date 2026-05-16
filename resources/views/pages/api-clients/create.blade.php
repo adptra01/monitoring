@@ -13,6 +13,7 @@ state([
     'name' => '',
     'is_active' => true,
     'rate_limit' => 60,
+    'allowed_ips' => '',
     'generated_key' => '',
     'generated_secret' => '',
 ]);
@@ -22,7 +23,12 @@ $save = function () {
         'name' => 'required|string|max:255',
         'is_active' => 'boolean',
         'rate_limit' => 'required|integer|min:1|max:10000',
+        'allowed_ips' => 'nullable|string',
     ]);
+
+    $ips = $this->allowed_ips
+        ? array_map('trim', explode("\n", $this->allowed_ips))
+        : null;
 
     $client = ApiClient::create([
         'name' => $this->name,
@@ -30,6 +36,7 @@ $save = function () {
         'api_secret' => ApiClient::generateApiSecret(),
         'is_active' => $this->is_active,
         'rate_limit' => $this->rate_limit,
+        'allowed_ips' => $ips,
     ]);
 
     $this->generated_key = $client->api_key;
@@ -95,6 +102,9 @@ $done = function () {
 
                     <flux:input wire:model="rate_limit" type="number" min="1" max="10000"
                         :label="__('Rate Limit (requests per minute)')" required />
+
+                    <flux:textarea wire:model="allowed_ips" :label="__('Allowed IPs')" rows="3"
+                        :placeholder="__('One IP or CIDR per line. Leave empty to allow all.')" />
 
                     <div>
                         <flux:checkbox wire:model="is_active" :label="__('Active')" />

@@ -16,6 +16,7 @@ class ApiClient extends Model
         'api_secret',
         'is_active',
         'rate_limit',
+        'allowed_ips',
         'last_used_at',
     ];
 
@@ -24,6 +25,7 @@ class ApiClient extends Model
         return [
             'is_active' => 'boolean',
             'rate_limit' => 'integer',
+            'allowed_ips' => 'array',
             'last_used_at' => 'datetime',
         ];
     }
@@ -36,6 +38,11 @@ class ApiClient extends Model
     public static function generateApiSecret(): string
     {
         return 'lcs_'.Str::random(64);
+    }
+
+    public function regenerateSecret(): void
+    {
+        $this->update(['api_secret' => static::generateApiSecret()]);
     }
 
     public function scopeActive($query)

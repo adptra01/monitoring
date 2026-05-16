@@ -5,8 +5,11 @@ use App\Exceptions\InvalidActivationCodeException;
 use App\Exceptions\LicenseExpiredException;
 use App\Exceptions\LicenseNotFoundException;
 use App\Exceptions\LicenseSuspendedException;
+use App\Http\Middleware\ApiLoggingMiddleware;
 use App\Http\Middleware\BruteForceMiddleware;
 use App\Http\Middleware\CheckAdminMiddleware;
+use App\Http\Middleware\IpWhitelistMiddleware;
+use App\Http\Middleware\SecurityHeadersMiddleware;
 use App\Http\Middleware\VerifyApiClientMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -25,7 +28,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'check.admin' => CheckAdminMiddleware::class,
             'api-client' => VerifyApiClientMiddleware::class,
             'brute-force' => BruteForceMiddleware::class,
+            'ip-whitelist' => IpWhitelistMiddleware::class,
         ]);
+
+        $middleware->append(SecurityHeadersMiddleware::class);
+
+        $middleware->api(ApiLoggingMiddleware::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (LicenseNotFoundException $e, Request $request) {

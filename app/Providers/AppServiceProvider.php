@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Listeners\AuditLogSubscriber;
+use App\Listeners\WebhookSubscriber;
 use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -35,6 +36,7 @@ class AppServiceProvider extends ServiceProvider
         Volt::mount([resource_path('views/pages')], 'pages');
 
         Event::subscribe(AuditLogSubscriber::class);
+        Event::subscribe(WebhookSubscriber::class);
 
         RateLimiter::for('api-client', function (Request $request) {
             $client = $request->attributes->get('api_client');
