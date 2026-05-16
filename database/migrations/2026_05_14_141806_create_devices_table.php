@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string('app_version')->nullable();
             $table->string('ip_address', 45)->nullable();
             $table->timestamp('last_seen_at')->nullable();
+            $table->timestamp('activated_at')->nullable();
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
 
             $table->index('license_id');

@@ -18,7 +18,9 @@ return new class extends Migration
             $table->string('mode')->default('online');
             $table->unsignedInteger('max_devices')->default(1);
             $table->timestamp('expires_at')->nullable();
+            $table->timestamp('activated_at')->nullable();
             $table->json('metadata')->nullable();
+            $table->text('notes')->nullable();
             $table->timestamps();
 
             $table->index('product_id');

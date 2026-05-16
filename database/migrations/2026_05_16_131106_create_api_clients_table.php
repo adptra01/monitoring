@@ -13,6 +13,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('api_key', 64)->unique();
             $table->string('api_secret', 128);
+            $table->integer('rate_limit')->default(60);
             $table->boolean('is_active')->default(true);
             $table->timestamp('last_used_at')->nullable();
             $table->timestamps();
