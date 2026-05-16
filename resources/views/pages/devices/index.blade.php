@@ -35,7 +35,7 @@ $devices = computed(function () {
         </flux:breadcrumbs>
 
         {{-- Header --}}
-        <div class="flex items-center justify-between">
+        <div data-tour="devices-header" class="flex items-center justify-between">
             <div>
                 <flux:heading size="xl">{{ __('Devices') }}</flux:heading>
                 <flux:subheading>{{ __('Monitor activated devices and hardware fingerprints') }}</flux:subheading>
@@ -43,10 +43,11 @@ $devices = computed(function () {
         </div>
 
         {{-- Search --}}
-        <flux:input size="md" wire:model.live="search" type="search"
+        <flux:input data-tour="devices-search" size="md" wire:model.live="search" type="search"
             placeholder="{{ __('Search by name or fingerprint...') }}" />
 
         <div
+            data-tour="devices-table"
             class="relative h-full flex-1 overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
             <flux:table :paginate="$this->devices">
                 <flux:table.columns>

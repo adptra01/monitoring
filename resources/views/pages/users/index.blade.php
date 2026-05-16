@@ -52,12 +52,12 @@ $delete = function (int $id) {
         </flux:breadcrumbs>
 
         {{-- Header --}}
-        <div class="flex items-center justify-between">
+        <div data-tour="users-header" class="flex items-center justify-between">
             <div>
                 <flux:heading size="xl">{{ __('Users') }}</flux:heading>
                 <flux:subheading>{{ __('Manage system users and their roles') }}</flux:subheading>
             </div>
-            <flux:button variant="primary" icon="plus" href="{{ url('/users/create') }}">
+            <flux:button data-tour="users-create" variant="primary" icon="plus" href="{{ url('/users/create') }}">
                 {{ __('Add User') }}
             </flux:button>
         </div>
@@ -73,6 +73,7 @@ $delete = function (int $id) {
         </div>
 
         <div
+            data-tour="users-table"
             class="relative h-full flex-1 overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
             <flux:table :paginate="$this->users">
                 <flux:table.columns>
@@ -81,7 +82,7 @@ $delete = function (int $id) {
                     <flux:table.column>{{ __('Email') }}</flux:table.column>
                     <flux:table.column>{{ __('Roles') }}</flux:table.column>
                     <flux:table.column>{{ __('Admin') }}</flux:table.column>
-                    <flux:table.column>{{ __('Actions') }}</flux:table.column>
+                    <flux:table.column data-tour="users-actions">{{ __('Actions') }}</flux:table.column>
                 </flux:table.columns>
 
                 <flux:table.rows>

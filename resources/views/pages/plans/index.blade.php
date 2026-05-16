@@ -51,12 +51,12 @@ $delete = function () {
         </flux:breadcrumbs>
 
         {{-- Header --}}
-        <div class="flex items-center justify-between">
+        <div data-tour="plans-header" class="flex items-center justify-between">
             <div>
                 <flux:heading size="xl">{{ __('Subscription Plans') }}</flux:heading>
                 <flux:subheading>{{ __('Manage pricing plans for your products') }}</flux:subheading>
             </div>
-            <flux:button variant="primary" icon="plus" href="{{ route('plans.create') }}">
+            <flux:button data-tour="plans-create" variant="primary" icon="plus" href="{{ route('plans.create') }}">
                 {{ __('Add Plan') }}
             </flux:button>
         </div>
@@ -65,6 +65,7 @@ $delete = function () {
         <flux:input size="md" wire:model.live="search" type="search" placeholder="{{ __('Search by plan name...') }}" />
 
         <div
+            data-tour="plans-table"
             class="relative h-full flex-1 overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
             <flux:table :paginate="$this->plans">
                 <flux:table.columns>
@@ -73,7 +74,7 @@ $delete = function () {
                     <flux:table.column>{{ __('Monthly') }}</flux:table.column>
                     <flux:table.column>{{ __('Yearly') }}</flux:table.column>
                     <flux:table.column>{{ __('Max Devices') }}</flux:table.column>
-                    <flux:table.column>{{ __('Actions') }}</flux:table.column>
+                    <flux:table.column data-tour="plans-actions">{{ __('Actions') }}</flux:table.column>
                 </flux:table.columns>
 
                 <flux:table.rows>

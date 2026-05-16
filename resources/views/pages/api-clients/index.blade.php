@@ -58,12 +58,12 @@ $delete = function () {
         </flux:breadcrumbs>
 
         {{-- Header --}}
-        <div class="flex items-center justify-between">
+        <div data-tour="api-clients-header" class="flex items-center justify-between">
             <div>
                 <flux:heading size="xl">{{ __('API Clients') }}</flux:heading>
                 <flux:subheading>{{ __('Manage API credentials for client applications') }}</flux:subheading>
             </div>
-            <flux:button variant="primary" icon="plus" href="{{ route('api-clients.create') }}">
+            <flux:button data-tour="api-clients-create" variant="primary" icon="plus" href="{{ route('api-clients.create') }}">
                 {{ __('Add API Client') }}
             </flux:button>
         </div>
@@ -73,6 +73,7 @@ $delete = function () {
             placeholder="{{ __('Search by client name...') }}" />
 
         <div
+            data-tour="api-clients-table"
             class="relative h-full flex-1 overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
             <flux:table :paginate="$this->clients">
                 <flux:table.columns>
@@ -81,7 +82,7 @@ $delete = function () {
                     <flux:table.column>{{ __('Rate Limit') }}</flux:table.column>
                     <flux:table.column>{{ __('Status') }}</flux:table.column>
                     <flux:table.column>{{ __('Last Used') }}</flux:table.column>
-                    <flux:table.column>{{ __('Actions') }}</flux:table.column>
+                    <flux:table.column data-tour="api-clients-actions">{{ __('Actions') }}</flux:table.column>
                 </flux:table.columns>
 
                 <flux:table.rows>

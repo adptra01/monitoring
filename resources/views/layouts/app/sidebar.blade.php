@@ -13,7 +13,7 @@
             <flux:sidebar.collapse class="lg:hidden" />
         </flux:sidebar.header>
 
-        <flux:sidebar.nav>
+        <flux:sidebar.nav data-tour="sidebar-navigation">
             <flux:sidebar.group :heading="__('Platform')" class="grid">
                 <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')">
                     {{ __('Dashboard') }}
@@ -72,18 +72,26 @@
         <flux:spacer />
 
         <flux:sidebar.nav>
-            <flux:sidebar.item icon="folder-git-2" href="https://github.com/laravel/livewire-starter-kit"
+            {{-- <flux:sidebar.item icon="folder-git-2" href="https://github.com/laravel/livewire-starter-kit"
                 target="_blank">
                 {{ __('Repository') }}
-            </flux:sidebar.item>
+            </flux:sidebar.item> --}}
 
-            <flux:sidebar.item icon="book-open-text" href="https://laravel.com/docs/starter-kits#livewire"
-                target="_blank">
-                {{ __('Documentation') }}
-            </flux:sidebar.item>
+            @auth
+                @if(auth()->user()->isAdmin())
+                    <flux:sidebar.group :heading="__('Help')" class="grid">
+                        <flux:sidebar.item icon="question-mark-circle" onclick="window.startTour('onboarding')" class="cursor-pointer">
+                            {{ __('Tur Selamat Datang') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="key" onclick="window.startTour('license-management')" class="cursor-pointer">
+                            {{ __('Tur Lisensi') }}
+                        </flux:sidebar.item>
+                    </flux:sidebar.group>
+                @endif
+            @endauth
         </flux:sidebar.nav>
 
-        <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />
+        <x-desktop-user-menu data-tour="user-menu" class="hidden lg:block" :name="auth()->user()->name" />
     </flux:sidebar>
 
     <!-- Mobile User Menu -->
@@ -140,6 +148,8 @@
         <flux:toast />
     </flux:toast.group>
     @endpersist
+
+    @livewire('tour-manager')
 
     @fluxScripts
 </body>

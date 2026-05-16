@@ -48,12 +48,12 @@ $delete = function () {
             <flux:breadcrumbs.item>{{ __('Webhooks') }}</flux:breadcrumbs.item>
         </flux:breadcrumbs>
 
-        <div class="flex items-center justify-between">
+        <div data-tour="webhooks-header" class="flex items-center justify-between">
             <div>
                 <flux:heading size="xl">{{ __('Webhooks') }}</flux:heading>
                 <flux:subheading>{{ __('Manage webhook endpoints for event notifications') }}</flux:subheading>
             </div>
-            <flux:button variant="primary" icon="plus" href="{{ route('webhooks.create') }}">
+            <flux:button data-tour="webhooks-create" variant="primary" icon="plus" href="{{ route('webhooks.create') }}">
                 {{ __('Add Webhook') }}
             </flux:button>
         </div>
@@ -62,6 +62,7 @@ $delete = function () {
             placeholder="{{ __('Search by URL...') }}" />
 
         <div
+            data-tour="webhooks-table"
             class="relative h-full flex-1 overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
             <flux:table :paginate="$this->endpoints">
                 <flux:table.columns>
@@ -69,7 +70,7 @@ $delete = function () {
                     <flux:table.column>{{ __('Events') }}</flux:table.column>
                     <flux:table.column>{{ __('Status') }}</flux:table.column>
                     <flux:table.column>{{ __('Created') }}</flux:table.column>
-                    <flux:table.column>{{ __('Actions') }}</flux:table.column>
+                    <flux:table.column data-tour="webhooks-actions">{{ __('Actions') }}</flux:table.column>
                 </flux:table.columns>
 
                 <flux:table.rows>

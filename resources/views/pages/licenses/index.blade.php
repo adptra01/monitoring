@@ -46,12 +46,12 @@ $statuses = computed(fn() => LicenseStatus::cases());
         </flux:breadcrumbs>
 
         {{-- Header --}}
-        <div class="flex items-center justify-between">
+        <div class="flex items-center justify-between" data-tour="licenses-header">
             <div>
                 <flux:heading size="xl">{{ __('Licenses') }}</flux:heading>
                 <flux:subheading>{{ __('Manage software license keys and activations') }}</flux:subheading>
             </div>
-            <flux:button variant="primary" icon="plus" href="{{ route('licenses.create') }}">
+            <flux:button variant="primary" icon="plus" href="{{ route('licenses.create') }}" data-tour="licenses-create">
                 {{ __('Create License') }}
             </flux:button>
         </div>
@@ -60,7 +60,7 @@ $statuses = computed(fn() => LicenseStatus::cases());
         <div class="grid grid-cols-2 gap-4">
             <flux:input size="md" wire:model.live="search" type="search"
                 placeholder="{{ __('Search by license key...') }}" />
-            <flux:select wire:model.live="status">
+            <flux:select wire:model.live="status" data-tour="licenses-status">
                 <option value="">{{ __('All Status') }}</option>
                 @foreach ($this->statuses as $status)
                     <option value="{{ $status->value }}">{{ $status->label() }}</option>
@@ -69,7 +69,7 @@ $statuses = computed(fn() => LicenseStatus::cases());
         </div>
 
         <div
-            class="relative h-full flex-1 overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
+            class="relative h-full flex-1 overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700 p-6" data-tour="licenses-table">
             <flux:table :paginate="$this->licenses">
                 <flux:table.columns>
                     <flux:table.column>{{ __('License Key') }}</flux:table.column>

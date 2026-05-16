@@ -50,7 +50,7 @@ $reject = function (int $id) {
         </flux:breadcrumbs>
 
         {{-- Header --}}
-        <div class="flex items-center justify-between">
+        <div data-tour="activation-header" class="flex items-center justify-between">
             <div>
                 <flux:heading size="xl">{{ __('Activation Requests') }}</flux:heading>
                 <flux:subheading>{{ __('Approve or reject manual license activation requests') }}</flux:subheading>
@@ -64,6 +64,7 @@ $reject = function (int $id) {
         </div>
 
         <div
+            data-tour="activation-table"
             class="relative h-full flex-1 overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
             <flux:table :paginate="$this->requests">
                 <flux:table.columns>
@@ -72,7 +73,7 @@ $reject = function (int $id) {
                     <flux:table.column>{{ __('Device') }}</flux:table.column>
                     <flux:table.column>{{ __('Status') }}</flux:table.column>
                     <flux:table.column>{{ __('Code') }}</flux:table.column>
-                    <flux:table.column>{{ __('Actions') }}</flux:table.column>
+                    <flux:table.column data-tour="activation-actions">{{ __('Actions') }}</flux:table.column>
                 </flux:table.columns>
 
                 <flux:table.rows>

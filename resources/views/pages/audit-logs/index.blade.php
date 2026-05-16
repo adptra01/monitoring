@@ -48,7 +48,7 @@ $actions = computed(fn() => [
         </flux:breadcrumbs>
 
         {{-- Header --}}
-        <div class="flex items-center justify-between">
+        <div data-tour="audit-header" class="flex items-center justify-between">
             <div>
                 <flux:heading size="xl">{{ __('Audit Logs') }}</flux:heading>
                 <flux:subheading>{{ __('Track system activities and resource changes') }}</flux:subheading>
@@ -56,7 +56,7 @@ $actions = computed(fn() => [
         </div>
 
         {{-- Filters --}}
-        <div class="grid grid-cols-2 gap-4">
+        <div data-tour="audit-filters" class="grid grid-cols-2 gap-4">
             <flux:input size="md" wire:model.live="search" type="search"
                 placeholder="{{ __('Search by IP or Entity...') }}" />
             <flux:select wire:model.live="action" class="max-w-xs">
@@ -68,6 +68,7 @@ $actions = computed(fn() => [
         </div>
 
         <div
+            data-tour="audit-table"
             class="relative h-full flex-1 overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
             <flux:table :paginate="$this->logs">
                 <flux:table.columns>

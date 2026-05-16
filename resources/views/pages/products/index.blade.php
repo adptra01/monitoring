@@ -134,12 +134,12 @@ $syncRepos = function () {
         </flux:breadcrumbs>
 
         {{-- Header --}}
-        <div class="flex items-center justify-between">
+        <div class="flex items-center justify-between" data-tour="products-header">
             <div>
                 <flux:heading size="xl">{{ __('Products') }}</flux:heading>
                 <flux:subheading>{{ __('Manage your product inventory') }}</flux:subheading>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2" data-tour="products-create">
                 <flux:button variant="ghost" icon="arrow-path" wire:click="syncRepos">
                     {{ __('Sync GitHub') }}
                 </flux:button>
@@ -170,7 +170,7 @@ $syncRepos = function () {
             class="relative h-full flex-1 overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
 
             {{-- Table --}}
-            <flux:table :paginate="$this->products">
+            <flux:table :paginate="$this->products" data-tour="products-table">
                 <flux:table.columns>
                     <flux:table.column sortable :sorted="$sortBy === 'name'" :direction="$sortDirection"
                         wire:click="sort('name')">
@@ -191,7 +191,7 @@ $syncRepos = function () {
                         {{ __('Status') }}
                     </flux:table.column>
 
-                    <flux:table.column>
+                    <flux:table.column data-tour="products-actions">
                         {{ __('Actions') }}
                     </flux:table.column>
                 </flux:table.columns>
