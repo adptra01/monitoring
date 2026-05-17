@@ -9,7 +9,8 @@
     "mcp": true,
     "nightwatch": false,
     "packages": [
-        "spatie/laravel-permission"
+        "spatie/laravel-permission",
+        "fruitcake/laravel-debugbar"
     ],
     "sail": false,
     "skills": [
@@ -21,6 +22,7 @@
         "volt-development",
         "tailwindcss-development",
         "laravel-permission-development",
+        "debug-using-debugbar",
         "laravel-brainstorming",
         "laravel-expert",
         "php-api",
