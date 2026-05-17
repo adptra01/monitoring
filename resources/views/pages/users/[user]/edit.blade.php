@@ -59,59 +59,59 @@ $save = function () {
 
 <x-layouts::app :title="__('Edit User')">
     @volt
-    <div class="flex h-full w-full flex-1 flex-col gap-6 rounded-xl">
-        <flux:breadcrumbs>
-            <flux:breadcrumbs.item href="{{ route('dashboard') }}">{{ __('Home') }}</flux:breadcrumbs.item>
-            <flux:breadcrumbs.item href="{{ url('/users') }}">{{ __('Users') }}</flux:breadcrumbs.item>
-            <flux:breadcrumbs.item>{{ __('Edit') }}</flux:breadcrumbs.item>
-        </flux:breadcrumbs>
+        <div class="flex h-full w-full flex-1 flex-col gap-6 rounded-xl">
+            <flux:breadcrumbs>
+                <flux:breadcrumbs.item href="{{ route('dashboard') }}">{{ __('Home') }}</flux:breadcrumbs.item>
+                <flux:breadcrumbs.item href="{{ url('/users') }}">{{ __('Users') }}</flux:breadcrumbs.item>
+                <flux:breadcrumbs.item>{{ __('Edit') }}</flux:breadcrumbs.item>
+            </flux:breadcrumbs>
 
-        {{-- Header --}}
-        <div class="flex items-center justify-between">
-            <div>
-                <flux:heading size="xl">{{ __('Edit User') }}</flux:heading>
-                <flux:subheading>{{ __('Update details for :name', ['name' => $user->name]) }}</flux:subheading>
+            {{-- Header --}}
+            <div class="flex items-center justify-between">
+                <div>
+                    <flux:heading size="xl">{{ __('Edit User') }}</flux:heading>
+                    <flux:subheading>{{ __('Update details for :name', ['name' => $user->name]) }}</flux:subheading>
+                </div>
+            </div>
+
+            <div class="w-full rounded-xl border border-neutral-200 dark:border-neutral-700 p-6 bg-white dark:bg-zinc-800">
+                <form wire:submit="save" class="space-y-6">
+                    <flux:input wire:model="name" :label="__('Name')" required autofocus />
+
+                    <flux:input wire:model="email" type="email" :label="__('Email')" required />
+
+                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                        <flux:input wire:model="password" type="password" :label="__('New Password')"
+                            placeholder="{{ __('Leave blank to keep current') }}" />
+                        <flux:input wire:model="password_confirmation" type="password"
+                            :label="__('Confirm New Password')" />
+                    </div>
+
+                    <flux:field>
+                        <flux:label>{{ __('Roles') }}</flux:label>
+                        <div class="grid grid-cols-2 gap-4 mt-2">
+                            @foreach (\Spatie\Permission\Models\Role::all() as $role)
+                                <flux:checkbox wire:model="selectedRoles" :value="$role->name" :label="$role->name" />
+                            @endforeach
+                        </div>
+                    </flux:field>
+
+                    <flux:field>
+                        <flux:label>{{ __('Direct Permissions') }}</flux:label>
+                        <div class="grid grid-cols-2 gap-4 mt-2">
+                            @foreach (\Spatie\Permission\Models\Permission::all() as $perm)
+                                <flux:checkbox wire:model="directPermissions" :value="$perm->name"
+                                    :label="$perm->name" />
+                            @endforeach
+                        </div>
+                    </flux:field>
+
+                    <div class="flex justify-end gap-2">
+                        <flux:button href="{{ url('/users') }}" variant="filled">{{ __('Cancel') }}</flux:button>
+                        <flux:button type="submit" variant="primary">{{ __('Update User') }}</flux:button>
+                    </div>
+                </form>
             </div>
         </div>
-
-        <div
-            class="max-w-2xl rounded-xl border border-neutral-200 dark:border-neutral-700 p-6 bg-white dark:bg-zinc-800">
-            <form wire:submit="save" class="space-y-6">
-                <flux:input wire:model="name" :label="__('Name')" required autofocus />
-
-                <flux:input wire:model="email" type="email" :label="__('Email')" required />
-
-                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-                    <flux:input wire:model="password" type="password" :label="__('New Password')"
-                        placeholder="{{ __('Leave blank to keep current') }}" />
-                    <flux:input wire:model="password_confirmation" type="password"
-                        :label="__('Confirm New Password')" />
-                </div>
-
-                <flux:field>
-                    <flux:label>{{ __('Roles') }}</flux:label>
-                    <div class="grid grid-cols-2 gap-4 mt-2">
-                        @foreach (\Spatie\Permission\Models\Role::all() as $role)
-                            <flux:checkbox wire:model="selectedRoles" :value="$role->name" :label="$role->name" />
-                        @endforeach
-                    </div>
-                </flux:field>
-
-                <flux:field>
-                    <flux:label>{{ __('Direct Permissions') }}</flux:label>
-                    <div class="grid grid-cols-2 gap-4 mt-2">
-                        @foreach (\Spatie\Permission\Models\Permission::all() as $perm)
-                            <flux:checkbox wire:model="directPermissions" :value="$perm->name" :label="$perm->name" />
-                        @endforeach
-                    </div>
-                </flux:field>
-
-                <div class="flex justify-end gap-2">
-                    <flux:button href="{{ url('/users') }}" variant="filled">{{ __('Cancel') }}</flux:button>
-                    <flux:button type="submit" variant="primary">{{ __('Update User') }}</flux:button>
-                </div>
-            </form>
-        </div>
-    </div>
     @endvolt
 </x-layouts::app>

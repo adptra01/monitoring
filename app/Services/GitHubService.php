@@ -3,14 +3,20 @@
 namespace App\Services;
 
 use App\Models\Product;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class GitHubService
 {
     protected string $token;
 
     protected string $apiUrl = 'https://api.github.com';
+
+    protected int $timeout = 5;
+
+    protected int $connectTimeout = 5;
 
     public function __construct()
     {
@@ -72,13 +78,34 @@ class GitHubService
         $page = 1;
 
         do {
-            $response = Http::withToken($this->token)
-                ->get("{$this->apiUrl}{$path}", array_merge($params, [
-                    'per_page' => 100,
-                    'page' => $page,
-                ]));
+            try {
+                $response = Http::withToken($this->token)
+                    ->timeout($this->timeout)
+                    ->connectTimeout($this->connectTimeout)
+                    ->retry(2, 100)
+                    ->get("{$this->apiUrl}{$path}", array_merge($params, [
+                        'per_page' => 100,
+                        'page' => $page,
+                    ]));
+            } catch (ConnectionException) {
+                Log::warning('GitHub API connection timeout', ['path' => $path, 'page' => $page]);
+
+                break;
+            }
+
+            if ($response->tooManyRequests()) {
+                Log::warning('GitHub API rate limited');
+
+                break;
+            }
 
             if (! $response->successful()) {
+                Log::warning('GitHub API error', [
+                    'status' => $response->status(),
+                    'path' => $path,
+                    'page' => $page,
+                ]);
+
                 break;
             }
 
@@ -114,11 +141,20 @@ class GitHubService
             return null;
         }
 
-        $response = Http::withToken($this->token)
-            ->withHeaders(['Accept' => 'application/vnd.github.raw'])
-            ->get("{$this->apiUrl}/repos/{$fullName}/readme");
+        try {
+            $response = Http::withToken($this->token)
+                ->timeout($this->timeout)
+                ->connectTimeout($this->connectTimeout)
+                ->withHeaders(['Accept' => 'application/vnd.github.raw'])
+                ->retry(2, 100)
+                ->get("{$this->apiUrl}/repos/{$fullName}/readme");
 
-        if (! $response->successful()) {
+            if (! $response->successful()) {
+                return null;
+            }
+        } catch (ConnectionException) {
+            Log::warning('GitHub API timeout fetching readme', ['repo' => $fullName]);
+
             return null;
         }
 
@@ -138,10 +174,19 @@ class GitHubService
             return null;
         }
 
-        $response = Http::withToken($this->token)
-            ->get("{$this->apiUrl}/repos/{$product->github_repo_full_name}");
+        try {
+            $response = Http::withToken($this->token)
+                ->timeout($this->timeout)
+                ->connectTimeout($this->connectTimeout)
+                ->retry(2, 100)
+                ->get("{$this->apiUrl}/repos/{$product->github_repo_full_name}");
 
-        if (! $response->successful()) {
+            if (! $response->successful()) {
+                return null;
+            }
+        } catch (ConnectionException) {
+            Log::warning('GitHub API timeout syncing product', ['repo' => $product->github_repo_full_name]);
+
             return null;
         }
 

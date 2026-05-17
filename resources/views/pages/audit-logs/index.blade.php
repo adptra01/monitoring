@@ -91,7 +91,7 @@ $actions = computed(fn() => [
                                 <flux:text size="sm" class="font-medium">
                                     {{ class_basename($log->entity_type) }}
                                 </flux:text>
-                                <flux:text size="xs" color="zinc">
+                                <flux:text size="xs">
                                     #{{ $log->entity_id }}
                                 </flux:text>
                             </flux:table.cell>

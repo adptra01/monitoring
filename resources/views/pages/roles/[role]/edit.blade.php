@@ -47,43 +47,43 @@ $save = function () {
 
 <x-layouts::app :title="__('Edit Role')">
     @volt
-    <div class="flex h-full w-full flex-1 flex-col gap-6 rounded-xl">
-        <flux:breadcrumbs>
-            <flux:breadcrumbs.item href="{{ route('dashboard') }}">{{ __('Home') }}</flux:breadcrumbs.item>
-            <flux:breadcrumbs.item href="{{ url('/roles') }}">{{ __('Roles') }}</flux:breadcrumbs.item>
-            <flux:breadcrumbs.item>{{ __('Edit') }}</flux:breadcrumbs.item>
-        </flux:breadcrumbs>
+        <div class="flex h-full w-full flex-1 flex-col gap-6 rounded-xl">
+            <flux:breadcrumbs>
+                <flux:breadcrumbs.item href="{{ route('dashboard') }}">{{ __('Home') }}</flux:breadcrumbs.item>
+                <flux:breadcrumbs.item href="{{ url('/roles') }}">{{ __('Roles') }}</flux:breadcrumbs.item>
+                <flux:breadcrumbs.item>{{ __('Edit') }}</flux:breadcrumbs.item>
+            </flux:breadcrumbs>
 
-        {{-- Header --}}
-        <div class="flex items-center justify-between">
-            <div>
-                <flux:heading size="xl">{{ __('Edit Role') }}</flux:heading>
-                <flux:subheading>{{ __('Update details for :name', ['name' => $role->name]) }}</flux:subheading>
+            {{-- Header --}}
+            <div class="flex items-center justify-between">
+                <div>
+                    <flux:heading size="xl">{{ __('Edit Role') }}</flux:heading>
+                    <flux:subheading>{{ __('Update details for :name', ['name' => $role->name]) }}</flux:subheading>
+                </div>
+            </div>
+
+            <div class="w-full rounded-xl border border-neutral-200 dark:border-neutral-700 p-6 bg-white dark:bg-zinc-800">
+                <form wire:submit="save" class="space-y-6">
+                    <flux:input wire:model="name" :label="__('Role Name')" required autofocus />
+
+                    <flux:input wire:model="guard_name" :label="__('Guard Name')" readonly />
+
+                    <flux:field>
+                        <flux:label>{{ __('Permissions') }}</flux:label>
+                        <div class="grid grid-cols-2 gap-4 mt-2">
+                            @foreach (\Spatie\Permission\Models\Permission::all() as $perm)
+                                <flux:checkbox wire:model="selectedPermissions" :value="$perm->name"
+                                    :label="$perm->name" />
+                            @endforeach
+                        </div>
+                    </flux:field>
+
+                    <div class="flex justify-end gap-2">
+                        <flux:button href="{{ url('/roles') }}" variant="filled">{{ __('Cancel') }}</flux:button>
+                        <flux:button type="submit" variant="primary">{{ __('Update Role') }}</flux:button>
+                    </div>
+                </form>
             </div>
         </div>
-
-        <div
-            class="max-w-2xl rounded-xl border border-neutral-200 dark:border-neutral-700 p-6 bg-white dark:bg-zinc-800">
-            <form wire:submit="save" class="space-y-6">
-                <flux:input wire:model="name" :label="__('Role Name')" required autofocus />
-
-                <flux:input wire:model="guard_name" :label="__('Guard Name')" readonly />
-
-                <flux:field>
-                    <flux:label>{{ __('Permissions') }}</flux:label>
-                    <div class="grid grid-cols-2 gap-4 mt-2">
-                        @foreach (\Spatie\Permission\Models\Permission::all() as $perm)
-                            <flux:checkbox wire:model="selectedPermissions" :value="$perm->name" :label="$perm->name" />
-                        @endforeach
-                    </div>
-                </flux:field>
-
-                <div class="flex justify-end gap-2">
-                    <flux:button href="{{ url('/roles') }}" variant="filled">{{ __('Cancel') }}</flux:button>
-                    <flux:button type="submit" variant="primary">{{ __('Update Role') }}</flux:button>
-                </div>
-            </form>
-        </div>
-    </div>
     @endvolt
 </x-layouts::app>

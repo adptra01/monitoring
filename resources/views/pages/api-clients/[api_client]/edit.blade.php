@@ -34,9 +34,7 @@ $save = function () {
         'allowed_ips' => 'nullable|string',
     ]);
 
-    $ips = $this->allowed_ips
-        ? array_map('trim', explode("\n", $this->allowed_ips))
-        : null;
+    $ips = $this->allowed_ips ? array_map('trim', explode("\n", $this->allowed_ips)) : null;
 
     $this->client->update([
         'name' => $this->name,
@@ -63,7 +61,8 @@ $regenerateSecret = function () {
     <div class="flex h-full w-full flex-1 flex-col gap-6 rounded-xl">
         <flux:breadcrumbs>
             <flux:breadcrumbs.item href="{{ route('dashboard') }}">{{ __('Home') }}</flux:breadcrumbs.item>
-            <flux:breadcrumbs.item href="{{ route('api-clients.index') }}">{{ __('API Clients') }}</flux:breadcrumbs.item>
+            <flux:breadcrumbs.item href="{{ route('api-clients.index') }}">{{ __('API Clients') }}
+            </flux:breadcrumbs.item>
             <flux:breadcrumbs.item>{{ __('Edit') }}</flux:breadcrumbs.item>
         </flux:breadcrumbs>
 
@@ -75,8 +74,7 @@ $regenerateSecret = function () {
             </div>
         </div>
 
-        <div
-            class="max-w-2xl rounded-xl border border-neutral-200 dark:border-neutral-700 p-6 bg-white dark:bg-zinc-800">
+        <div class="w-full rounded-xl border border-neutral-200 dark:border-neutral-700 p-6 bg-white dark:bg-zinc-800">
             <form wire:submit="save" class="space-y-6">
                 <flux:input wire:model="name" :label="__('Client Name')" required autofocus />
 
@@ -97,18 +95,23 @@ $regenerateSecret = function () {
                 </div>
 
                 @if ($regenerated_secret)
-                    <div class="rounded-lg border border-amber-200 dark:border-amber-700 p-4 bg-amber-50 dark:bg-amber-900/20">
-                        <flux:heading size="sm" class="text-amber-800 dark:text-amber-200">{{ __('New API Secret') }}</flux:heading>
+                    <div
+                        class="rounded-lg border border-amber-200 dark:border-amber-700 p-4 bg-amber-50 dark:bg-amber-900/20">
+                        <flux:heading size="sm" class="text-amber-800 dark:text-amber-200">
+                            {{ __('New API Secret') }}</flux:heading>
                         <flux:text size="sm" class="mt-1 text-amber-700 dark:text-amber-300">
                             {{ __('Save this now — it won\'t be shown again. Old clients must update their secret.') }}
                         </flux:text>
-                        <code class="block mt-2 text-sm font-mono bg-white dark:bg-zinc-800 px-3 py-2 rounded border border-amber-300 dark:border-amber-600 select-all">{{ $regenerated_secret }}</code>
+                        <code
+                            class="block mt-2 text-sm font-mono bg-white dark:bg-zinc-800 px-3 py-2 rounded border border-amber-300 dark:border-amber-600 select-all">{{ $regenerated_secret }}</code>
                     </div>
                 @endif
 
                 <div class="flex justify-end gap-2">
-                    <flux:button href="{{ route('api-clients.index') }}" variant="filled">{{ __('Cancel') }}</flux:button>
-                    <flux:button wire:click="regenerateSecret" variant="warning">{{ __('Regenerate Secret') }}</flux:button>
+                    <flux:button href="{{ route('api-clients.index') }}" variant="filled">{{ __('Cancel') }}
+                    </flux:button>
+                    <flux:button wire:click="regenerateSecret" variant="warning">{{ __('Regenerate Secret') }}
+                    </flux:button>
                     <flux:button type="submit" variant="primary">{{ __('Update API Client') }}</flux:button>
                 </div>
             </form>

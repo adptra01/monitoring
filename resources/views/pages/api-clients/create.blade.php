@@ -26,9 +26,7 @@ $save = function () {
         'allowed_ips' => 'nullable|string',
     ]);
 
-    $ips = $this->allowed_ips
-        ? array_map('trim', explode("\n", $this->allowed_ips))
-        : null;
+    $ips = $this->allowed_ips ? array_map('trim', explode("\n", $this->allowed_ips)) : null;
 
     $client = ApiClient::create([
         'name' => $this->name,
@@ -53,70 +51,73 @@ $done = function () {
 
 <x-layouts::app :title="__('Create API Client')">
     @volt
-    <div class="flex h-full w-full flex-1 flex-col gap-6 rounded-xl">
-        <flux:breadcrumbs>
-            <flux:breadcrumbs.item href="{{ route('dashboard') }}">{{ __('Home') }}</flux:breadcrumbs.item>
-            <flux:breadcrumbs.item href="{{ route('api-clients.index') }}">{{ __('API Clients') }}</flux:breadcrumbs.item>
-            <flux:breadcrumbs.item>{{ __('Create') }}</flux:breadcrumbs.item>
-        </flux:breadcrumbs>
+        <div class="flex h-full w-full flex-1 flex-col gap-6 rounded-xl">
+            <flux:breadcrumbs>
+                <flux:breadcrumbs.item href="{{ route('dashboard') }}">{{ __('Home') }}</flux:breadcrumbs.item>
+                <flux:breadcrumbs.item href="{{ route('api-clients.index') }}">{{ __('API Clients') }}
+                </flux:breadcrumbs.item>
+                <flux:breadcrumbs.item>{{ __('Create') }}</flux:breadcrumbs.item>
+            </flux:breadcrumbs>
 
-        {{-- Header --}}
-        <div class="flex items-center justify-between">
-            <div>
-                <flux:heading size="xl">{{ __('Create API Client') }}</flux:heading>
-                <flux:subheading>{{ __('Generate API credentials for a client application') }}</flux:subheading>
+            {{-- Header --}}
+            <div class="flex items-center justify-between">
+                <div>
+                    <flux:heading size="xl">{{ __('Create API Client') }}</flux:heading>
+                    <flux:subheading>{{ __('Generate API credentials for a client application') }}</flux:subheading>
+                </div>
             </div>
+
+            @if ($generated_key)
+                <div
+                    class="max-w-2xl rounded-xl border border-amber-200 dark:border-amber-700 p-6 bg-amber-50 dark:bg-amber-900/20">
+                    <flux:heading size="lg" class="text-amber-800 dark:text-amber-200">{{ __('API Credentials') }}
+                    </flux:heading>
+                    <flux:subheading class="mt-1 text-amber-700 dark:text-amber-300">
+                        {{ __('Copy these credentials now. The secret will not be shown again.') }}
+                    </flux:subheading>
+
+                    <div class="mt-4 space-y-3">
+                        <div>
+                            <flux:text size="sm" class="font-semibold">{{ __('API Key') }}:</flux:text>
+                            <code
+                                class="block mt-1 text-sm font-mono bg-white dark:bg-zinc-800 px-3 py-2 rounded border border-amber-300 dark:border-amber-600 select-all">{{ $generated_key }}</code>
+                        </div>
+                        <div>
+                            <flux:text size="sm" class="font-semibold">{{ __('API Secret') }}:</flux:text>
+                            <code
+                                class="block mt-1 text-sm font-mono bg-white dark:bg-zinc-800 px-3 py-2 rounded border border-amber-300 dark:border-amber-600 select-all">{{ $generated_secret }}</code>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 flex justify-end">
+                        <flux:button variant="primary" wire:click="done">{{ __('Done, take me back') }}</flux:button>
+                    </div>
+                </div>
+            @else
+                <div
+                    class="w-full rounded-xl border border-neutral-200 dark:border-neutral-700 p-6 bg-white dark:bg-zinc-800">
+                    <form wire:submit="save" class="space-y-6">
+                        <flux:input wire:model="name" :label="__('Client Name')" required autofocus
+                            placeholder="e.g., My POS App" />
+
+                        <flux:input wire:model="rate_limit" type="number" min="1" max="10000"
+                            :label="__('Rate Limit (requests per minute)')" required />
+
+                        <flux:textarea wire:model="allowed_ips" :label="__('Allowed IPs')" rows="3"
+                            :placeholder="__('One IP or CIDR per line. Leave empty to allow all.')" />
+
+                        <div>
+                            <flux:checkbox wire:model="is_active" :label="__('Active')" />
+                        </div>
+
+                        <div class="flex justify-end gap-2">
+                            <flux:button href="{{ route('api-clients.index') }}" variant="filled">{{ __('Cancel') }}
+                            </flux:button>
+                            <flux:button type="submit" variant="primary">{{ __('Create API Client') }}</flux:button>
+                        </div>
+                    </form>
+                </div>
+            @endif
         </div>
-
-        @if ($generated_key)
-            <div
-                class="max-w-2xl rounded-xl border border-amber-200 dark:border-amber-700 p-6 bg-amber-50 dark:bg-amber-900/20">
-                <flux:heading size="lg" class="text-amber-800 dark:text-amber-200">{{ __('API Credentials') }}</flux:heading>
-                <flux:subheading class="mt-1 text-amber-700 dark:text-amber-300">
-                    {{ __('Copy these credentials now. The secret will not be shown again.') }}
-                </flux:subheading>
-
-                <div class="mt-4 space-y-3">
-                    <div>
-                        <flux:text size="sm" class="font-semibold">{{ __('API Key') }}:</flux:text>
-                        <code
-                            class="block mt-1 text-sm font-mono bg-white dark:bg-zinc-800 px-3 py-2 rounded border border-amber-300 dark:border-amber-600 select-all">{{ $generated_key }}</code>
-                    </div>
-                    <div>
-                        <flux:text size="sm" class="font-semibold">{{ __('API Secret') }}:</flux:text>
-                        <code
-                            class="block mt-1 text-sm font-mono bg-white dark:bg-zinc-800 px-3 py-2 rounded border border-amber-300 dark:border-amber-600 select-all">{{ $generated_secret }}</code>
-                    </div>
-                </div>
-
-                <div class="mt-4 flex justify-end">
-                    <flux:button variant="primary" wire:click="done">{{ __('Done, take me back') }}</flux:button>
-                </div>
-            </div>
-        @else
-            <div
-                class="max-w-2xl rounded-xl border border-neutral-200 dark:border-neutral-700 p-6 bg-white dark:bg-zinc-800">
-                <form wire:submit="save" class="space-y-6">
-                    <flux:input wire:model="name" :label="__('Client Name')" required autofocus
-                        placeholder="e.g., My POS App" />
-
-                    <flux:input wire:model="rate_limit" type="number" min="1" max="10000"
-                        :label="__('Rate Limit (requests per minute)')" required />
-
-                    <flux:textarea wire:model="allowed_ips" :label="__('Allowed IPs')" rows="3"
-                        :placeholder="__('One IP or CIDR per line. Leave empty to allow all.')" />
-
-                    <div>
-                        <flux:checkbox wire:model="is_active" :label="__('Active')" />
-                    </div>
-
-                    <div class="flex justify-end gap-2">
-                        <flux:button href="{{ route('api-clients.index') }}" variant="filled">{{ __('Cancel') }}</flux:button>
-                        <flux:button type="submit" variant="primary">{{ __('Create API Client') }}</flux:button>
-                    </div>
-                </form>
-            </div>
-        @endif
-    </div>
     @endvolt
 </x-layouts::app>
