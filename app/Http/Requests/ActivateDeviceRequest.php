@@ -14,7 +14,7 @@ class ActivateDeviceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'license_key' => ['required', 'string', 'size:19'],
+            'license_key' => ['required', 'string', 'min:5', 'max:64'],
             'device' => ['required', 'array'],
             'device.fingerprint' => ['required', 'string', 'min:32', 'max:64'],
             'device.name' => ['nullable', 'string', 'max:255'],
@@ -28,7 +28,7 @@ class ActivateDeviceRequest extends FormRequest
     {
         return [
             'license_key.required' => 'Kunci lisensi wajib diisi',
-            'license_key.size' => 'Kunci lisensi harus dalam format XXXX-XXXX-XXXX-XXXX',
+            'license_key.min' => 'Kunci lisensi tidak valid',
             'device.fingerprint.required' => 'Sidik jari perangkat wajib diisi',
             'device.fingerprint.min' => 'Sidik jari perangkat minimal 32 karakter',
         ];

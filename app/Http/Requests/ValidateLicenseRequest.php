@@ -14,7 +14,7 @@ class ValidateLicenseRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'license_key' => ['required', 'string', 'size:19'],
+            'license_key' => ['required', 'string', 'min:5', 'max:64'],
             'device' => ['required', 'array'],
             'device.fingerprint' => ['required', 'string', 'min:32', 'max:64'],
             'device.name' => ['nullable', 'string', 'max:255'],

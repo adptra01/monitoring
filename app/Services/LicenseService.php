@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\LicenseStatus;
+use App\Enums\SubscriptionStatus;
 use App\Events\LicenseCreated;
 use App\Events\LicenseRestored;
 use App\Events\LicenseRevoked;
@@ -35,6 +36,22 @@ class LicenseService
 
         if ($license->expires_at && $license->expires_at->isPast()) {
             return ['valid' => false, 'reason' => 'Lisensi telah kedaluwarsa'];
+        }
+
+        if ($license->subscription_plan_id) {
+            $subscription = $license->subscriptions()
+                ->whereIn('status', [SubscriptionStatus::Active, SubscriptionStatus::Trialing, SubscriptionStatus::PastDue])
+                ->where('current_period_end_at', '>', now())
+                ->latest()
+                ->first();
+
+            if (! $subscription) {
+                return ['valid' => false, 'reason' => 'Langganan tidak aktif atau telah kedaluwarsa'];
+            }
+
+            if ($subscription->status === SubscriptionStatus::PastDue) {
+                return ['valid' => false, 'reason' => 'Pembayaran langganan tertunda'];
+            }
         }
 
         return ['valid' => true, 'reason' => null];

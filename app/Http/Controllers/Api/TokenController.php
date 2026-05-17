@@ -18,7 +18,7 @@ class TokenController extends ApiController
     public function refresh(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'license_key' => ['required', 'string', 'size:19'],
+            'license_key' => ['required', 'string', 'min:5', 'max:64'],
             'device' => ['required', 'array'],
             'device.fingerprint' => ['required', 'string', 'min:32', 'max:64'],
             'offline_token' => ['required', 'string'],

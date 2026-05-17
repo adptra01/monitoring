@@ -19,7 +19,6 @@ class LicenseFactory extends Factory
         return [
             'product_id' => Product::factory(),
             'user_id' => User::factory(),
-            'subscription_plan_id' => SubscriptionPlan::factory(),
             'key' => License::generateKey(),
             'status' => LicenseStatus::Active,
             'mode' => LicenseMode::Online,
@@ -27,6 +26,13 @@ class LicenseFactory extends Factory
             'expires_at' => now()->addYear(),
             'metadata' => [],
         ];
+    }
+
+    public function withSubscriptionPlan(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'subscription_plan_id' => SubscriptionPlan::factory(),
+        ]);
     }
 
     public function suspended(): static

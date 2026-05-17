@@ -8,6 +8,7 @@ use App\Services\ActivationService;
 use App\Services\DeviceService;
 use App\Services\LicenseService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 
 class ActivationController extends ApiController
 {
@@ -57,27 +58,51 @@ class ActivationController extends ApiController
             ], 'Perangkat sudah diaktifkan');
         }
 
-        $device = $this->deviceService->register($license, $deviceData);
+        if (! $license->hasAvailableSlots()) {
+            $device = $this->deviceService->register($license, $deviceData);
 
-        if (! $this->deviceService->checkDeviceLimit($license) || $license->mode->requiresActivation()) {
-            $activationRequest = $this->activationService->createRequest($device);
+            return $this->responseWithActivationRequest($device, 'Batas perangkat tercapai, aktivasi diperlukan');
+        }
 
-            if ($activationRequest) {
-                return $this->success([
-                    'device_id' => $device->id,
-                    'requires_approval' => true,
-                    'activation_code' => $activationRequest->code,
-                    'expires_at' => $activationRequest->expires_at->toIso8601String(),
-                ], ! $this->deviceService->checkDeviceLimit($license)
-                    ? 'Batas perangkat tercapai, aktivasi diperlukan'
-                    : 'Perangkat terdaftar, aktivasi diperlukan');
+        $device = DB::transaction(function () use ($license, $deviceData) {
+            if (! $license->hasAvailableSlots()) {
+                return null;
             }
+
+            return $this->deviceService->register($license, $deviceData);
+        });
+
+        if ($device === null) {
+            return $this->error('Batas perangkat tercapai, silakan coba lagi', 409);
+        }
+
+        if ($license->mode->requiresActivation()) {
+            return $this->responseWithActivationRequest($device, 'Perangkat terdaftar, aktivasi diperlukan');
         }
 
         return $this->success([
             'device_id' => $device->id,
             'offline_until' => now()->addDays(7)->toIso8601String(),
         ], 'Perangkat berhasil diaktifkan');
+    }
+
+    private function responseWithActivationRequest($device, string $message): JsonResponse
+    {
+        $activationRequest = $this->activationService->createRequest($device);
+
+        if ($activationRequest) {
+            return $this->success([
+                'device_id' => $device->id,
+                'requires_approval' => true,
+                'activation_code' => $activationRequest->code,
+                'expires_at' => $activationRequest->expires_at->toIso8601String(),
+            ], $message);
+        }
+
+        return $this->success([
+            'device_id' => $device->id,
+            'offline_until' => now()->addDays(7)->toIso8601String(),
+        ], $message);
     }
 
     public function verify(string $key, string $fingerprint): JsonResponse

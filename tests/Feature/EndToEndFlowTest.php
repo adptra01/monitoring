@@ -2,112 +2,114 @@
 
 namespace Tests\Feature;
 
+use App\Enums\LicenseMode;
+use App\Enums\LicenseStatus;
+use App\Models\ApiClient;
 use App\Models\Device;
 use App\Models\License;
 use App\Models\Product;
-use App\Models\SubscriptionPlan;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
-use Livewire\Volt\Volt;
-use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class EndToEndFlowTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_complete_crud_and_activation_flow(): void
+    private function signRequest(string $method, string $path, string $body, ApiClient $client): array
     {
-        // 1. Setup Admin User
-        Role::create(['name' => 'admin']);
-        $admin = User::factory()->create();
-        $admin->assignRole('admin');
-        $this->actingAs($admin);
+        $timestamp = now()->toIso8601String();
+        $nonce = Str::random(32);
+        $signPath = ltrim($path, '/');
+        $payload = "{$method}\n{$signPath}\n{$timestamp}\n{$nonce}\n{$body}";
+        $signature = base64_encode(hash_hmac('sha256', $payload, $client->api_secret, true));
 
-        // 2. Product CRUD Flow
-        Volt::test('pages.products.create')
-            ->set('name', 'E2E Product Flow')
-            ->set('slug', 'e2e-product-flow')
-            ->set('description', 'Test Description')
-            ->call('save')
-            ->assertRedirect(route('products.index'));
+        return [
+            'X-API-Key' => $client->api_key,
+            'X-Timestamp' => $timestamp,
+            'X-Nonce' => $nonce,
+            'X-Signature' => $signature,
+            'Content-Type' => 'application/json',
+        ];
+    }
 
-        $product = Product::where('slug', 'e2e-product-flow')->first();
-        $this->assertNotNull($product);
+    public function test_complete_license_api_flow(): void
+    {
+        $client = ApiClient::factory()->create();
+        $product = Product::factory()->create(['is_active' => true]);
+        $license = License::factory()->create([
+            'product_id' => $product->id,
+            'subscription_plan_id' => null,
+            'status' => LicenseStatus::Active,
+            'mode' => LicenseMode::Offline,
+            'max_devices' => 3,
+            'expires_at' => now()->addYear(),
+        ]);
 
-        Volt::test('pages.products.[product].edit', ['product' => $product->slug])
-            ->set('name', 'E2E Product Flow Updated')
-            ->call('save')
-            ->assertRedirect(route('products.index'));
+        $deviceFingerprint = 'device-'.Str::random(32);
 
-        $this->assertEquals('E2E Product Flow Updated', $product->fresh()->name);
-
-        // 3. Plan CRUD Flow
-        Volt::test('pages.plans.create')
-            ->set('product_id', $product->id)
-            ->set('name', 'E2E Premium Plan')
-            ->set('slug', 'e2e-premium-plan')
-            ->set('monthly_price', 50000)
-            ->set('max_devices', 3)
-            ->call('save')
-            ->assertRedirect(route('plans.index'));
-
-        $plan = SubscriptionPlan::where('slug', 'e2e-premium-plan')->first();
-        $this->assertNotNull($plan);
-
-        // 4. License CRUD Flow
-        Volt::test('pages.licenses.create')
-            ->set('product_id', $product->id)
-            ->set('plan_id', $plan->id)
-            ->set('user_id', $admin->id)
-            ->set('max_devices', 3)
-            ->call('save')
-            ->assertRedirect(route('licenses.index'));
-
-        $license = License::where('user_id', $admin->id)->first();
-        $this->assertNotNull($license);
-        $this->assertNotNull($license->license_key);
-
-        // 5. API Validation & Activation Flow
-        $deviceFingerprint = 'device-'.Str::random(10);
-
-        // Simulate Device Activation via API
-        $response = $this->postJson('/api/v1/validate', [
-            'license_key' => $license->license_key,
+        // 1. Activate device
+        $body = json_encode([
+            'license_key' => $license->key,
             'device' => [
                 'fingerprint' => $deviceFingerprint,
-                'name' => 'E2E Test Device',
-                'platform' => 'Windows',
-                'os_version' => '11',
+                'name' => 'Test Device',
+                'platform' => 'Linux',
+                'platform_version' => '6.0',
             ],
         ]);
+        $headers = $this->signRequest('POST', '/api/v1/activate', $body, $client);
+        $response = $this->postJson('/api/v1/activate', [
+            'license_key' => $license->key,
+            'device' => [
+                'fingerprint' => $deviceFingerprint,
+                'name' => 'Test Device',
+                'platform' => 'Linux',
+                'platform_version' => '6.0',
+            ],
+        ], $headers);
+
+        $response->assertStatus(200);
+        $response->assertJsonPath('data.offline_until', fn ($v) => $v !== null);
+
+        // 2. Validate license with device
+        $body = json_encode([
+            'license_key' => $license->key,
+            'device' => ['fingerprint' => $deviceFingerprint],
+        ]);
+        $headers = $this->signRequest('POST', '/api/v1/validate', $body, $client);
+        $response = $this->postJson('/api/v1/validate', [
+            'license_key' => $license->key,
+            'device' => ['fingerprint' => $deviceFingerprint],
+        ], $headers);
 
         $response->assertStatus(200);
         $response->assertJsonPath('data.valid', true);
+        $response->assertJsonPath('data.product', $product->name);
+        $response->assertJsonPath('data.offline_until', fn ($v) => $v !== null);
 
-        // Verify device was registered
+        // 3. Check status endpoint
+        $headers = $this->signRequest('GET', "/api/v1/status/{$license->key}/{$deviceFingerprint}", '', $client);
+        $response = $this->call('GET', "/api/v1/status/{$license->key}/{$deviceFingerprint}", [], [], [], $this->transformHeadersToServerVars($headers));
+        $response->assertStatus(200);
+        $response->assertJsonPath('data.license_valid', true);
+
+        // 4. Deactivate device
+        $body = json_encode([
+            'license_key' => $license->key,
+            'device' => ['fingerprint' => $deviceFingerprint],
+        ]);
+        $headers = $this->signRequest('POST', '/api/v1/deactivate', $body, $client);
+        $response = $this->postJson('/api/v1/deactivate', [
+            'license_key' => $license->key,
+            'device' => ['fingerprint' => $deviceFingerprint],
+        ], $headers);
+
+        $response->assertStatus(200);
+
+        // 5. Verify deactivation
         $device = Device::where('fingerprint', $deviceFingerprint)->first();
         $this->assertNotNull($device);
-        $this->assertEquals($license->id, $device->license_id);
-
-        // 6. Cleanup / Deletion Flow
-        // Delete License
-        Volt::test('pages.licenses.index')
-            ->call('confirmDelete', $license->id)
-            ->call('delete');
-        $this->assertNull(License::find($license->id));
-
-        // Delete Plan
-        Volt::test('pages.plans.index')
-            ->call('confirmDelete', $plan->id)
-            ->call('delete');
-        $this->assertNull(SubscriptionPlan::find($plan->id));
-
-        // Delete Product
-        Volt::test('pages.products.index')
-            ->call('confirmDelete', $product->id)
-            ->call('delete');
-        $this->assertNull(Product::find($product->id));
+        $this->assertFalse($device->is_active);
     }
 }

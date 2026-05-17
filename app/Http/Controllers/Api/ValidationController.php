@@ -7,16 +7,16 @@ use App\Models\License;
 use App\Services\DeviceService;
 use App\Services\LicenseKeyService;
 use App\Services\LicenseService;
-use App\Services\OfflineTokenService;
 use Illuminate\Http\JsonResponse;
 
 class ValidationController extends ApiController
 {
+    private const OFFLINE_GRACE_DAYS = 7;
+
     public function __construct(
         protected LicenseService $licenseService,
         protected LicenseKeyService $keyService,
         protected DeviceService $deviceService,
-        protected OfflineTokenService $offlineTokenService,
     ) {}
 
     public function validate(ValidateLicenseRequest $request): JsonResponse
@@ -43,7 +43,9 @@ class ValidationController extends ApiController
 
         $this->deviceService->touch($device);
 
-        $tokenData = $this->offlineTokenService->issue($license, $device);
+        $offlineUntil = $license->expires_at
+            ? min($license->expires_at, now()->addDays(self::OFFLINE_GRACE_DAYS))
+            : now()->addDays(self::OFFLINE_GRACE_DAYS);
 
         return $this->success([
             'valid' => true,
@@ -53,8 +55,7 @@ class ValidationController extends ApiController
             'expires_at' => $license->expires_at?->format('Y-m-d'),
             'max_devices' => $license->max_devices,
             'devices_count' => $license->devices()->count(),
-            'cache_until' => now()->addDays(7)->format('Y-m-d'),
-            'offline_token' => $tokenData['token'],
+            'offline_until' => $offlineUntil->toIso8601String(),
             'message' => 'Lisensi valid',
         ]);
     }

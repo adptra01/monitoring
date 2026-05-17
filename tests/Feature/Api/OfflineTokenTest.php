@@ -192,7 +192,7 @@ class OfflineTokenTest extends TestCase
         $this->assertTrue($this->tokenService->verify($token2['token'], $device2->fingerprint)['valid']);
     }
 
-    public function test_validate_endpoint_returns_offline_token(): void
+    public function test_validate_endpoint_returns_offline_until(): void
     {
         $body = json_encode([
             'license_key' => $this->license->key,
@@ -217,15 +217,12 @@ class OfflineTokenTest extends TestCase
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'success',
-            'data' => ['offline_token', 'cache_until'],
+            'data' => ['valid', 'status', 'offline_until'],
             'meta',
         ]);
 
-        $offlineToken = $response->json('data.offline_token');
-        $this->assertNotEmpty($offlineToken);
-
-        $verification = $this->tokenService->verify($offlineToken, $this->device->fingerprint);
-        $this->assertTrue($verification['valid']);
+        $this->assertTrue($response->json('data.valid'));
+        $this->assertNotEmpty($response->json('data.offline_until'));
     }
 
     public function test_token_refresh_endpoint_returns_new_token(): void

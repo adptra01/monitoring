@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "PreToolUse": [{
+      "matcher": "*",
+      "hooks": [{
+        "type": "command",
+        "command": "~/.claude/skills/continuous-learning-v2/hooks/observe.sh"
+      }]
+    }],
+    "PostToolUse": [{
+      "matcher": "*",
+      "hooks": [{
+        "type": "command",
+        "command": "~/.claude/skills/continuous-learning-v2/hooks/observe.sh"
+      }]
+    }]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(php *)",
+      "Bash(vendor/bin/pint *)",
+      "Bash(grep *)",
+      "mcp__laravel-boost__*"
+    ]
+  }
+}
