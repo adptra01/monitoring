@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\License;
-use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -46,11 +45,15 @@ class GithubLicenseSyncService
             'updated_at' => now()->toIso8601String(),
         ];
 
-        $content = base64_encode(json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
-
-        $sha = $this->getCurrentSha($filePath);
-
         try {
+            $existing = $this->getCurrentSha($filePath);
+
+            if ($existing !== null && $this->hasSameContent($filePath, $payload)) {
+                return true;
+            }
+
+            $content = base64_encode(json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+
             $response = Http::withToken($this->token)
                 ->timeout(10)
                 ->connectTimeout(5)
@@ -58,7 +61,7 @@ class GithubLicenseSyncService
                 ->put("{$this->apiUrl}/repos/{$this->owner}/{$this->repo}/contents/{$filePath}", array_filter([
                     'message' => "Sync license {$hash}",
                     'content' => $content,
-                    'sha' => $sha,
+                    'sha' => $existing,
                 ]));
 
             if ($response->successful()) {
@@ -72,9 +75,41 @@ class GithubLicenseSyncService
             ]);
 
             return false;
-        } catch (ConnectionException $e) {
-            Log::warning('GitHub sync connection timeout', ['license' => $license->key]);
+        } catch (\Throwable $e) {
+            Log::warning('GitHub sync error', [
+                'license' => $license->key,
+                'error' => $e->getMessage(),
+            ]);
 
+            return false;
+        }
+    }
+
+    protected function hasSameContent(string $filePath, array $payload): bool
+    {
+        try {
+            $response = Http::withToken($this->token)
+                ->timeout(10)
+                ->connectTimeout(5)
+                ->get("{$this->apiUrl}/repos/{$this->owner}/{$this->repo}/contents/{$filePath}");
+
+            if (! $response->successful()) {
+                return false;
+            }
+
+            $existing = $response->json();
+            $decoded = base64_decode($existing['content'], true);
+
+            if ($decoded === false) {
+                return false;
+            }
+
+            $existingPayload = json_decode($decoded, true);
+
+            return ($existingPayload['status'] ?? null) === $payload['status']
+                && ($existingPayload['expires_at'] ?? null) === $payload['expires_at']
+                && ($existingPayload['max_devices'] ?? null) === $payload['max_devices'];
+        } catch (\Throwable) {
             return false;
         }
     }
@@ -92,7 +127,7 @@ class GithubLicenseSyncService
             }
 
             return null;
-        } catch (ConnectionException) {
+        } catch (\Throwable) {
             return null;
         }
     }

@@ -2,10 +2,7 @@
 
 use App\Models\License;
 use App\Models\Product;
-use App\Models\User;
 use App\Models\SubscriptionPlan;
-use App\Enums\LicenseStatus;
-use App\Enums\LicenseMode;
 use Flux\Flux;
 
 use function Laravel\Folio\{name, middleware};
@@ -16,38 +13,45 @@ middleware('check.admin');
 
 state([
     'product_id' => '',
-    'user_id' => '',
     'subscription_plan_id' => '',
+    'customer_name' => '',
+    'customer_phone' => '',
+    'customer_store' => '',
+    'customer_address' => '',
     'status' => 'active',
-    'mode' => 'online',
     'max_devices' => 1,
     'expires_at' => '',
+    'notes' => '',
 ]);
 
 $products = computed(fn() => Product::where('is_active', true)->get());
-$users = computed(fn() => User::all());
 
 $plans = computed(fn() => SubscriptionPlan::where('product_id', $this->product_id)->where('is_active', true)->get());
 
 $save = function () {
     $this->validate([
         'product_id' => 'required|exists:products,id',
-        'user_id' => 'required|exists:users,id',
+        'customer_name' => 'required|string|max:255',
+        'customer_phone' => 'required|string|max:255',
+        'customer_store' => 'required|string|max:255',
         'status' => 'required',
-        'mode' => 'required',
         'max_devices' => 'required|integer|min:1',
         'expires_at' => 'nullable|date',
+        'notes' => 'nullable|string',
     ]);
 
     $license = License::create([
         'product_id' => $this->product_id,
-        'user_id' => $this->user_id,
         'subscription_plan_id' => $this->subscription_plan_id ?: null,
         'key' => License::generateKey(),
+        'customer_name' => $this->customer_name,
+        'customer_phone' => $this->customer_phone,
+        'customer_store' => $this->customer_store,
+        'customer_address' => $this->customer_address,
         'status' => $this->status,
-        'mode' => $this->mode,
         'max_devices' => $this->max_devices,
         'expires_at' => $this->expires_at ?: null,
+        'notes' => $this->notes ?: null,
     ]);
 
     Flux::toast(duration: 1500, variant: 'success', text: __('License created successfully: :key', ['key' => $license->key]));
@@ -82,13 +86,6 @@ $save = function () {
                         @endforeach
                     </flux:select>
 
-                    <flux:select wire:model="user_id" :label="__('User')" required>
-                        <option value="">{{ __('Select User') }}</option>
-                        @foreach ($this->users as $user)
-                            <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})</option>
-                        @endforeach
-                    </flux:select>
-
                     @if ($product_id)
                         <flux:select wire:model="subscription_plan_id" :label="__('Subscription Plan')">
                             <option value="">{{ __('No Plan (Custom)') }}</option>
@@ -99,23 +96,28 @@ $save = function () {
                     @endif
 
                     <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                        <flux:input wire:model="customer_name" :label="__('Customer Name')" required />
+                        <flux:input wire:model="customer_phone" :label="__('Customer Phone')" required />
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                        <flux:input wire:model="customer_store" :label="__('Store Name')" required />
+                        <flux:input wire:model="customer_address" :label="__('Customer Address')" />
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                         <flux:select wire:model="status" :label="__('Status')" required>
                             @foreach (App\Enums\LicenseStatus::cases() as $status)
                                 <option value="{{ $status->value }}">{{ $status->label() }}</option>
                             @endforeach
                         </flux:select>
 
-                        <flux:select wire:model="mode" :label="__('Activation Mode')" required>
-                            @foreach (App\Enums\LicenseMode::cases() as $mode)
-                                <option value="{{ $mode->value }}">{{ $mode->label() }}</option>
-                            @endforeach
-                        </flux:select>
+                        <flux:input wire:model="max_devices" type="number" min="1" :label="__('Max Devices')" required />
                     </div>
 
                     <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-                        <flux:input wire:model="max_devices" type="number" min="1" :label="__('Max Devices')"
-                            required />
                         <flux:input wire:model="expires_at" type="date" :label="__('Expires At')" />
+                        <flux:input wire:model="notes" :label="__('Notes')" />
                     </div>
 
                     <div class="flex justify-end gap-2">

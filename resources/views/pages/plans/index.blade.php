@@ -71,9 +71,8 @@ $delete = function () {
                 <flux:table.columns>
                     <flux:table.column>{{ __('Product') }}</flux:table.column>
                     <flux:table.column>{{ __('Plan Name') }}</flux:table.column>
-                    <flux:table.column>{{ __('Monthly') }}</flux:table.column>
-                    <flux:table.column>{{ __('Yearly') }}</flux:table.column>
-                    <flux:table.column>{{ __('Max Devices') }}</flux:table.column>
+                    <flux:table.column>{{ __('Duration') }}</flux:table.column>
+                    <flux:table.column>{{ __('Active') }}</flux:table.column>
                     <flux:table.column data-tour="plans-actions">{{ __('Actions') }}</flux:table.column>
                 </flux:table.columns>
 
@@ -86,9 +85,12 @@ $delete = function () {
                                 </flux:badge>
                             </flux:table.cell>
                             <flux:table.cell class="font-medium">{{ $plan->name }}</flux:table.cell>
-                            <flux:table.cell>{{ Number::currency($plan->monthly_price, 'IDR', 'id') }}</flux:table.cell>
-                            <flux:table.cell>{{ Number::currency($plan->yearly_price, 'IDR', 'id') }}</flux:table.cell>
-                            <flux:table.cell>{{ $plan->max_devices }}</flux:table.cell>
+                            <flux:table.cell>{{ $plan->duration_days }} {{ __('days') }}</flux:table.cell>
+                            <flux:table.cell>
+                                <flux:badge :color="$plan->is_active ? 'green' : 'red'" size="sm" inset="top bottom">
+                                    {{ $plan->is_active ? __('Yes') : __('No') }}
+                                </flux:badge>
+                            </flux:table.cell>
                             <flux:table.cell>
                                 <div class="flex gap-2">
                                     <flux:button variant="ghost" size="sm" icon="pencil"

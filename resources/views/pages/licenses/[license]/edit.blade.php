@@ -3,7 +3,6 @@
 use App\Models\License;
 use App\Models\Product;
 use App\Models\SubscriptionPlan;
-use App\Enums\LicenseMode;
 use App\Services\LicenseService;
 use Flux\Flux;
 
@@ -18,22 +17,30 @@ state([
     'editing' => false,
     'edit_product_id' => '',
     'edit_subscription_plan_id' => '',
-    'edit_mode' => 'online',
+    'edit_customer_name' => '',
+    'edit_customer_phone' => '',
+    'edit_customer_store' => '',
+    'edit_customer_address' => '',
     'edit_max_devices' => 1,
     'edit_expires_at' => '',
+    'edit_notes' => '',
 ]);
 
 mount(function (string $license) {
-    $licenseModel = License::with(['devices'])->where('key', $license)->orWhere('id', $license)->firstOrFail();
+    $licenseModel = License::where('key', $license)->orWhere('id', $license)->firstOrFail();
     $this->license = $licenseModel;
 });
 
 $fillEdit = function () {
     $this->edit_product_id = (string) $this->license->product_id;
     $this->edit_subscription_plan_id = (string) ($this->license->subscription_plan_id ?? '');
-    $this->edit_mode = $this->license->mode->value;
+    $this->edit_customer_name = $this->license->customer_name ?? '';
+    $this->edit_customer_phone = $this->license->customer_phone ?? '';
+    $this->edit_customer_store = $this->license->customer_store ?? '';
+    $this->edit_customer_address = $this->license->customer_address ?? '';
     $this->edit_max_devices = $this->license->max_devices;
     $this->edit_expires_at = $this->license->expires_at?->format('Y-m-d') ?? '';
+    $this->edit_notes = $this->license->notes ?? '';
 };
 
 $editProducts = computed(fn() => Product::where('is_active', true)->orderBy('name')->get());
@@ -50,17 +57,24 @@ $toggleEdit = function () {
 $saveEdit = function () {
     $this->validate([
         'edit_product_id' => 'required|exists:products,id',
-        'edit_mode' => 'required',
+        'edit_customer_name' => 'required|string|max:255',
+        'edit_customer_phone' => 'required|string|max:255',
+        'edit_customer_store' => 'required|string|max:255',
         'edit_max_devices' => 'required|integer|min:1',
         'edit_expires_at' => 'nullable|date',
+        'edit_notes' => 'nullable|string',
     ]);
 
     $this->license->update([
         'product_id' => $this->edit_product_id,
         'subscription_plan_id' => $this->edit_subscription_plan_id ?: null,
-        'mode' => $this->edit_mode,
+        'customer_name' => $this->edit_customer_name,
+        'customer_phone' => $this->edit_customer_phone,
+        'customer_store' => $this->edit_customer_store,
+        'customer_address' => $this->edit_customer_address,
         'max_devices' => $this->edit_max_devices,
         'expires_at' => $this->edit_expires_at ?: null,
+        'notes' => $this->edit_notes ?: null,
     ]);
 
     $this->license->refresh();
@@ -88,7 +102,6 @@ $restore = function (LicenseService $licenseService) {
 };
 
 $delete = function () {
-    $this->license->devices()->delete();
     $this->license->delete();
 
     Flux::toast(duration: 1500, variant: 'success', text: __('License deleted.'));
@@ -159,16 +172,21 @@ $delete = function () {
                                 @endif
 
                                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                    <flux:select wire:model="edit_mode" :label="__('Activation Mode')" required>
-                                        @foreach (App\Enums\LicenseMode::cases() as $mode)
-                                            <option value="{{ $mode->value }}">{{ $mode->label() }}</option>
-                                        @endforeach
-                                    </flux:select>
-
-                                    <flux:input wire:model="edit_max_devices" type="number" min="1" :label="__('Max Devices')" required />
+                                    <flux:input wire:model="edit_customer_name" :label="__('Customer Name')" required />
+                                    <flux:input wire:model="edit_customer_phone" :label="__('Customer Phone')" required />
                                 </div>
 
-                                <flux:input wire:model="edit_expires_at" type="date" :label="__('Expires At')" />
+                                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                    <flux:input wire:model="edit_customer_store" :label="__('Store Name')" required />
+                                    <flux:input wire:model="edit_customer_address" :label="__('Customer Address')" />
+                                </div>
+
+                                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                    <flux:input wire:model="edit_max_devices" type="number" min="1" :label="__('Max Devices')" required />
+                                    <flux:input wire:model="edit_expires_at" type="date" :label="__('Expires At')" />
+                                </div>
+
+                                <flux:input wire:model="edit_notes" :label="__('Notes')" />
 
                                 <div class="flex justify-end gap-2">
                                     <flux:button variant="filled" wire:click="toggleEdit">{{ __('Cancel') }}</flux:button>
@@ -196,24 +214,34 @@ $delete = function () {
 
                                 <div class="text-neutral-500">{{ __('Customer') }}</div>
                                 <div>
-                                    <div class="font-medium">{{ $license->user->name }}</div>
-                                    <div class="text-neutral-400 text-xs">{{ $license->user->email }}</div>
+                                    <div class="font-medium">{{ $license->customer_name }}</div>
+                                    @if ($license->customer_store)
+                                        <div class="text-neutral-400 text-xs">{{ $license->customer_store }}</div>
+                                    @endif
                                 </div>
 
-                                <div class="text-neutral-500">{{ __('Activation Mode') }}</div>
-                                <div>{{ $license->mode->label() }}</div>
+                                <div class="text-neutral-500">{{ __('Phone') }}</div>
+                                <div>{{ $license->customer_phone ?? '-' }}</div>
+
+                                <div class="text-neutral-500">{{ __('Address') }}</div>
+                                <div>{{ $license->customer_address ?? '-' }}</div>
 
                                 <div class="text-neutral-500">{{ __('Max Devices') }}</div>
                                 <div>{{ $license->max_devices }}</div>
 
                                 <div class="text-neutral-500">{{ __('Registered Devices') }}</div>
-                                <div>{{ $license->devices->count() }}</div>
+                                <div>{{ count($license->devices ?? []) }}</div>
 
                                 <div class="text-neutral-500">{{ __('Expires At') }}</div>
                                 <div>{{ $license->expires_at?->format('d M Y') ?? __('Never') }}</div>
 
                                 <div class="text-neutral-500">{{ __('Subscription Plan') }}</div>
                                 <div>{{ $license->subscriptionPlan?->name ?? __('Custom / Manual') }}</div>
+
+                                @if ($license->notes)
+                                    <div class="text-neutral-500">{{ __('Notes') }}</div>
+                                    <div class="text-sm">{{ $license->notes }}</div>
+                                @endif
                             </div>
                         </div>
                     @endif
@@ -221,7 +249,8 @@ $delete = function () {
                     <div class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-zinc-800 p-6">
                         <flux:heading size="lg" class="mb-4">{{ __('Registered Devices') }}</flux:heading>
 
-                        @if ($license->devices->isEmpty())
+                        @php $devices = $license->devices ?? []; @endphp
+                        @if (empty($devices))
                             <flux:text class="text-center py-8">{{ __('No devices registered yet.') }}</flux:text>
                         @else
                             <flux:table>
@@ -232,12 +261,12 @@ $delete = function () {
                                     <flux:table.column>{{ __('Last Seen') }}</flux:table.column>
                                 </flux:table.columns>
                                 <flux:table.rows>
-                                    @foreach ($license->devices as $device)
-                                        <flux:table.row :key="$device->id">
-                                            <flux:table.cell class="font-medium">{{ $device->name }}</flux:table.cell>
-                                            <flux:table.cell class="font-mono text-xs">{{ Str::limit($device->fingerprint, 16) }}</flux:table.cell>
-                                            <flux:table.cell>{{ $device->platform }}</flux:table.cell>
-                                            <flux:table.cell>{{ $device->last_seen_at?->diffForHumans() ?? '-' }}</flux:table.cell>
+                                    @foreach ($devices as $device)
+                                        <flux:table.row :key="$device['fingerprint'] ?? ''">
+                                            <flux:table.cell class="font-medium">{{ $device['name'] ?? '-' }}</flux:table.cell>
+                                            <flux:table.cell class="font-mono text-xs">{{ Str::limit($device['fingerprint'] ?? '', 16) }}</flux:table.cell>
+                                            <flux:table.cell>{{ $device['platform'] ?? '-' }}</flux:table.cell>
+                                            <flux:table.cell>{{ isset($device['last_seen_at']) ? \Carbon\Carbon::parse($device['last_seen_at'])->diffForHumans() : '-' }}</flux:table.cell>
                                         </flux:table.row>
                                     @endforeach
                                 </flux:table.rows>

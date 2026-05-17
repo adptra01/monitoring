@@ -16,11 +16,8 @@ state([
     'name' => '',
     'slug' => '',
     'description' => '',
-    'monthly_price' => '',
-    'yearly_price' => '',
-    'max_devices' => 1,
+    'duration_days' => 30,
     'is_active' => true,
-    'is_default' => false,
 ]);
 
 $products = computed(fn() => Product::where('is_active', true)->get());
@@ -34,11 +31,9 @@ $save = function () {
         'product_id' => 'required|exists:products,id',
         'name' => 'required|string|max:255',
         'slug' => 'required|string|max:255|unique:subscription_plans,slug',
-        'monthly_price' => 'nullable|numeric|min:0',
-        'yearly_price' => 'nullable|numeric|min:0',
-        'max_devices' => 'required|integer|min:1',
+        'description' => 'nullable|string',
+        'duration_days' => 'required|integer|min:1',
         'is_active' => 'boolean',
-        'is_default' => 'boolean',
     ]);
 
     SubscriptionPlan::create([
@@ -46,12 +41,8 @@ $save = function () {
         'name' => $this->name,
         'slug' => $this->slug,
         'description' => $this->description,
-        'monthly_price' => $this->monthly_price,
-        'yearly_price' => $this->yearly_price,
-        'max_devices' => $this->max_devices,
-        'features' => ['Fitur 1', 'Fitur 2'],
+        'duration_days' => $this->duration_days,
         'is_active' => $this->is_active,
-        'is_default' => $this->is_default,
     ]);
 
     Flux::toast(duration: 1500, variant: 'success', text: __('Plan created successfully.'));
@@ -93,20 +84,10 @@ $save = function () {
 
                     <flux:textarea wire:model="description" :label="__('Description')" rows="3" />
 
-                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-                        <flux:input wire:model="monthly_price" type="number" step="0.01"
-                            :label="__('Monthly Price (IDR)')" />
-                        <flux:input wire:model="yearly_price" type="number" step="0.01"
-                            :label="__('Yearly Price (IDR)')" />
-                    </div>
-
-                    <flux:input wire:model="max_devices" type="number" min="1" :label="__('Max Devices')"
+                    <flux:input wire:model="duration_days" type="number" min="1" :label="__('Duration (Days)')"
                         required />
 
-                    <div class="flex gap-6">
-                        <flux:checkbox wire:model="is_active" :label="__('Active')" />
-                        <flux:checkbox wire:model="is_default" :label="__('Default Plan')" />
-                    </div>
+                    <flux:checkbox wire:model="is_active" :label="__('Active')" />
 
                     <div class="flex justify-end gap-2">
                         <flux:button href="{{ route('plans.index') }}" variant="filled">{{ __('Cancel') }}</flux:button>

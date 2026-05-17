@@ -19,8 +19,10 @@ test.describe('License Management', () => {
 
     // Select first product
     await page.selectOption('[wire\\:model*="product_id"]', { index: 1 });
-    // Select first user
-    await page.selectOption('[wire\\:model*="user_id"]', { index: 1 });
+    // Fill customer fields
+    await page.fill('[wire\\:model*="customer_name"]', 'Toko Sinar Jaya');
+    await page.fill('[wire\\:model*="customer_phone"]', '081234567890');
+    await page.fill('[wire\\:model*="customer_store"]', 'Toko Sinar Jaya Elektronik');
     // Set max devices
     await page.fill('[wire\\:model*="max_devices"]', '5');
 

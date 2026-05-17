@@ -21,7 +21,7 @@ state([
 ]);
 
 $licenses = computed(function () {
-    $query = License::with(['product', 'user', 'devices']);
+    $query = License::with('product');
 
     if ($this->search) {
         $query->where('key', 'like', '%' . $this->search . '%');
@@ -43,7 +43,6 @@ $confirmDelete = function ($id) {
 
 $delete = function () {
     if ($this->deletingLicense) {
-        $this->deletingLicense->devices()->delete();
         $this->deletingLicense->delete();
 
         $this->deletingLicense = null;
@@ -91,7 +90,7 @@ $delete = function () {
                 <flux:table.columns>
                     <flux:table.column>{{ __('License Key') }}</flux:table.column>
                     <flux:table.column>{{ __('Product') }}</flux:table.column>
-                    <flux:table.column>{{ __('User') }}</flux:table.column>
+                    <flux:table.column>{{ __('Customer') }}</flux:table.column>
                     <flux:table.column>{{ __('Status') }}</flux:table.column>
                     <flux:table.column>{{ __('Devices') }}</flux:table.column>
                     <flux:table.column>{{ __('Expires At') }}</flux:table.column>
@@ -107,7 +106,12 @@ $delete = function () {
                                 </a>
                             </flux:table.cell>
                             <flux:table.cell>{{ $license->product->name }}</flux:table.cell>
-                            <flux:table.cell class="text-sm">{{ $license->user->email }}</flux:table.cell>
+                            <flux:table.cell class="text-sm">
+                                {{ $license->customer_name }}
+                                @if ($license->customer_store)
+                                    <span class="text-xs text-zinc-400">({{ $license->customer_store }})</span>
+                                @endif
+                            </flux:table.cell>
                             <flux:table.cell>
                                 <flux:badge :color="$license->status->value === 'active' ? 'green' : ($license->status->value === 'suspended' ? 'yellow' : 'red')" size="sm" inset="top bottom">
                                     {{ $license->status->label() }}
@@ -115,7 +119,7 @@ $delete = function () {
                             </flux:table.cell>
                             <flux:table.cell>
                                 <flux:text size="sm">
-                                    {{ $license->devices->count() }} / {{ $license->max_devices }}
+                                    {{ count($license->devices ?? []) }} / {{ $license->max_devices }}
                                 </flux:text>
                             </flux:table.cell>
                             <flux:table.cell>
@@ -162,7 +166,7 @@ $delete = function () {
                         @if ($deletingLicense)
                             <div class="mt-3 p-3 bg-zinc-100 dark:bg-zinc-900 rounded-lg">
                                 <code class="text-sm font-mono">{{ $deletingLicense->key }}</code>
-                                <p class="text-xs text-zinc-500 mt-1">{{ $deletingLicense->product->name }} &middot; {{ $deletingLicense->user->email }}</p>
+                                <p class="text-xs text-zinc-500 mt-1">{{ $deletingLicense->product->name }} &middot; {{ $deletingLicense->customer_name }}</p>
                             </div>
                         @endif
                     </div>
