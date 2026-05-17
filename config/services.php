@@ -38,6 +38,9 @@ return [
     'github' => [
         'token' => env('GITHUB_TOKEN'),
         'usernames' => array_filter(explode(',', env('GITHUB_USERNAMES', ''))),
+        'sync_owner' => env('GITHUB_SYNC_REPO_OWNER'),
+        'sync_repo' => env('GITHUB_SYNC_REPO_NAME'),
+        'sync_path' => env('GITHUB_SYNC_PATH', 'licenses'),
     ],
 
 ];

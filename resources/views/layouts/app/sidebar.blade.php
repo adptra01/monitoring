@@ -35,15 +35,6 @@
                     <flux:sidebar.item icon="key" :href="url('/licenses')" :current="request()->is('licenses*')">
                         {{ __('Licenses') }}
                     </flux:sidebar.item>
-
-                    <flux:sidebar.item icon="check-circle" :href="url('/activation-requests')"
-                        :current="request()->is('activation-requests*')">
-                        {{ __('Activation Requests') }}
-                    </flux:sidebar.item>
-
-                    <flux:sidebar.item icon="computer-desktop" :href="url('/devices')" :current="request()->is('devices*')">
-                        {{ __('Devices') }}
-                    </flux:sidebar.item>
                 </flux:sidebar.group>
 
                 <flux:sidebar.group :heading="__('Access Control')" class="grid">
@@ -53,17 +44,6 @@
 
                     <flux:sidebar.item icon="shield-check" :href="url('/roles')" :current="request()->is('roles*')">
                         {{ __('Roles') }}
-                    </flux:sidebar.item>
-
-                    <flux:sidebar.item icon="server" :href="url('/api-clients')" :current="request()->is('api-clients*')">
-                        {{ __('API Clients') }}
-                    </flux:sidebar.item>
-                </flux:sidebar.group>
-
-                <flux:sidebar.group :heading="__('Monitoring')" class="grid">
-                    <flux:sidebar.item icon="clipboard-document-list" :href="url('/audit-logs')"
-                        :current="request()->is('audit-logs*')">
-                        {{ __('Audit Logs') }}
                     </flux:sidebar.item>
                 </flux:sidebar.group>
             @endif
@@ -148,8 +128,6 @@
         <flux:toast />
     </flux:toast.group>
     @endpersist
-
-    @livewire('tour-manager')
 
     @fluxScripts
 </body>

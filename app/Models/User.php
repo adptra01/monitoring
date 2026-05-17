@@ -32,16 +32,6 @@ class User extends Authenticatable
         return $this->hasMany(License::class);
     }
 
-    public function subscriptions(): HasMany
-    {
-        return $this->hasMany(Subscription::class);
-    }
-
-    public function auditLogs(): HasMany
-    {
-        return $this->hasMany(AuditLog::class);
-    }
-
     public function isAdmin(): bool
     {
         return $this->hasRole('admin');

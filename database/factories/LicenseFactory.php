@@ -2,11 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Enums\LicenseMode;
 use App\Enums\LicenseStatus;
 use App\Models\License;
 use App\Models\Product;
-use App\Models\SubscriptionPlan;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -21,18 +19,14 @@ class LicenseFactory extends Factory
             'user_id' => User::factory(),
             'key' => License::generateKey(),
             'status' => LicenseStatus::Active,
-            'mode' => LicenseMode::Online,
             'max_devices' => fake()->numberBetween(1, 5),
             'expires_at' => now()->addYear(),
-            'metadata' => [],
+            'customer_name' => fake()->name(),
+            'customer_phone' => fake()->phoneNumber(),
+            'customer_store' => fake()->company(),
+            'customer_address' => fake()->address(),
+            'starts_at' => now(),
         ];
-    }
-
-    public function withSubscriptionPlan(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'subscription_plan_id' => SubscriptionPlan::factory(),
-        ]);
     }
 
     public function suspended(): static
@@ -43,15 +37,5 @@ class LicenseFactory extends Factory
     public function expired(): static
     {
         return $this->state(fn (array $attributes) => ['status' => LicenseStatus::Expired]);
-    }
-
-    public function offline(): static
-    {
-        return $this->state(fn (array $attributes) => ['mode' => LicenseMode::Offline]);
-    }
-
-    public function semiOnline(): static
-    {
-        return $this->state(fn (array $attributes) => ['mode' => LicenseMode::SemiOnline]);
     }
 }

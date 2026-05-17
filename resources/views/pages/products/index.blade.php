@@ -12,7 +12,6 @@ use function Livewire\Volt\{computed, state, uses};
 name('products.index');
 middleware('check.admin');
 
-
 uses(WithPagination::class);
 
 state([
@@ -61,7 +60,7 @@ $confirmDelete = function ($id) {
 
 $toggleStatus = function ($id) {
     $product = Product::findOrFail($id);
-    $product->update(['is_active' => ! $product->is_active]);
+    $product->update(['is_active' => !$product->is_active]);
 
     Flux::toast(duration: 1500, variant: 'success', text: $product->is_active ? __('Product activated.') : __('Product deactivated.'));
 };
@@ -127,330 +126,331 @@ $syncRepos = function () {
 
 <x-layouts::app :title="__('Products')">
     @volt
-    <div class="flex h-full w-full flex-1 flex-col gap-6 rounded-xl">
-        <flux:breadcrumbs>
-            <flux:breadcrumbs.item href="{{ route('dashboard') }}">{{ __('Home') }}</flux:breadcrumbs.item>
-            <flux:breadcrumbs.item>{{ __('Products') }}</flux:breadcrumbs.item>
-        </flux:breadcrumbs>
-
-        {{-- Header --}}
-        <div class="flex items-center justify-between" data-tour="products-header">
-            <div>
-                <flux:heading size="xl">{{ __('Products') }}</flux:heading>
-                <flux:subheading>{{ __('Manage your product inventory') }}</flux:subheading>
-            </div>
-            <div class="flex items-center gap-2" data-tour="products-create">
-                <flux:button variant="ghost" icon="arrow-path" wire:click="syncRepos">
-                    {{ __('Sync GitHub') }}
-                </flux:button>
-                <flux:button variant="primary" icon="plus" href="{{ route('products.create') }}">
-                    {{ __('Add Product') }}
-                </flux:button>
-            </div>
-        </div>
-
-        {{-- Stats --}}
-        <div class="grid grid-cols-2 gap-4">
-            <div class="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-800">
-                <p class="text-xs font-medium uppercase tracking-wider text-zinc-500">{{ __('Total Products') }}</p>
-                <p class="mt-1 text-2xl font-semibold">{{ $this->totalProducts }}</p>
-            </div>
-            <div class="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-800">
-                <p class="text-xs font-medium uppercase tracking-wider text-zinc-500">{{ __('Active') }}</p>
-                <p class="mt-1 text-2xl font-semibold text-emerald-600 dark:text-emerald-400">
-                    {{ $this->activeProducts }}
-                </p>
-            </div>
-        </div>
-
-        {{-- Search --}}
-        <flux:input size="md" wire:model.live="search" type="search"
-            placeholder="{{ __('Search by name or slug...') }}" />
-        <div
-            class="relative h-full flex-1 overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
-
-            {{-- Table --}}
-            <flux:table :paginate="$this->products" data-tour="products-table">
-                <flux:table.columns>
-                    <flux:table.column sortable :sorted="$sortBy === 'name'" :direction="$sortDirection"
-                        wire:click="sort('name')">
-                        {{ __('Name') }}
-                    </flux:table.column>
-
-                    <flux:table.column sortable :sorted="$sortBy === 'slug'" :direction="$sortDirection"
-                        wire:click="sort('slug')">
-                        {{ __('Slug') }}
-                    </flux:table.column>
-
-                    <flux:table.column>
-                        {{ __('GitHub Repository') }}
-                    </flux:table.column>
-
-                    <flux:table.column sortable :sorted="$sortBy === 'is_active'" :direction="$sortDirection"
-                        wire:click="sort('is_active')">
-                        {{ __('Status') }}
-                    </flux:table.column>
-
-                    <flux:table.column data-tour="products-actions">
-                        {{ __('Actions') }}
-                    </flux:table.column>
-                </flux:table.columns>
-
-                <flux:table.rows>
-                    @foreach ($this->products as $product)
-                        <flux:table.row :key="$product->id">
-                            <flux:table.cell class="font-medium">{{ $product->name }}</flux:table.cell>
-
-                            <flux:table.cell variant="strong">
-                                <code class="text-xs">{{ $product->slug }}</code>
-                            </flux:table.cell>
-
-                            <flux:table.cell>
-                                @if ($product->github_repo_full_name)
-                                    <a href="{{ $product->github_repo_url }}" target="_blank"
-                                        class="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
-                                        <flux:icon name="folder" variant="micro" class="size-3.5" />
-                                        {{ $product->github_repo_full_name }}
-                                    </a>
-                                @else
-                                    <span
-                                        class="text-xs text-zinc-400">{{ __('Not linked') }}</span>
-                                @endif
-                            </flux:table.cell>
-
-                            <flux:table.cell>
-                                <flux:button size="sm" variant="primary" :color="$product->is_active ? 'emerald' : 'red'"
-                                    wire:click="toggleStatus({{ $product->id }})">
-                                    {{ $product->is_active ? __('Active') : __('Inactive') }}
-                                </flux:button>
-                            </flux:table.cell>
-
-                            <flux:table.cell>
-                                <flux:dropdown position="bottom" align="end">
-                                    <flux:button variant="ghost" size="sm" icon="ellipsis-horizontal" inset="top bottom" />
-                                    <flux:menu>
-                                        <flux:menu.item icon="eye" wire:click="viewProduct({{ $product->id }})">
-                                            {{ __('View') }}
-                                        </flux:menu.item>
-                                        <flux:menu.item icon="pencil"
-                                            href="{{ route('products.edit', ['product' => $product->slug]) }}">
-                                            {{ __('Edit') }}
-                                        </flux:menu.item>
-                                        <flux:menu.separator />
-                                        <flux:menu.item icon="trash" variant="danger"
-                                            wire:click="confirmDelete({{ $product->id }})">
-                                            {{ __('Delete') }}
-                                        </flux:menu.item>
-                                    </flux:menu>
-                                </flux:dropdown>
-                            </flux:table.cell>
-                        </flux:table.row>
-                    @endforeach
-                </flux:table.rows>
-            </flux:table>
-
-        </div>
-
-       {{-- Detail Modal --}}
-<flux:modal wire:model.self="showDetailModal" class="max-w-4xl w-full">
-    @if ($detailProduct)
-        <div class="space-y-6">
+        <div class="flex h-full w-full flex-1 flex-col gap-6 rounded-xl">
+            <flux:breadcrumbs>
+                <flux:breadcrumbs.item href="{{ route('dashboard') }}">{{ __('Home') }}</flux:breadcrumbs.item>
+                <flux:breadcrumbs.item>{{ __('Products') }}</flux:breadcrumbs.item>
+            </flux:breadcrumbs>
 
             {{-- Header --}}
-            <div class="flex items-start justify-between gap-4">
-                <div class="min-w-0 flex-1">
-                    <div class="flex items-center gap-2">
-                        <flux:icon name="cube" class="size-5 text-zinc-400" />
-
-                        <flux:heading size="xl" class="truncate">
-                            {{ $detailProduct->name }}
-                        </flux:heading>
-                    </div>
-
-                    <flux:subheading class="mt-1">
-                        {{ __('Product details and GitHub repository information') }}
-                    </flux:subheading>
+            <div class="flex items-center justify-between" data-tour="products-header">
+                <div>
+                    <flux:heading size="xl">{{ __('Products') }}</flux:heading>
+                    <flux:subheading>{{ __('Manage your product inventory') }}</flux:subheading>
                 </div>
-
-                <flux:badge :color="$detailProduct->is_active ? 'emerald' : 'red'" size="lg">
-                    {{ $detailProduct->is_active ? __('Active') : __('Inactive') }}
-                </flux:badge>
+                <div class="flex items-center gap-2" data-tour="products-create">
+                    <flux:button variant="ghost" icon="arrow-path" wire:click="syncRepos">
+                        {{ __('Sync GitHub') }}
+                    </flux:button>
+                    <flux:button variant="primary" icon="plus" href="{{ route('products.create') }}">
+                        {{ __('Add Product') }}
+                    </flux:button>
+                </div>
             </div>
 
-            {{-- Content --}}
-            <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-
-                {{-- Product Information --}}
-                <div class="rounded-2xl">
-                    <div class="mb-5 flex items-center gap-2">
-                        <flux:icon name="information-circle" class="size-5 text-zinc-400" />
-
-                        <h3 class="text-sm font-semibold text-zinc-900 dark:text-white">
-                            {{ __('Product Information') }}
-                        </h3>
-                    </div>
-
-                    <div class="space-y-5">
-
-                        {{-- Slug --}}
-                        <div>
-                            <p class="text-xs font-medium uppercase tracking-wider text-zinc-400">
-                                {{ __('Slug') }}
-                            </p>
-
-                            <code
-                                class="mt-1 inline-flex rounded-lg bg-white px-2.5 py-1 text-xs dark:bg-zinc-900">
-                                {{ $detailProduct->slug }}
-                            </code>
-                        </div>
-
-                        {{-- Description --}}
-                        @if ($detailProduct->description)
-                            <div>
-                                <p class="text-xs font-medium uppercase tracking-wider text-zinc-400">
-                                    {{ __('Description') }}
-                                </p>
-
-                                <p class="mt-1.5 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
-                                    {{ $detailProduct->description }}
-                                </p>
-                            </div>
-                        @endif
-
-                    </div>
+            {{-- Stats --}}
+            <div class="grid grid-cols-2 gap-4">
+                <div class="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-800">
+                    <p class="text-xs font-medium uppercase tracking-wider text-zinc-500">{{ __('Total Products') }}</p>
+                    <p class="mt-1 text-2xl font-semibold">{{ $this->totalProducts }}</p>
                 </div>
+                <div class="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-800">
+                    <p class="text-xs font-medium uppercase tracking-wider text-zinc-500">{{ __('Active') }}</p>
+                    <p class="mt-1 text-2xl font-semibold text-emerald-600 dark:text-emerald-400">
+                        {{ $this->activeProducts }}
+                    </p>
+                </div>
+            </div>
 
-                {{-- GitHub Information --}}
-                <div class="rounded-2xl">
-                    <div class="mb-5 flex items-center gap-2">
-                        <flux:icon name="folder" class="size-5 text-zinc-400" />
+            {{-- Search --}}
+            <flux:input size="md" wire:model.live="search" type="search"
+                placeholder="{{ __('Search by name or slug...') }}" />
+            <div
+                class="relative h-full flex-1 overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
 
-                        <h3 class="text-sm font-semibold text-zinc-900 dark:text-white">
+                {{-- Table --}}
+                <flux:table :paginate="$this->products" data-tour="products-table">
+                    <flux:table.columns>
+                        <flux:table.column sortable :sorted="$sortBy === 'name'" :direction="$sortDirection"
+                            wire:click="sort('name')">
+                            {{ __('Name') }}
+                        </flux:table.column>
+
+                        <flux:table.column sortable :sorted="$sortBy === 'slug'" :direction="$sortDirection"
+                            wire:click="sort('slug')">
+                            {{ __('Slug') }}
+                        </flux:table.column>
+
+                        <flux:table.column>
                             {{ __('GitHub Repository') }}
-                        </h3>
-                    </div>
+                        </flux:table.column>
 
-                    @if ($detailProduct->github_repo_full_name)
-                        <div class="space-y-5">
+                        <flux:table.column sortable :sorted="$sortBy === 'is_active'" :direction="$sortDirection"
+                            wire:click="sort('is_active')">
+                            {{ __('Status') }}
+                        </flux:table.column>
 
-                            {{-- Repository --}}
-                            <div>
-                                <p class="text-xs font-medium uppercase tracking-wider text-zinc-400">
-                                    {{ __('Repository') }}
-                                </p>
+                        <flux:table.column data-tour="products-actions">
+                            {{ __('Actions') }}
+                        </flux:table.column>
+                    </flux:table.columns>
 
-                                <a href="{{ $detailProduct->github_repo_url }}" target="_blank"
-                                    class="mt-1.5 inline-flex items-center gap-2 text-sm font-medium text-blue-600 transition hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
-                                    <flux:icon name="folder" variant="micro" class="size-4" />
+                    <flux:table.rows>
+                        @foreach ($this->products as $product)
+                            <flux:table.row :key="$product->id">
+                                <flux:table.cell class="font-medium">{{ $product->name }}</flux:table.cell>
 
-                                    <span class="break-all">
-                                        {{ $detailProduct->github_repo_full_name }}
-                                    </span>
-                                </a>
-                            </div>
+                                <flux:table.cell variant="strong">
+                                    <code class="text-xs">{{ $product->slug }}</code>
+                                </flux:table.cell>
 
-                            {{-- Repository Description --}}
-                            @if ($detailProduct->github_repo_description)
-                                <div>
-                                    <p class="text-xs font-medium uppercase tracking-wider text-zinc-400">
-                                        {{ __('Repository Description') }}
-                                    </p>
+                                <flux:table.cell>
+                                    @if ($product->github_repo_full_name)
+                                        <a href="{{ $product->github_repo_url }}" target="_blank"
+                                            class="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                                            <flux:icon name="folder" variant="micro" class="size-3.5" />
+                                            {{ $product->github_repo_full_name }}
+                                        </a>
+                                    @else
+                                        <span class="text-xs text-zinc-400">{{ __('Not linked') }}</span>
+                                    @endif
+                                </flux:table.cell>
 
-                                    <p class="mt-1.5 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
-                                        {{ $detailProduct->github_repo_description }}
-                                    </p>
+                                <flux:table.cell>
+                                    <flux:button size="sm" variant="primary"
+                                        :color="$product->is_active ? 'emerald' : 'red'"
+                                        wire:click="toggleStatus({{ $product->id }})">
+                                        {{ $product->is_active ? __('Active') : __('Inactive') }}
+                                    </flux:button>
+                                </flux:table.cell>
+
+                                <flux:table.cell>
+                                    <flux:dropdown position="bottom" align="end">
+                                        <flux:button variant="ghost" size="sm" icon="ellipsis-horizontal"
+                                            inset="top bottom" />
+                                        <flux:menu>
+                                            <flux:menu.item icon="eye" wire:click="viewProduct({{ $product->id }})">
+                                                {{ __('View') }}
+                                            </flux:menu.item>
+                                            <flux:menu.item icon="pencil"
+                                                href="{{ route('products.edit', ['product' => $product->slug]) }}">
+                                                {{ __('Edit') }}
+                                            </flux:menu.item>
+                                            <flux:menu.separator />
+                                            <flux:menu.item icon="trash" variant="danger"
+                                                wire:click="confirmDelete({{ $product->id }})">
+                                                {{ __('Delete') }}
+                                            </flux:menu.item>
+                                        </flux:menu>
+                                    </flux:dropdown>
+                                </flux:table.cell>
+                            </flux:table.row>
+                        @endforeach
+                    </flux:table.rows>
+                </flux:table>
+
+            </div>
+
+            {{-- Detail Modal --}}
+            <flux:modal wire:model.self="showDetailModal" class="max-w-4xl w-full">
+                @if ($detailProduct)
+                    <div class="space-y-6">
+
+                        {{-- Header --}}
+                        <div class="flex items-start justify-between gap-4">
+                            <div class="min-w-0 flex-1">
+                                <div class="flex items-center gap-2">
+                                    <flux:icon name="cube" class="size-5 text-zinc-400" />
+
+                                    <flux:heading size="xl" class="truncate">
+                                        {{ $detailProduct->name }}
+                                    </flux:heading>
                                 </div>
-                            @endif
 
-                            {{-- Default Branch --}}
-                            <div>
-                                <p class="text-xs font-medium uppercase tracking-wider text-zinc-400">
-                                    {{ __('Default Branch') }}
-                                </p>
+                                <flux:subheading class="mt-1">
+                                    {{ __('Product details and GitHub repository information') }}
+                                </flux:subheading>
+                            </div>
 
-                                <code
-                                    class="mt-1 inline-flex rounded-lg bg-white px-2.5 py-1 text-xs dark:bg-zinc-900">
-                                    {{ $detailProduct->github_default_branch ?? 'main' }}
-                                </code>
+                            <flux:badge :color="$detailProduct->is_active ? 'emerald' : 'red'" size="lg">
+                                {{ $detailProduct->is_active ? __('Active') : __('Inactive') }}
+                            </flux:badge>
+                        </div>
+
+                        {{-- Content --}}
+                        <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+
+                            {{-- Product Information --}}
+                            <div class="rounded-2xl">
+                                <div class="mb-5 flex items-center gap-2">
+                                    <flux:icon name="information-circle" class="size-5 text-zinc-400" />
+
+                                    <h3 class="text-sm font-semibold text-zinc-900 dark:text-white">
+                                        {{ __('Product Information') }}
+                                    </h3>
+                                </div>
+
+                                <div class="space-y-5">
+
+                                    {{-- Slug --}}
+                                    <div>
+                                        <p class="text-xs font-medium uppercase tracking-wider text-zinc-400">
+                                            {{ __('Slug') }}
+                                        </p>
+
+                                        <code
+                                            class="mt-1 inline-flex rounded-lg bg-white px-2.5 py-1 text-xs dark:bg-zinc-900">
+                                            {{ $detailProduct->slug }}
+                                        </code>
+                                    </div>
+
+                                    {{-- Description --}}
+                                    @if ($detailProduct->description)
+                                        <div>
+                                            <p class="text-xs font-medium uppercase tracking-wider text-zinc-400">
+                                                {{ __('Description') }}
+                                            </p>
+
+                                            <p class="mt-1.5 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
+                                                {{ $detailProduct->description }}
+                                            </p>
+                                        </div>
+                                    @endif
+
+                                </div>
+                            </div>
+
+                            {{-- GitHub Information --}}
+                            <div class="rounded-2xl">
+                                <div class="mb-5 flex items-center gap-2">
+                                    <flux:icon name="folder" class="size-5 text-zinc-400" />
+
+                                    <h3 class="text-sm font-semibold text-zinc-900 dark:text-white">
+                                        {{ __('GitHub Repository') }}
+                                    </h3>
+                                </div>
+
+                                @if ($detailProduct->github_repo_full_name)
+                                    <div class="space-y-5">
+
+                                        {{-- Repository --}}
+                                        <div>
+                                            <p class="text-xs font-medium uppercase tracking-wider text-zinc-400">
+                                                {{ __('Repository') }}
+                                            </p>
+
+                                            <a href="{{ $detailProduct->github_repo_url }}" target="_blank"
+                                                class="mt-1.5 inline-flex items-center gap-2 text-sm font-medium text-blue-600 transition hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                                                <flux:icon name="folder" variant="micro" class="size-4" />
+
+                                                <span class="break-all">
+                                                    {{ $detailProduct->github_repo_full_name }}
+                                                </span>
+                                            </a>
+                                        </div>
+
+                                        {{-- Repository Description --}}
+                                        @if ($detailProduct->github_repo_description)
+                                            <div>
+                                                <p class="text-xs font-medium uppercase tracking-wider text-zinc-400">
+                                                    {{ __('Repository Description') }}
+                                                </p>
+
+                                                <p class="mt-1.5 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
+                                                    {{ $detailProduct->github_repo_description }}
+                                                </p>
+                                            </div>
+                                        @endif
+
+                                        {{-- Default Branch --}}
+                                        <div>
+                                            <p class="text-xs font-medium uppercase tracking-wider text-zinc-400">
+                                                {{ __('Default Branch') }}
+                                            </p>
+
+                                            <code
+                                                class="mt-1 inline-flex rounded-lg bg-white px-2.5 py-1 text-xs dark:bg-zinc-900">
+                                                {{ $detailProduct->github_default_branch ?? 'main' }}
+                                            </code>
+                                        </div>
+
+                                    </div>
+                                @else
+                                    <div class="flex flex-col items-center justify-center py-10 text-center">
+                                        <flux:icon name="folder" class="size-10 text-zinc-300 dark:text-zinc-600" />
+
+                                        <p class="mt-3 text-sm font-medium text-zinc-500">
+                                            {{ __('No GitHub repository linked') }}
+                                        </p>
+
+                                        <p class="mt-1 text-xs text-zinc-400">
+                                            {{ __('This product is not connected to any repository.') }}
+                                        </p>
+                                    </div>
+                                @endif
                             </div>
 
                         </div>
-                    @else
-                        <div class="flex flex-col items-center justify-center py-10 text-center">
-                            <flux:icon name="folder" class="size-10 text-zinc-300 dark:text-zinc-600" />
 
-                            <p class="mt-3 text-sm font-medium text-zinc-500">
-                                {{ __('No GitHub repository linked') }}
-                            </p>
+                        {{-- Footer --}}
+                        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
-                            <p class="mt-1 text-xs text-zinc-400">
-                                {{ __('This product is not connected to any repository.') }}
-                            </p>
+                            <div class="flex flex-wrap gap-4 text-xs text-zinc-400">
+                                <span>
+                                    {{ __('Created') }}:
+                                    {{ $detailProduct->created_at->format('d M Y, H:i') }}
+                                </span>
+
+                                <span>
+                                    {{ __('Updated') }}:
+                                    {{ $detailProduct->updated_at->format('d M Y, H:i') }}
+                                </span>
+                            </div>
+
+                            <div class="flex items-center gap-2">
+                                @if ($detailProduct->github_repo_url)
+                                    <flux:button variant="ghost" href="{{ $detailProduct->github_repo_url }}"
+                                        target="_blank" icon="arrow-top-right-on-square">
+                                        {{ __('Open Repository') }}
+                                    </flux:button>
+                                @endif
+
+                                <flux:modal.close>
+                                    <flux:button variant="primary">
+                                        {{ __('Close') }}
+                                    </flux:button>
+                                </flux:modal.close>
+                            </div>
                         </div>
-                    @endif
-                </div>
 
-            </div>
+                    </div>
+                @endif
+            </flux:modal>
 
-            {{-- Footer --}}
-            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            {{-- Delete Confirmation Modal --}}
+            <flux:modal wire:model.self="showDeleteModal" class="max-w-lg">
+                <form wire:submit="delete" class="space-y-6">
+                    <div class="flex items-start gap-4">
+                        <div
+                            class="flex size-10 shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
+                            <flux:icon name="exclamation-triangle" variant="micro" class="text-red-600" />
+                        </div>
+                        <div>
+                            <flux:heading size="lg">{{ __('Delete Product') }}</flux:heading>
+                            <flux:subheading class="mt-1">
+                                {{ __('Are you sure you want to delete this product? This action cannot be undone.') }}
+                            </flux:subheading>
+                        </div>
+                    </div>
 
-                <div class="flex flex-wrap gap-4 text-xs text-zinc-400">
-                    <span>
-                        {{ __('Created') }}:
-                        {{ $detailProduct->created_at->format('d M Y, H:i') }}
-                    </span>
-
-                    <span>
-                        {{ __('Updated') }}:
-                        {{ $detailProduct->updated_at->format('d M Y, H:i') }}
-                    </span>
-                </div>
-
-                <div class="flex items-center gap-2">
-                    @if ($detailProduct->github_repo_url)
-                        <flux:button variant="ghost" href="{{ $detailProduct->github_repo_url }}"
-                            target="_blank" icon="arrow-top-right-on-square">
-                            {{ __('Open Repository') }}
-                        </flux:button>
-                    @endif
-
-                    <flux:modal.close>
-                        <flux:button variant="primary">
-                            {{ __('Close') }}
-                        </flux:button>
-                    </flux:modal.close>
-                </div>
-            </div>
-
+                    <div class="flex justify-end gap-2">
+                        <flux:modal.close>
+                            <flux:button variant="filled">{{ __('Cancel') }}</flux:button>
+                        </flux:modal.close>
+                        <flux:button variant="danger" type="submit">{{ __('Delete') }}</flux:button>
+                    </div>
+                </form>
+            </flux:modal>
         </div>
-    @endif
-</flux:modal>
-
-        {{-- Delete Confirmation Modal --}}
-        <flux:modal wire:model.self="showDeleteModal" class="max-w-lg">
-            <form wire:submit="delete" class="space-y-6">
-                <div class="flex items-start gap-4">
-                    <div
-                        class="flex size-10 shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
-                        <flux:icon name="exclamation-triangle" variant="micro" class="text-red-600" />
-                    </div>
-                    <div>
-                        <flux:heading size="lg">{{ __('Delete Product') }}</flux:heading>
-                        <flux:subheading class="mt-1">
-                            {{ __('Are you sure you want to delete this product? This action cannot be undone.') }}
-                        </flux:subheading>
-                    </div>
-                </div>
-
-                <div class="flex justify-end gap-2">
-                    <flux:modal.close>
-                        <flux:button variant="filled">{{ __('Cancel') }}</flux:button>
-                    </flux:modal.close>
-                    <flux:button variant="danger" type="submit">{{ __('Delete') }}</flux:button>
-                </div>
-            </form>
-        </flux:modal>
-    </div>
     @endvolt
 </x-layouts::app>

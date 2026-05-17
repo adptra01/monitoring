@@ -9,7 +9,7 @@ use App\Enums\LicenseMode;
 use Flux\Flux;
 
 use function Laravel\Folio\{name, middleware};
-use function Livewire\Volt\{state, mount, computed};
+use function Livewire\Volt\{state, computed};
 
 name('licenses.create');
 middleware('check.admin');
@@ -26,6 +26,7 @@ state([
 
 $products = computed(fn() => Product::where('is_active', true)->get());
 $users = computed(fn() => User::all());
+
 $plans = computed(fn() => SubscriptionPlan::where('product_id', $this->product_id)->where('is_active', true)->get());
 
 $save = function () {
@@ -65,7 +66,6 @@ $save = function () {
                 <flux:breadcrumbs.item>{{ __('Create') }}</flux:breadcrumbs.item>
             </flux:breadcrumbs>
 
-            {{-- Header --}}
             <div class="flex items-center justify-between">
                 <div>
                     <flux:heading size="xl">{{ __('Create License') }}</flux:heading>

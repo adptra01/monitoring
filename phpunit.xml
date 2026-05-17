@@ -32,5 +32,9 @@
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
+        <env name="GITHUB_TOKEN" value="test-token"/>
+        <env name="GITHUB_SYNC_REPO_OWNER" value="devWebs01"/>
+        <env name="GITHUB_SYNC_REPO_NAME" value="license-sync-data"/>
+        <env name="GITHUB_SYNC_PATH" value="licenses"/>
     </php>
 </phpunit>

@@ -2,13 +2,11 @@
 
 namespace App\Models;
 
-use App\Enums\LicenseMode;
 use App\Enums\LicenseStatus;
 use App\Services\LicenseKeyService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class License extends Model
 {
@@ -20,23 +18,25 @@ class License extends Model
         'subscription_plan_id',
         'key',
         'status',
-        'mode',
         'max_devices',
         'expires_at',
-        'activated_at',
-        'metadata',
+        'starts_at',
         'notes',
+        'customer_name',
+        'customer_phone',
+        'customer_store',
+        'customer_address',
+        'devices',
     ];
 
     protected function casts(): array
     {
         return [
             'status' => LicenseStatus::class,
-            'mode' => LicenseMode::class,
             'max_devices' => 'integer',
             'expires_at' => 'datetime',
-            'activated_at' => 'datetime',
-            'metadata' => 'array',
+            'starts_at' => 'datetime',
+            'devices' => 'array',
         ];
     }
 
@@ -45,29 +45,9 @@ class License extends Model
         return $this->belongsTo(Product::class);
     }
 
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
-    }
-
     public function subscriptionPlan(): BelongsTo
     {
         return $this->belongsTo(SubscriptionPlan::class);
-    }
-
-    public function devices(): HasMany
-    {
-        return $this->hasMany(Device::class);
-    }
-
-    public function activationRequests(): HasMany
-    {
-        return $this->hasMany(ActivationRequest::class);
-    }
-
-    public function subscriptions(): HasMany
-    {
-        return $this->hasMany(Subscription::class);
     }
 
     public static function generateKey(): string
@@ -90,6 +70,13 @@ class License extends Model
 
     public function hasAvailableSlots(): bool
     {
-        return $this->devices()->count() < $this->max_devices;
+        $devices = $this->devices ?? [];
+
+        return count($devices) < $this->max_devices;
+    }
+
+    public function registeredDevicesCount(): int
+    {
+        return count($this->devices ?? []);
     }
 }

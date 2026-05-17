@@ -3,13 +3,7 @@
 namespace App\Services;
 
 use App\Enums\LicenseStatus;
-use App\Enums\SubscriptionStatus;
-use App\Events\LicenseCreated;
-use App\Events\LicenseRestored;
-use App\Events\LicenseRevoked;
-use App\Events\LicenseSuspended;
 use App\Models\License;
-use Illuminate\Support\Facades\Event;
 
 class LicenseService
 {
@@ -21,11 +15,7 @@ class LicenseService
     {
         $data['key'] = $data['key'] ?? $this->keyService->generate();
 
-        $license = License::create($data);
-
-        Event::dispatch(new LicenseCreated($license));
-
-        return $license;
+        return License::create($data);
     }
 
     public function validate(License $license): array
@@ -38,30 +28,12 @@ class LicenseService
             return ['valid' => false, 'reason' => 'Lisensi telah kedaluwarsa'];
         }
 
-        if ($license->subscription_plan_id) {
-            $subscription = $license->subscriptions()
-                ->whereIn('status', [SubscriptionStatus::Active, SubscriptionStatus::Trialing, SubscriptionStatus::PastDue])
-                ->where('current_period_end_at', '>', now())
-                ->latest()
-                ->first();
-
-            if (! $subscription) {
-                return ['valid' => false, 'reason' => 'Langganan tidak aktif atau telah kedaluwarsa'];
-            }
-
-            if ($subscription->status === SubscriptionStatus::PastDue) {
-                return ['valid' => false, 'reason' => 'Pembayaran langganan tertunda'];
-            }
-        }
-
         return ['valid' => true, 'reason' => null];
     }
 
     public function suspend(License $license): bool
     {
         $license->update(['status' => LicenseStatus::Suspended]);
-
-        Event::dispatch(new LicenseSuspended($license));
 
         return true;
     }
@@ -70,16 +42,12 @@ class LicenseService
     {
         $license->update(['status' => LicenseStatus::Revoked]);
 
-        Event::dispatch(new LicenseRevoked($license));
-
         return true;
     }
 
     public function restore(License $license): bool
     {
         $license->update(['status' => LicenseStatus::Active]);
-
-        Event::dispatch(new LicenseRestored($license));
 
         return true;
     }
