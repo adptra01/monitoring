@@ -176,10 +176,10 @@ $syncRepos = function () {
                             {{ __('Name') }}
                         </flux:table.column>
 
-                        <flux:table.column sortable :sorted="$sortBy === 'slug'" :direction="$sortDirection"
+                        {{-- <flux:table.column sortable :sorted="$sortBy === 'slug'" :direction="$sortDirection"
                             wire:click="sort('slug')">
                             {{ __('Slug') }}
-                        </flux:table.column>
+                        </flux:table.column> --}}
 
                         <flux:table.column>
                             {{ __('GitHub Repository') }}
@@ -200,9 +200,9 @@ $syncRepos = function () {
                             <flux:table.row :key="$product->id">
                                 <flux:table.cell class="font-medium">{{ $product->name }}</flux:table.cell>
 
-                                <flux:table.cell variant="strong">
+                                {{-- <flux:table.cell variant="strong">
                                     <code class="text-xs">{{ $product->slug }}</code>
-                                </flux:table.cell>
+                                </flux:table.cell> --}}
 
                                 <flux:table.cell>
                                     @if ($product->github_repo_full_name)
@@ -233,7 +233,7 @@ $syncRepos = function () {
                                                 {{ __('View') }}
                                             </flux:menu.item>
                                             <flux:menu.item icon="pencil"
-                                                href="{{ route('products.edit', ['product' => $product->slug]) }}">
+                                                href="{{ route('products.edit', ['slug' => $product->slug]) }}">
                                                 {{ __('Edit') }}
                                             </flux:menu.item>
                                             <flux:menu.separator />

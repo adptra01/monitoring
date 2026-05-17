@@ -21,8 +21,8 @@ state([
     'directPermissions' => [],
 ]);
 
-mount(function (string $user) {
-    $this->user = User::with('roles', 'permissions')->findOrFail($user);
+mount(function (string $id) {
+    $this->user = User::with('roles', 'permissions')->findOrFail($id);
     $this->name = $this->user->name;
     $this->email = $this->user->email;
     $this->selectedRoles = $this->user->roles->pluck('name')->toArray();

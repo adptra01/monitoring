@@ -26,9 +26,8 @@ state([
     'edit_notes' => '',
 ]);
 
-mount(function (string $license) {
-    $licenseModel = License::where('key', $license)->orWhere('id', $license)->firstOrFail();
-    $this->license = $licenseModel;
+mount(function (string $id) {
+    $this->license = License::where('key', $id)->orWhere('id', $id)->firstOrFail();
 });
 
 $fillEdit = function () {
@@ -48,10 +47,10 @@ $editProducts = computed(fn() => Product::where('is_active', true)->orderBy('nam
 $editPlans = computed(fn() => SubscriptionPlan::where('product_id', $this->edit_product_id)->where('is_active', true)->get());
 
 $toggleEdit = function () {
-    if (! $this->editing) {
+    if (!$this->editing) {
         $this->fillEdit();
     }
-    $this->editing = ! $this->editing;
+    $this->editing = !$this->editing;
 };
 
 $saveEdit = function () {
@@ -125,6 +124,9 @@ $delete = function () {
                     <flux:heading size="xl">{{ __('License Details') }}</flux:heading>
                     <flux:subheading>{{ __('View and manage license :key', ['key' => $license->key]) }}</flux:subheading>
                 </div>
+
+            </div>
+            <div class="flex items-center justify-between">
                 <div class="flex gap-2">
                     @if ($license->status->value !== 'active')
                         <flux:button variant="primary" icon="check" wire:click="restore">
@@ -149,10 +151,11 @@ $delete = function () {
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+            <div class="w-full grid grid-cols-1 gap-6 md:grid-cols-3">
                 <div class="col-span-2 space-y-6">
                     @if ($editing)
-                        <div class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-zinc-800 p-6">
+                        <div
+                            class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-zinc-800 p-6">
                             <flux:heading size="lg" class="mb-4">{{ __('Edit License') }}</flux:heading>
                             <form wire:submit="saveEdit" class="space-y-6">
                                 <flux:select wire:model.live="edit_product_id" :label="__('Product')" required>
@@ -182,7 +185,8 @@ $delete = function () {
                                 </div>
 
                                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                    <flux:input wire:model="edit_max_devices" type="number" min="1" :label="__('Max Devices')" required />
+                                    <flux:input wire:model="edit_max_devices" type="number" min="1"
+                                        :label="__('Max Devices')" required />
                                     <flux:input wire:model="edit_expires_at" type="date" :label="__('Expires At')" />
                                 </div>
 
@@ -195,16 +199,19 @@ $delete = function () {
                             </form>
                         </div>
                     @else
-                        <div class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-zinc-800 p-6">
+                        <div
+                            class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-zinc-800 p-6">
                             <flux:heading size="lg" class="mb-4">{{ __('License Information') }}</flux:heading>
 
                             <div class="grid grid-cols-2 gap-y-4 text-sm">
                                 <div class="text-neutral-500">{{ __('Key') }}</div>
-                                <div class="font-mono bg-neutral-100 dark:bg-zinc-900 px-2 py-1 rounded w-fit">{{ $license->key }}</div>
+                                <div class="font-mono bg-neutral-100 dark:bg-zinc-900 px-2 py-1 rounded w-fit">
+                                    {{ $license->key }}</div>
 
                                 <div class="text-neutral-500">{{ __('Status') }}</div>
                                 <div>
-                                    <flux:badge :color="$license->status->value === 'active' ? 'green' : 'red'" size="sm">
+                                    <flux:badge :color="$license->status->value === 'active' ? 'green' : 'red'"
+                                        size="sm">
                                         {{ $license->status->label() }}
                                     </flux:badge>
                                 </div>
@@ -263,10 +270,14 @@ $delete = function () {
                                 <flux:table.rows>
                                     @foreach ($devices as $device)
                                         <flux:table.row :key="$device['fingerprint'] ?? ''">
-                                            <flux:table.cell class="font-medium">{{ $device['name'] ?? '-' }}</flux:table.cell>
-                                            <flux:table.cell class="font-mono text-xs">{{ Str::limit($device['fingerprint'] ?? '', 16) }}</flux:table.cell>
+                                            <flux:table.cell class="font-medium">{{ $device['name'] ?? '-' }}
+                                            </flux:table.cell>
+                                            <flux:table.cell class="font-mono text-xs">
+                                                {{ Str::limit($device['fingerprint'] ?? '', 16) }}</flux:table.cell>
                                             <flux:table.cell>{{ $device['platform'] ?? '-' }}</flux:table.cell>
-                                            <flux:table.cell>{{ isset($device['last_seen_at']) ? \Carbon\Carbon::parse($device['last_seen_at'])->diffForHumans() : '-' }}</flux:table.cell>
+                                            <flux:table.cell>
+                                                {{ isset($device['last_seen_at']) ? \Carbon\Carbon::parse($device['last_seen_at'])->diffForHumans() : '-' }}
+                                            </flux:table.cell>
                                         </flux:table.row>
                                     @endforeach
                                 </flux:table.rows>

@@ -22,8 +22,8 @@ state([
     'repos' => [],
 ]);
 
-mount(function (string $product) {
-    $this->product = Product::where('slug', $product)->firstOrFail();
+mount(function (string $slug) {
+    $this->product = Product::where('slug', $slug)->firstOrFail();
     $this->name = $this->product->name;
     $this->slug = $this->product->slug;
     $this->description = $this->product->description;

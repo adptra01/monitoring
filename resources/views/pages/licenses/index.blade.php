@@ -101,7 +101,7 @@ $delete = function () {
                     @foreach ($this->licenses as $license)
                         <flux:table.row :key="$license->id">
                             <flux:table.cell class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded w-fit">
-                                <a href="{{ route('licenses.edit', ['license' => $license->id]) }}" class="hover:underline">
+                                <a href="{{ route('licenses.edit', ['id' => $license->id]) }}" class="hover:underline">
                                     {{ $license->key }}
                                 </a>
                             </flux:table.cell>
@@ -130,11 +130,11 @@ $delete = function () {
                                     <flux:button variant="ghost" size="sm" icon="ellipsis-horizontal" inset="top bottom" />
                                     <flux:menu>
                                         <flux:menu.item icon="eye"
-                                            href="{{ route('licenses.edit', ['license' => $license->id]) }}">
+                                            href="{{ route('licenses.edit', ['id' => $license->id]) }}">
                                             {{ __('View') }}
                                         </flux:menu.item>
                                         <flux:menu.item icon="pencil"
-                                            href="{{ route('licenses.edit', ['license' => $license->id]) }}">
+                                            href="{{ route('licenses.edit', ['id' => $license->id]) }}">
                                             {{ __('Edit') }}
                                         </flux:menu.item>
                                         <flux:menu.separator />
@@ -165,7 +165,7 @@ $delete = function () {
                         </flux:subheading>
                         @if ($deletingLicense)
                             <div class="mt-3 p-3 bg-zinc-100 dark:bg-zinc-900 rounded-lg">
-                                <code class="text-sm font-mono">{{ $deletinglicense->id }}</code>
+                                <code class="text-sm font-mono">{{ $deletingLicense->id }}</code>
                                 <p class="text-xs text-zinc-500 mt-1">{{ $deletingLicense->product->name }} &middot; {{ $deletingLicense->customer_name }}</p>
                             </div>
                         @endif
