@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -53,27 +52,5 @@ class RolePermissionSeeder extends Seeder
 
         $userRole = Role::updateOrCreate(['name' => 'user'], ['guard_name' => 'web']);
         $userRole->syncPermissions(['view licenses', 'view products']);
-
-        $this->createAdminUsers();
-    }
-
-    private function createAdminUsers(): void
-    {
-        $admins = [
-            ['name' => 'Super Admin', 'email' => 'admin@testing.com', 'password' => 'password'],
-        ];
-
-        foreach ($admins as $adminData) {
-            $admin = User::updateOrCreate(
-                ['email' => $adminData['email']],
-                [
-                    'name' => $adminData['name'],
-                    'email' => $adminData['email'],
-                    'password' => bcrypt($adminData['password']),
-                    'email_verified_at' => now(),
-                ]
-            );
-            $admin->assignRole('admin');
-        }
     }
 }
