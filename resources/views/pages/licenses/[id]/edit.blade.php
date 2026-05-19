@@ -186,10 +186,10 @@ $delete = function () {
                                     @endforeach
                                 </flux:select>
 
-                                @if ($editSelectedPlan)
+                                @if ($this->editSelectedPlan)
                                     <div class="rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 p-3 text-sm text-blue-800 dark:text-blue-200">
-                                        <p class="font-medium">{{ $editSelectedPlan->name }}</p>
-                                        <p class="mt-1">{{ __('Duration') }}: <strong>{{ $editSelectedPlan->duration_days }} {{ __('days') }}</strong></p>
+                                        <p class="font-medium">{{ $this->editSelectedPlan->name }}</p>
+                                        <p class="mt-1">{{ __('Duration') }}: <strong>{{ $this->editSelectedPlan->duration_days }} {{ __('days') }}</strong></p>
                                         <p>{{ __('License will auto-expire after the plan duration. You can adjust dates manually below.') }}</p>
                                     </div>
                                 @endif

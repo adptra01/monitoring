@@ -18,6 +18,7 @@ state([
     'search' => '',
     'sortBy' => 'id',
     'sortDirection' => 'asc',
+    'selected' => [],
 ])->url();
 
 state([
@@ -25,6 +26,10 @@ state([
     'detailProduct' => null,
     'showDeleteModal' => false,
     'deletingProductId' => null,
+    'showBulkDeleteModal' => false,
+    'showBulkDeleteAllModal' => false,
+    'showBulkToggleModal' => false,
+    'bulkToggleValue' => true,
 ]);
 
 $sort = function ($column) {
@@ -78,6 +83,65 @@ $delete = function () {
     $this->showDeleteModal = false;
 
     Flux::toast(duration: 1500, variant: 'success', text: __('Product deleted.'));
+};
+
+$toggleSelectAll = function () {
+    $ids = $this->products->pluck('id')->map(fn ($id) => (string) $id)->toArray();
+    $selectedIds = collect($this->selected)->map(fn ($id) => (string) $id)->toArray();
+
+    if (count(array_intersect($selectedIds, $ids)) === count($ids)) {
+        $this->selected = array_values(array_diff($selectedIds, $ids));
+    } else {
+        $this->selected = array_values(array_unique(array_merge($selectedIds, $ids)));
+    }
+};
+
+$confirmBulkDelete = function () {
+    if (empty($this->selected)) {
+        Flux::toast(duration: 1500, variant: 'warning', text: __('No items selected.'));
+
+        return;
+    }
+    $this->showBulkDeleteModal = true;
+};
+
+$bulkDelete = function () {
+    Product::whereIn('id', $this->selected)->delete();
+    $this->selected = [];
+    $this->showBulkDeleteModal = false;
+
+    Flux::toast(duration: 1500, variant: 'success', text: __('Selected products deleted.'));
+};
+
+$confirmBulkDeleteAll = function () {
+    $this->showBulkDeleteAllModal = true;
+};
+
+$bulkDeleteAll = function () {
+    Product::query()->delete();
+    $this->selected = [];
+    $this->showBulkDeleteAllModal = false;
+
+    Flux::toast(duration: 1500, variant: 'success', text: __('All products deleted.'));
+};
+
+$confirmBulkToggle = function ($value) {
+    if (empty($this->selected)) {
+        Flux::toast(duration: 1500, variant: 'warning', text: __('No items selected.'));
+
+        return;
+    }
+    $this->bulkToggleValue = $value;
+    $this->showBulkToggleModal = true;
+};
+
+$bulkToggle = function () {
+    Product::whereIn('id', $this->selected)->update(['is_active' => $this->bulkToggleValue]);
+    $this->selected = [];
+    $this->showBulkToggleModal = false;
+
+    $label = $this->bulkToggleValue ? __('activated') : __('deactivated');
+    Flux::toast(duration: 1500, variant: 'success', text: __('Selected products :label.', ['label' => $label]));
 };
 
 $syncRepos = function () {
@@ -166,89 +230,114 @@ $syncRepos = function () {
             <flux:input size="md" wire:model.live="search" type="search"
                 placeholder="{{ __('Search by name or slug...') }}" />
             <div
-                class="relative h-full flex-1 overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
+                class="relative h-full flex-1 overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700">
 
-                {{-- Table --}}
-                <flux:table :paginate="$this->products" data-tour="products-table">
-                    <flux:table.columns>
-                        <flux:table.column sortable :sorted="$sortBy === 'name'" :direction="$sortDirection"
-                            wire:click="sort('name')">
-                            {{ __('Name') }}
-                        </flux:table.column>
+                {{-- Bulk Actions Toolbar --}}
+                @if (!empty($selected))
+                    <div
+                        class="flex items-center justify-between border-b border-neutral-200 bg-zinc-50 px-4 py-2 dark:border-neutral-700 dark:bg-zinc-800/50">
+                        <flux:text size="sm" class="font-medium">
+                            {{ __(':count item(s) selected', ['count' => count($selected)]) }}
+                        </flux:text>
+                        <div class="flex items-center gap-2">
+                            <flux:button size="sm" variant="primary" color="green"
+                                wire:click="confirmBulkToggle(true)">
+                                {{ __('Activate') }}
+                            </flux:button>
+                            <flux:button size="sm" variant="primary" color="red"
+                                wire:click="confirmBulkToggle(false)">
+                                {{ __('Deactivate') }}
+                            </flux:button>
+                            <flux:button size="sm" variant="danger" wire:click="confirmBulkDelete">
+                                {{ __('Delete Selected') }}
+                            </flux:button>
+                            <flux:button size="sm" variant="danger" wire:click="confirmBulkDeleteAll">
+                                {{ __('Delete All') }}
+                            </flux:button>
+                        </div>
+                    </div>
+                @endif
 
-                        {{-- <flux:table.column sortable :sorted="$sortBy === 'slug'" :direction="$sortDirection"
-                            wire:click="sort('slug')">
-                            {{ __('Slug') }}
-                        </flux:table.column> --}}
+                <div class="p-6">
+                    <flux:table :paginate="$this->products" data-tour="products-table">
+                        <flux:table.columns>
+                            <flux:table.column class="w-10">
+                                <flux:checkbox wire:click="toggleSelectAll"
+                                    :checked="count($this->products) > 0 && collect($this->products->pluck('id'))->every(fn($id) => in_array((string) $id, array_map('strval', $this->selected ?? [])))" />
+                            </flux:table.column>
+                            <flux:table.column sortable :sorted="$sortBy === 'name'" :direction="$sortDirection"
+                                wire:click="sort('name')">
+                                {{ __('Name') }}
+                            </flux:table.column>
 
-                        <flux:table.column>
-                            {{ __('GitHub Repository') }}
-                        </flux:table.column>
+                            <flux:table.column>
+                                {{ __('GitHub Repository') }}
+                            </flux:table.column>
 
-                        <flux:table.column sortable :sorted="$sortBy === 'is_active'" :direction="$sortDirection"
-                            wire:click="sort('is_active')">
-                            {{ __('Status') }}
-                        </flux:table.column>
+                            <flux:table.column sortable :sorted="$sortBy === 'is_active'" :direction="$sortDirection"
+                                wire:click="sort('is_active')">
+                                {{ __('Status') }}
+                            </flux:table.column>
 
-                        <flux:table.column data-tour="products-actions">
-                            {{ __('Actions') }}
-                        </flux:table.column>
-                    </flux:table.columns>
+                            <flux:table.column data-tour="products-actions">
+                                {{ __('Actions') }}
+                            </flux:table.column>
+                        </flux:table.columns>
 
-                    <flux:table.rows>
-                        @foreach ($this->products as $product)
-                            <flux:table.row :key="$product->id">
-                                <flux:table.cell class="font-medium">{{ $product->name }}</flux:table.cell>
+                        <flux:table.rows>
+                            @foreach ($this->products as $product)
+                                <flux:table.row :key="$product->id"
+                                    class="{{ in_array((string) $product->id, array_map('strval', $this->selected ?? [])) ? 'bg-blue-50 dark:bg-blue-900/20' : '' }}">
+                                    <flux:table.cell class="w-10">
+                                        <flux:checkbox wire:model.live="selected" value="{{ $product->id }}" />
+                                    </flux:table.cell>
+                                    <flux:table.cell class="font-medium">{{ $product->name }}</flux:table.cell>
 
-                                {{-- <flux:table.cell variant="strong">
-                                    <code class="text-xs">{{ $product->slug }}</code>
-                                </flux:table.cell> --}}
+                                    <flux:table.cell>
+                                        @if ($product->github_repo_full_name)
+                                            <a href="{{ $product->github_repo_url }}" target="_blank"
+                                                class="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                                                <flux:icon name="folder" variant="micro" class="size-3.5" />
+                                                {{ $product->github_repo_full_name }}
+                                            </a>
+                                        @else
+                                            <span class="text-xs text-zinc-400">{{ __('Not linked') }}</span>
+                                        @endif
+                                    </flux:table.cell>
 
-                                <flux:table.cell>
-                                    @if ($product->github_repo_full_name)
-                                        <a href="{{ $product->github_repo_url }}" target="_blank"
-                                            class="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
-                                            <flux:icon name="folder" variant="micro" class="size-3.5" />
-                                            {{ $product->github_repo_full_name }}
-                                        </a>
-                                    @else
-                                        <span class="text-xs text-zinc-400">{{ __('Not linked') }}</span>
-                                    @endif
-                                </flux:table.cell>
+                                    <flux:table.cell>
+                                        <flux:button size="sm" variant="primary"
+                                            :color="$product->is_active ? 'emerald' : 'red'"
+                                            wire:click="toggleStatus({{ $product->id }})">
+                                            {{ $product->is_active ? __('Active') : __('Inactive') }}
+                                        </flux:button>
+                                    </flux:table.cell>
 
-                                <flux:table.cell>
-                                    <flux:button size="sm" variant="primary"
-                                        :color="$product->is_active ? 'emerald' : 'red'"
-                                        wire:click="toggleStatus({{ $product->id }})">
-                                        {{ $product->is_active ? __('Active') : __('Inactive') }}
-                                    </flux:button>
-                                </flux:table.cell>
-
-                                <flux:table.cell>
-                                    <flux:dropdown position="bottom" align="end">
-                                        <flux:button variant="ghost" size="sm" icon="ellipsis-horizontal"
-                                            inset="top bottom" />
-                                        <flux:menu>
-                                            <flux:menu.item icon="eye" wire:click="viewProduct({{ $product->id }})">
-                                                {{ __('View') }}
-                                            </flux:menu.item>
-                                            <flux:menu.item icon="pencil"
-                                                href="{{ route('products.edit', ['slug' => $product->slug]) }}">
-                                                {{ __('Edit') }}
-                                            </flux:menu.item>
-                                            <flux:menu.separator />
-                                            <flux:menu.item icon="trash" variant="danger"
-                                                wire:click="confirmDelete({{ $product->id }})">
-                                                {{ __('Delete') }}
-                                            </flux:menu.item>
-                                        </flux:menu>
-                                    </flux:dropdown>
-                                </flux:table.cell>
-                            </flux:table.row>
-                        @endforeach
-                    </flux:table.rows>
-                </flux:table>
-
+                                    <flux:table.cell>
+                                        <flux:dropdown position="bottom" align="end">
+                                            <flux:button variant="ghost" size="sm" icon="ellipsis-horizontal"
+                                                inset="top bottom" />
+                                            <flux:menu>
+                                                <flux:menu.item icon="eye" wire:click="viewProduct({{ $product->id }})">
+                                                    {{ __('View') }}
+                                                </flux:menu.item>
+                                                <flux:menu.item icon="pencil"
+                                                    href="{{ route('products.edit', ['slug' => $product->slug]) }}">
+                                                    {{ __('Edit') }}
+                                                </flux:menu.item>
+                                                <flux:menu.separator />
+                                                <flux:menu.item icon="trash" variant="danger"
+                                                    wire:click="confirmDelete({{ $product->id }})">
+                                                    {{ __('Delete') }}
+                                                </flux:menu.item>
+                                            </flux:menu>
+                                        </flux:dropdown>
+                                    </flux:table.cell>
+                                </flux:table.row>
+                            @endforeach
+                        </flux:table.rows>
+                    </flux:table>
+                </div>
             </div>
 
             {{-- Detail Modal --}}
@@ -448,6 +537,85 @@ $syncRepos = function () {
                             <flux:button variant="filled">{{ __('Cancel') }}</flux:button>
                         </flux:modal.close>
                         <flux:button variant="danger" type="submit">{{ __('Delete') }}</flux:button>
+                    </div>
+                </form>
+            </flux:modal>
+
+            {{-- Bulk Delete Confirmation Modal --}}
+            <flux:modal wire:model.self="showBulkDeleteModal" class="max-w-lg">
+                <form wire:submit="bulkDelete" class="space-y-6">
+                    <div class="flex items-start gap-4">
+                        <div
+                            class="flex size-10 shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
+                            <flux:icon name="exclamation-triangle" variant="micro" class="text-red-600" />
+                        </div>
+                        <div>
+                            <flux:heading size="lg">{{ __('Delete Selected Products') }}</flux:heading>
+                            <flux:subheading class="mt-1">
+                                {{ __('Are you sure you want to delete :count selected product(s)? This action cannot be undone.', ['count' => count($selected)]) }}
+                            </flux:subheading>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end gap-2">
+                        <flux:modal.close>
+                            <flux:button variant="filled">{{ __('Cancel') }}</flux:button>
+                        </flux:modal.close>
+                        <flux:button variant="danger" type="submit">{{ __('Delete') }}</flux:button>
+                    </div>
+                </form>
+            </flux:modal>
+
+            {{-- Delete All Confirmation Modal --}}
+            <flux:modal wire:model.self="showBulkDeleteAllModal" class="max-w-lg">
+                <form wire:submit="bulkDeleteAll" class="space-y-6">
+                    <div class="flex items-start gap-4">
+                        <div
+                            class="flex size-10 shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
+                            <flux:icon name="exclamation-triangle" variant="micro" class="text-red-600" />
+                        </div>
+                        <div>
+                            <flux:heading size="lg">{{ __('Delete All Products') }}</flux:heading>
+                            <flux:subheading class="mt-1">
+                                {{ __('Are you sure you want to delete ALL products? This action cannot be undone.') }}
+                            </flux:subheading>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end gap-2">
+                        <flux:modal.close>
+                            <flux:button variant="filled">{{ __('Cancel') }}</flux:button>
+                        </flux:modal.close>
+                        <flux:button variant="danger" type="submit">{{ __('Delete All') }}</flux:button>
+                    </div>
+                </form>
+            </flux:modal>
+
+            {{-- Bulk Toggle Status Confirmation Modal --}}
+            <flux:modal wire:model.self="showBulkToggleModal" class="max-w-lg">
+                <form wire:submit="bulkToggle" class="space-y-6">
+                    <div class="flex items-start gap-4">
+                        <div
+                            class="flex size-10 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
+                            <flux:icon name="exclamation-triangle" variant="micro" class="text-blue-600" />
+                        </div>
+                        <div>
+                            <flux:heading size="lg">
+                                {{ $bulkToggleValue ? __('Activate') : __('Deactivate') }} {{ __('Products') }}
+                            </flux:heading>
+                            <flux:subheading class="mt-1">
+                                {{ __('Are you sure you want to :action :count selected product(s)?', ['action' => $bulkToggleValue ? __('activate') : __('deactivate'), 'count' => count($selected)]) }}
+                            </flux:subheading>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end gap-2">
+                        <flux:modal.close>
+                            <flux:button variant="filled">{{ __('Cancel') }}</flux:button>
+                        </flux:modal.close>
+                        <flux:button variant="primary" type="submit">
+                            {{ $bulkToggleValue ? __('Activate') : __('Deactivate') }}
+                        </flux:button>
                     </div>
                 </form>
             </flux:modal>
