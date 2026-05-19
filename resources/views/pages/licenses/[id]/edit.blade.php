@@ -21,7 +21,8 @@ state([
     'edit_customer_phone' => '',
     'edit_customer_store' => '',
     'edit_customer_address' => '',
-    'edit_max_devices' => 1,
+    'edit_max_devices' => 5,
+    'edit_starts_at' => '',
     'edit_expires_at' => '',
     'edit_notes' => '',
 ]);
@@ -38,6 +39,7 @@ $fillEdit = function () {
     $this->edit_customer_store = $this->license->customer_store ?? '';
     $this->edit_customer_address = $this->license->customer_address ?? '';
     $this->edit_max_devices = $this->license->max_devices;
+    $this->edit_starts_at = $this->license->starts_at?->format('Y-m-d') ?? '';
     $this->edit_expires_at = $this->license->expires_at?->format('Y-m-d') ?? '';
     $this->edit_notes = $this->license->notes ?? '';
 };
@@ -45,6 +47,16 @@ $fillEdit = function () {
 $editProducts = computed(fn() => Product::where('is_active', true)->orderBy('name')->get());
 
 $editPlans = computed(fn() => SubscriptionPlan::where('product_id', $this->edit_product_id)->where('is_active', true)->get());
+
+$editSelectedPlan = computed(fn() => $this->edit_subscription_plan_id ? SubscriptionPlan::find($this->edit_subscription_plan_id) : null);
+
+$updatedEditSubscriptionPlanId = function () {
+    $plan = $this->editSelectedPlan;
+    if ($plan) {
+        $this->edit_starts_at = now()->format('Y-m-d');
+        $this->edit_expires_at = now()->addDays($plan->duration_days)->format('Y-m-d');
+    }
+};
 
 $toggleEdit = function () {
     if (!$this->editing) {
@@ -60,7 +72,8 @@ $saveEdit = function () {
         'edit_customer_phone' => 'required|string|max:255',
         'edit_customer_store' => 'required|string|max:255',
         'edit_max_devices' => 'required|integer|min:1',
-        'edit_expires_at' => 'nullable|date',
+        'edit_starts_at' => 'nullable|date',
+        'edit_expires_at' => 'nullable|date|after_or_equal:edit_starts_at',
         'edit_notes' => 'nullable|string',
     ]);
 
@@ -72,6 +85,7 @@ $saveEdit = function () {
         'customer_store' => $this->edit_customer_store,
         'customer_address' => $this->edit_customer_address,
         'max_devices' => $this->edit_max_devices,
+        'starts_at' => $this->edit_starts_at ?: null,
         'expires_at' => $this->edit_expires_at ?: null,
         'notes' => $this->edit_notes ?: null,
     ]);
@@ -166,12 +180,20 @@ $delete = function () {
                                 </flux:select>
 
                                 @if ($edit_product_id)
-                                    <flux:select wire:model="edit_subscription_plan_id" :label="__('Subscription Plan')">
+                                    <flux:select wire:model.live="edit_subscription_plan_id" :label="__('Subscription Plan')">
                                         <option value="">{{ __('No Plan (Custom)') }}</option>
                                         @foreach ($this->editPlans as $plan)
-                                            <option value="{{ $plan->id }}">{{ $plan->name }}</option>
+                                            <option value="{{ $plan->id }}">{{ $plan->name }} ({{ $plan->duration_days }} {{ __('days') }})</option>
                                         @endforeach
                                     </flux:select>
+
+                                    @if ($editSelectedPlan)
+                                        <div class="rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 p-3 text-sm text-blue-800 dark:text-blue-200">
+                                            <p class="font-medium">{{ $editSelectedPlan->name }}</p>
+                                            <p class="mt-1">{{ __('Duration') }}: <strong>{{ $editSelectedPlan->duration_days }} {{ __('days') }}</strong></p>
+                                            <p>{{ __('License will auto-expire after the plan duration. You can adjust dates manually below.') }}</p>
+                                        </div>
+                                    @endif
                                 @endif
 
                                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -184,9 +206,10 @@ $delete = function () {
                                     <flux:input wire:model="edit_customer_address" :label="__('Customer Address')" />
                                 </div>
 
-                                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
                                     <flux:input wire:model="edit_max_devices" type="number" min="1"
                                         :label="__('Max Devices')" required />
+                                    <flux:input wire:model="edit_starts_at" type="date" :label="__('Starts At')" />
                                     <flux:input wire:model="edit_expires_at" type="date" :label="__('Expires At')" />
                                 </div>
 

@@ -19,7 +19,8 @@ state([
     'customer_store' => '',
     'customer_address' => '',
     'status' => 'active',
-    'max_devices' => 1,
+    'max_devices' => 5,
+    'starts_at' => now()->format('Y-m-d'),
     'expires_at' => '',
     'notes' => '',
 ]);
@@ -27,6 +28,16 @@ state([
 $products = computed(fn() => Product::where('is_active', true)->get());
 
 $plans = computed(fn() => SubscriptionPlan::where('product_id', $this->product_id)->where('is_active', true)->get());
+
+$selectedPlan = computed(fn() => $this->subscription_plan_id ? SubscriptionPlan::find($this->subscription_plan_id) : null);
+
+$updatedSubscriptionPlanId = function () {
+    $plan = $this->selectedPlan;
+    if ($plan) {
+        $this->starts_at = now()->format('Y-m-d');
+        $this->expires_at = now()->addDays($plan->duration_days)->format('Y-m-d');
+    }
+};
 
 $save = function () {
     $this->validate([
@@ -36,7 +47,8 @@ $save = function () {
         'customer_store' => 'required|string|max:255',
         'status' => 'required',
         'max_devices' => 'required|integer|min:1',
-        'expires_at' => 'nullable|date',
+        'starts_at' => 'nullable|date',
+        'expires_at' => 'nullable|date|after_or_equal:starts_at',
         'notes' => 'nullable|string',
     ]);
 
@@ -50,6 +62,7 @@ $save = function () {
         'customer_address' => $this->customer_address,
         'status' => $this->status,
         'max_devices' => $this->max_devices,
+        'starts_at' => $this->starts_at ?: null,
         'expires_at' => $this->expires_at ?: null,
         'notes' => $this->notes ?: null,
     ]);
@@ -87,12 +100,20 @@ $save = function () {
                     </flux:select>
 
                     @if ($product_id)
-                        <flux:select wire:model="subscription_plan_id" :label="__('Subscription Plan')">
+                        <flux:select wire:model.live="subscription_plan_id" :label="__('Subscription Plan')">
                             <option value="">{{ __('No Plan (Custom)') }}</option>
                             @foreach ($this->plans as $plan)
-                                <option value="{{ $plan->id }}">{{ $plan->name }}</option>
+                                <option value="{{ $plan->id }}">{{ $plan->name }} ({{ $plan->duration_days }} {{ __('days') }})</option>
                             @endforeach
                         </flux:select>
+
+                        @if ($selectedPlan)
+                            <div class="rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 p-3 text-sm text-blue-800 dark:text-blue-200">
+                                <p class="font-medium">{{ $selectedPlan->name }}</p>
+                                <p class="mt-1">{{ __('Duration') }}: <strong>{{ $selectedPlan->duration_days }} {{ __('days') }}</strong></p>
+                                <p>{{ __('License will auto-expire after the plan duration. You can adjust dates manually below.') }}</p>
+                            </div>
+                        @endif
                     @endif
 
                     <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -115,7 +136,8 @@ $save = function () {
                         <flux:input wire:model="max_devices" type="number" min="1" :label="__('Max Devices')" required />
                     </div>
 
-                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+                        <flux:input wire:model="starts_at" type="date" :label="__('Starts At')" />
                         <flux:input wire:model="expires_at" type="date" :label="__('Expires At')" />
                         <flux:input wire:model="notes" :label="__('Notes')" />
                     </div>

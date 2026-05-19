@@ -25,4 +25,8 @@ yarn-error.log
 /test-results
 /tmp
 .env.before_lerd
-.claude/*.local.md
+# AI Assistants & Skills Configuration
+.agents/
+.ai/
+.gemini/
+.kilo/
