@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\Product;
-use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -87,7 +86,7 @@ class GitHubService
                         'per_page' => 100,
                         'page' => $page,
                     ]));
-            } catch (ConnectionException) {
+            } catch (\Throwable) {
                 Log::warning('GitHub API connection timeout', ['path' => $path, 'page' => $page]);
 
                 break;
@@ -152,8 +151,8 @@ class GitHubService
             if (! $response->successful()) {
                 return null;
             }
-        } catch (ConnectionException) {
-            Log::warning('GitHub API timeout fetching readme', ['repo' => $fullName]);
+        } catch (\Throwable) {
+            Log::warning('GitHub API error fetching readme', ['repo' => $fullName]);
 
             return null;
         }
@@ -184,8 +183,8 @@ class GitHubService
             if (! $response->successful()) {
                 return null;
             }
-        } catch (ConnectionException) {
-            Log::warning('GitHub API timeout syncing product', ['repo' => $product->github_repo_full_name]);
+        } catch (\Throwable) {
+            Log::warning('GitHub API error syncing product', ['repo' => $product->github_repo_full_name]);
 
             return null;
         }

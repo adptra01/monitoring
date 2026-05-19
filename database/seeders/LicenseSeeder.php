@@ -91,12 +91,12 @@ class LicenseSeeder extends Seeder
     private function createSubscriptionPlans(): void
     {
         $plans = [
-            ['product' => 'laravel-monitor-pro', 'name' => 'Starter', 'slug' => 'starter', 'monthly' => 9.99, 'yearly' => 99.99, 'devices' => 1],
-            ['product' => 'laravel-monitor-pro', 'name' => 'Professional', 'slug' => 'professional', 'monthly' => 29.99, 'yearly' => 299.99, 'devices' => 5],
-            ['product' => 'laravel-monitor-pro', 'name' => 'Enterprise', 'slug' => 'enterprise', 'monthly' => 99.99, 'yearly' => 999.99, 'devices' => 25],
-            ['product' => 'analytics-dashboard', 'name' => 'Basic', 'slug' => 'basic', 'monthly' => 14.99, 'yearly' => 149.99, 'devices' => 2],
-            ['product' => 'analytics-dashboard', 'name' => 'Premium', 'slug' => 'premium', 'monthly' => 49.99, 'yearly' => 499.99, 'devices' => 10],
-            ['product' => 'api-gateway', 'name' => 'Team', 'slug' => 'team', 'monthly' => 79.99, 'yearly' => 799.99, 'devices' => 15],
+            ['product' => 'laravel-monitor-pro', 'name' => 'Starter', 'slug' => 'starter', 'days' => 30],
+            ['product' => 'laravel-monitor-pro', 'name' => 'Professional', 'slug' => 'professional', 'days' => 90],
+            ['product' => 'laravel-monitor-pro', 'name' => 'Enterprise', 'slug' => 'enterprise', 'days' => 365],
+            ['product' => 'analytics-dashboard', 'name' => 'Basic', 'slug' => 'basic', 'days' => 30],
+            ['product' => 'analytics-dashboard', 'name' => 'Premium', 'slug' => 'premium', 'days' => 90],
+            ['product' => 'api-gateway', 'name' => 'Team', 'slug' => 'team', 'days' => 365],
         ];
 
         foreach ($plans as $planData) {
@@ -112,12 +112,8 @@ class LicenseSeeder extends Seeder
                     'name' => $planData['name'],
                     'slug' => $planData['slug'],
                     'description' => $planData['name'].' plan for '.$product->name,
-                    'monthly_price' => $planData['monthly'],
-                    'yearly_price' => $planData['yearly'],
-                    'max_devices' => $planData['devices'],
-                    'features' => ['Fitur 1', 'Fitur 2', 'Fitur 3'],
+                    'duration_days' => $planData['days'],
                     'is_active' => true,
-                    'is_default' => $planData['slug'] === 'professional' || $planData['slug'] === 'basic',
                 ]
             );
         }
@@ -147,8 +143,8 @@ class LicenseSeeder extends Seeder
                         'key' => License::generateKey(),
                         'status' => $statuses[array_rand($statuses)],
                         'mode' => $modes[array_rand($modes)],
-                        'max_devices' => $plan->max_devices,
-                        'expires_at' => now()->addMonths(rand(1, 12)),
+                        'max_devices' => 5,
+                        'expires_at' => now()->addDays($plan->duration_days ?? 30),
                         'metadata' => [
                             'registered_at' => now()->subDays(rand(1, 90))->toIso8601String(),
                         ],

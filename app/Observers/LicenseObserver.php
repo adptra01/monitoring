@@ -33,4 +33,16 @@ class LicenseObserver
             }
         }
     }
+
+    public function deleted(License $license): void
+    {
+        try {
+            dispatch(new SyncLicenseToGithubJob($license));
+        } catch (\Throwable $e) {
+            Log::warning('Failed to dispatch GitHub sync job for deleted license', [
+                'license' => $license->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
 }

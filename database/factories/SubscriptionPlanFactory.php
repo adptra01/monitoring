@@ -20,19 +20,8 @@ class SubscriptionPlanFactory extends Factory
             'name' => ucwords($name).' Plan',
             'slug' => Str::slug($name.'-plan'),
             'description' => fake()->sentence(),
-            'monthly_price' => fake()->randomFloat(2, 9.99, 99.99),
-            'yearly_price' => fake()->randomFloat(2, 99.99, 999.99),
-            'stripe_price_id_monthly' => 'price_'.Str::random(24),
-            'stripe_price_id_yearly' => 'price_'.Str::random(24),
-            'max_devices' => fake()->numberBetween(1, 10),
-            'features' => ['feature1', 'feature2', 'feature3'],
+            'duration_days' => fake()->numberBetween(30, 365),
             'is_active' => true,
-            'is_default' => false,
         ];
-    }
-
-    public function default(): static
-    {
-        return $this->state(fn (array $attributes) => ['is_default' => true]);
     }
 }
