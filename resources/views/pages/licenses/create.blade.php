@@ -27,7 +27,7 @@ state([
 
 $products = computed(fn() => Product::where('is_active', true)->get());
 
-$plans = computed(fn() => SubscriptionPlan::where('product_id', $this->product_id)->where('is_active', true)->get());
+$plans = computed(fn() => SubscriptionPlan::where('is_active', true)->get());
 
 $selectedPlan = computed(fn() => $this->subscription_plan_id ? SubscriptionPlan::find($this->subscription_plan_id) : null);
 
@@ -99,21 +99,19 @@ $save = function () {
                         @endforeach
                     </flux:select>
 
-                    @if ($product_id)
-                        <flux:select wire:model.live="subscription_plan_id" :label="__('Subscription Plan')">
-                            <option value="">{{ __('No Plan (Custom)') }}</option>
-                            @foreach ($this->plans as $plan)
-                                <option value="{{ $plan->id }}">{{ $plan->name }} ({{ $plan->duration_days }} {{ __('days') }})</option>
-                            @endforeach
-                        </flux:select>
+                    <flux:select wire:model.live="subscription_plan_id" :label="__('Subscription Plan')">
+                        <option value="">{{ __('No Plan (Custom)') }}</option>
+                        @foreach ($this->plans as $plan)
+                            <option value="{{ $plan->id }}">{{ $plan->name }} ({{ $plan->duration_days }} {{ __('days') }})</option>
+                        @endforeach
+                    </flux:select>
 
-                        @if ($selectedPlan)
-                            <div class="rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 p-3 text-sm text-blue-800 dark:text-blue-200">
-                                <p class="font-medium">{{ $selectedPlan->name }}</p>
-                                <p class="mt-1">{{ __('Duration') }}: <strong>{{ $selectedPlan->duration_days }} {{ __('days') }}</strong></p>
-                                <p>{{ __('License will auto-expire after the plan duration. You can adjust dates manually below.') }}</p>
-                            </div>
-                        @endif
+                    @if ($selectedPlan)
+                        <div class="rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 p-3 text-sm text-blue-800 dark:text-blue-200">
+                            <p class="font-medium">{{ $selectedPlan->name }}</p>
+                            <p class="mt-1">{{ __('Duration') }}: <strong>{{ $selectedPlan->duration_days }} {{ __('days') }}</strong></p>
+                            <p>{{ __('License will auto-expire after the plan duration. You can adjust dates manually below.') }}</p>
+                        </div>
                     @endif
 
                     <div class="grid grid-cols-1 gap-6 md:grid-cols-2">

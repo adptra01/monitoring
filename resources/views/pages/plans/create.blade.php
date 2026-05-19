@@ -1,18 +1,16 @@
 <?php
 
-use App\Models\Product;
 use App\Models\SubscriptionPlan;
 use Illuminate\Support\Str;
 use Flux\Flux;
 
 use function Laravel\Folio\{name, middleware};
-use function Livewire\Volt\{state, mount, computed};
+use function Livewire\Volt\state;
 
 name('plans.create');
 middleware('check.admin');
 
 state([
-    'product_id' => '',
     'name' => '',
     'slug' => '',
     'description' => '',
@@ -20,15 +18,12 @@ state([
     'is_active' => true,
 ]);
 
-$products = computed(fn() => Product::where('is_active', true)->get());
-
 $updatedName = function () {
     $this->slug = Str::slug($this->name);
 };
 
 $save = function () {
     $this->validate([
-        'product_id' => 'required|exists:products,id',
         'name' => 'required|string|max:255',
         'slug' => 'required|string|max:255|unique:subscription_plans,slug',
         'description' => 'nullable|string',
@@ -37,7 +32,6 @@ $save = function () {
     ]);
 
     SubscriptionPlan::create([
-        'product_id' => $this->product_id,
         'name' => $this->name,
         'slug' => $this->slug,
         'description' => $this->description,
@@ -61,24 +55,16 @@ $save = function () {
                 <flux:breadcrumbs.item>{{ __('Create') }}</flux:breadcrumbs.item>
             </flux:breadcrumbs>
 
-            {{-- Header --}}
             <div class="flex items-center justify-between">
                 <div>
                     <flux:heading size="xl">{{ __('Create Subscription Plan') }}</flux:heading>
-                    <flux:subheading>{{ __('Add a new pricing plan for your products') }}</flux:subheading>
+                    <flux:subheading>{{ __('Add a new pricing plan') }}</flux:subheading>
                 </div>
             </div>
 
             <div class="w-full rounded-xl border border-neutral-200 dark:border-neutral-700 p-6 bg-white dark:bg-zinc-800">
                 <form wire:submit="save" class="space-y-6">
-                    <flux:select wire:model="product_id" :label="__('Product')" required autofocus>
-                        <option value="">{{ __('Select Product') }}</option>
-                        @foreach ($this->products as $product)
-                            <option value="{{ $product->id }}">{{ $product->name }}</option>
-                        @endforeach
-                    </flux:select>
-
-                    <flux:input wire:model.live.debounce.500ms="name" :label="__('Plan Name')" required />
+                    <flux:input wire:model.live.debounce.500ms="name" :label="__('Plan Name')" required autofocus />
 
                     <flux:input wire:model="slug" :label="__('Slug')" required />
 

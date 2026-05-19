@@ -14,15 +14,13 @@ return new class extends Migration
             $table->string('slug')->unique();
             $table->text('description')->nullable();
             $table->boolean('is_active')->default(true);
+            // GitHub fields retained — used by products edit page for repo sync feature
             $table->unsignedBigInteger('github_repo_id')->nullable()->unique();
             $table->string('github_repo_full_name')->nullable();
             $table->string('github_repo_url')->nullable();
             $table->text('github_repo_description')->nullable();
             $table->string('github_default_branch')->nullable()->default('main');
             $table->timestamps();
-
-            $table->index('slug');
-            $table->index('is_active');
         });
     }
 

@@ -136,82 +136,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Activation Requests Tour
-    |--------------------------------------------------------------------------
-    |
-    | Contextual — shown automatically on first visit.
-    | Explains how to approve or reject manual activation requests.
-    |
-    */
-    'activation-requests' => [
-        'id' => 'activation-requests',
-        'type' => 'contextual',
-        'label' => 'Permintaan Aktivasi',
-        'description' => 'Setujui atau tolak permintaan aktivasi lisensi',
-        'icon' => 'check-badge',
-        'routes' => ['activation-requests.index'],
-        'steps' => [
-            [
-                'element' => '[data-tour="activation-header"]',
-                'title' => 'Permintaan Aktivasi',
-                'description' => 'Tinjau permintaan aktivasi yang masuk. Filter berdasarkan status — Tertunda, Disetujui, atau Ditolak — menggunakan dropdown di sebelah kanan.',
-                'position' => 'bottom',
-            ],
-            [
-                'element' => '[data-tour="activation-table"]',
-                'title' => 'Daftar Permintaan',
-                'description' => 'Setiap baris menampilkan kunci lisensi, perangkat yang meminta, lencana status, dan kode aktivasi. Permintaan tertunda dapat disetujui atau ditolak langsung.',
-                'position' => 'top',
-            ],
-            [
-                'element' => '[data-tour="activation-actions"]',
-                'title' => 'Setujui / Tolak',
-                'description' => 'Klik centang untuk menyetujui atau X untuk menolak permintaan tertunda. Setelah disetujui, perangkat dapat mengaktifkan lisensi.',
-                'position' => 'left',
-            ],
-        ],
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Device Management Tour
-    |--------------------------------------------------------------------------
-    |
-    | Contextual — shown automatically on first visit to Devices page.
-    | Explains device monitoring and fingerprinting.
-    |
-    */
-    'device-management' => [
-        'id' => 'device-management',
-        'type' => 'contextual',
-        'label' => 'Manajemen Perangkat',
-        'description' => 'Pantau perangkat yang diaktifkan dan sidik jari perangkat keras',
-        'icon' => 'computer-desktop',
-        'routes' => ['devices.index'],
-        'steps' => [
-            [
-                'element' => '[data-tour="devices-header"]',
-                'title' => 'Ikhtisar Perangkat',
-                'description' => 'Lihat semua perangkat yang telah diaktifkan di seluruh lisensi Anda. Setiap perangkat terikat dengan sidik jari perangkat keras yang unik.',
-                'position' => 'bottom',
-            ],
-            [
-                'element' => '[data-tour="devices-search"]',
-                'title' => 'Cari Perangkat',
-                'description' => 'Cari berdasarkan nama perangkat atau sidik jari untuk menemukan perangkat tertentu dengan cepat.',
-                'position' => 'bottom',
-            ],
-            [
-                'element' => '[data-tour="devices-table"]',
-                'title' => 'Daftar Perangkat',
-                'description' => 'Setiap baris menampilkan ID perangkat, kunci lisensi terkait, nama perangkat, platform, dan stempel waktu terakhir terlihat.',
-                'position' => 'top',
-            ],
-        ],
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
     | User Management Tour
     |--------------------------------------------------------------------------
     |
@@ -341,86 +265,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Audit Logs Tour
-    |--------------------------------------------------------------------------
-    |
-    | Contextual — shown automatically on first visit to Audit Logs page.
-    |
-    */
-    'audit-logs' => [
-        'id' => 'audit-logs',
-        'type' => 'contextual',
-        'label' => 'Log Audit',
-        'description' => 'Lacak aktivitas sistem dan perubahan sumber daya',
-        'icon' => 'clipboard-document-list',
-        'routes' => ['audit-logs.index'],
-        'steps' => [
-            [
-                'element' => '[data-tour="audit-header"]',
-                'title' => 'Jejak Audit',
-                'description' => 'Setiap tindakan dalam sistem dicatat di sini — pembuatan lisensi, persetujuan aktivasi, penangguhan, dan lainnya.',
-                'position' => 'bottom',
-            ],
-            [
-                'element' => '[data-tour="audit-filters"]',
-                'title' => 'Cari & Filter',
-                'description' => 'Cari berdasarkan alamat IP atau nama entitas, dan filter berdasarkan jenis tindakan untuk menemukan entri log tertentu.',
-                'position' => 'bottom',
-            ],
-            [
-                'element' => '[data-tour="audit-table"]',
-                'title' => 'Entri Log',
-                'description' => 'Setiap entri menampilkan tindakan yang dilakukan, entitas yang terpengaruh, pengguna yang melakukannya, alamat IP, dan stempel waktu.',
-                'position' => 'top',
-            ],
-        ],
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Webhook Configuration Tour
-    |--------------------------------------------------------------------------
-    |
-    | Feature tour — accessible from the Help sidebar menu.
-    |
-    */
-    'webhook-config' => [
-        'id' => 'webhook-config',
-        'type' => 'feature',
-        'label' => 'Konfigurasi Webhook',
-        'description' => 'Konfigurasikan endpoint webhook untuk notifikasi peristiwa',
-        'icon' => 'webhook',
-        'routes' => ['webhooks.index', 'webhooks.create', 'webhooks.*'],
-        'steps' => [
-            [
-                'element' => '[data-tour="webhooks-header"]',
-                'title' => 'Endpoint Webhook',
-                'description' => 'Kelola endpoint yang menerima panggilan balik HTTP saat peristiwa lisensi terjadi — seperti lisensi dibuat, dicabut, atau perangkat terdaftar.',
-                'position' => 'bottom',
-            ],
-            [
-                'element' => '[data-tour="webhooks-create"]',
-                'title' => 'Tambah Webhook',
-                'description' => 'Daftarkan URL endpoint baru dan pilih peristiwa mana yang ingin dilanggani. Setiap endpoint mendapatkan rahasia penandatanganan yang unik.',
-                'position' => 'left',
-            ],
-            [
-                'element' => '[data-tour="webhooks-table"]',
-                'title' => 'Daftar Endpoint',
-                'description' => 'Setiap endpoint menampilkan URL, peristiwa yang dilanggani sebagai lencana, status aktif, dan tanggal pembuatan.',
-                'position' => 'top',
-            ],
-            [
-                'element' => '[data-tour="webhooks-actions"]',
-                'title' => 'Aksi Endpoint',
-                'description' => 'Edit pengaturan endpoint, alihkan status aktif, atau hapus endpoint.',
-                'position' => 'left',
-            ],
-        ],
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
     | Subscription Plans Tour
     |--------------------------------------------------------------------------
     |
@@ -431,26 +275,26 @@ return [
         'id' => 'subscription-plans',
         'type' => 'contextual',
         'label' => 'Paket Langganan',
-        'description' => 'Kelola paket harga untuk produk Anda',
+        'description' => 'Kelola paket durasi lisensi',
         'icon' => 'currency-dollar',
         'routes' => ['plans.index', 'plans.create', 'plans.*'],
         'steps' => [
             [
                 'element' => '[data-tour="plans-header"]',
                 'title' => 'Paket Langganan',
-                'description' => 'Tentukan tingkat harga untuk produk Anda. Setiap paket menentukan harga bulanan dan tahunan, plus jumlah maksimum perangkat yang diizinkan.',
+                'description' => 'Tentukan paket durasi untuk lisensi Anda. Setiap paket menentukan nama, deskripsi, dan masa berlaku lisensi dalam hari.',
                 'position' => 'bottom',
             ],
             [
                 'element' => '[data-tour="plans-create"]',
                 'title' => 'Tambah Paket',
-                'description' => 'Buat paket langganan baru yang terkait dengan produk. Atur harga, interval penagihan, dan batas perangkat.',
+                'description' => 'Buat paket baru dengan nama, slug, deskripsi, dan durasi dalam hari.',
                 'position' => 'left',
             ],
             [
                 'element' => '[data-tour="plans-table"]',
                 'title' => 'Daftar Paket',
-                'description' => 'Setiap paket menampilkan produk induk, nama paket, harga bulanan/tahunan, dan perangkat maks. Gunakan aksi untuk mengedit atau menghapus.',
+                'description' => 'Setiap paket menampilkan nama, durasi hari, dan status aktif. Gunakan aksi untuk mengedit atau menghapus.',
                 'position' => 'top',
             ],
             [

@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Models\Product;
 use App\Models\SubscriptionPlan;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
@@ -16,7 +15,6 @@ class SubscriptionPlanFactory extends Factory
         $name = fake()->words(2, true);
 
         return [
-            'product_id' => Product::factory(),
             'name' => ucwords($name).' Plan',
             'slug' => Str::slug($name.'-plan'),
             'description' => fake()->sentence(),

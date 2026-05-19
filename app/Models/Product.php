@@ -33,9 +33,4 @@ class Product extends Model
     {
         return $this->hasMany(License::class);
     }
-
-    public function subscriptionPlans(): HasMany
-    {
-        return $this->hasMany(SubscriptionPlan::class);
-    }
 }

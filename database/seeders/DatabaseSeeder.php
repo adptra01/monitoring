@@ -13,8 +13,8 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             ProductSeeder::class,
             SubscriptionPlanSeeder::class,
-            // LicenseSeeder::class,
-            // DeviceSeeder::class,
+            LicenseSeeder::class,
+            DeviceSeeder::class,
         ]);
     }
 }

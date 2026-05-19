@@ -10,23 +10,17 @@ return new class extends Migration
     {
         Schema::create('subscription_plans', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('product_id')->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->string('slug')->unique();
             $table->text('description')->nullable();
-            $table->decimal('monthly_price', 10, 2)->nullable();
-            $table->decimal('yearly_price', 10, 2)->nullable();
-            $table->string('stripe_price_id_monthly')->nullable();
-            $table->string('stripe_price_id_yearly')->nullable();
-            $table->unsignedInteger('max_devices')->default(1);
-            $table->json('features')->nullable();
-            $table->boolean('is_active')->default(true);
-            $table->boolean('is_default')->default(false);
-            $table->timestamps();
 
-            $table->index('product_id');
-            $table->index('slug');
-            $table->index('is_active');
+            // Simplified: removed product_id FK, pricing fields (monthly_price, yearly_price,
+            // stripe_price_id_*), max_devices, features, is_default — these were unused in the
+            // current UI. Duration drives license expiry, set per-plan.
+            $table->unsignedInteger('duration_days')->default(30);
+            $table->boolean('is_active')->default(true);
+
+            $table->timestamps();
         });
     }
 

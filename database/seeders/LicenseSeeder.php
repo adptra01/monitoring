@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Enums\LicenseStatus;
 use App\Models\License;
 use App\Models\Product;
+use App\Models\SubscriptionPlan;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -14,12 +15,13 @@ class LicenseSeeder extends Seeder
     {
         $users = User::role('user')->get();
         $products = Product::all();
+        $plans = SubscriptionPlan::all();
 
         $statuses = [LicenseStatus::Active, LicenseStatus::Active, LicenseStatus::Active, LicenseStatus::Suspended, LicenseStatus::Expired];
 
         foreach ($users as $user) {
             foreach ($products->random(rand(1, 2)) as $product) {
-                $plan = $product->subscriptionPlans()->inRandomOrder()->first();
+                $plan = $plans->random();
                 if (! $plan) {
                     continue;
                 }
@@ -44,16 +46,15 @@ class LicenseSeeder extends Seeder
         }
 
         $admin = User::role('admin')->first();
-        $proProduct = Product::where('slug', 'laravel-monitor-pro')->first();
-        $proPlan = $proProduct?->subscriptionPlans()->where('slug', 'enterprise')->first();
+        $enterprisePlan = SubscriptionPlan::where('slug', 'enterprise')->first();
 
-        if ($admin && $proProduct && $proPlan) {
+        if ($admin && $enterprisePlan) {
             License::updateOrCreate(
                 ['key' => License::generateKey()],
                 [
-                    'product_id' => $proProduct->id,
+                    'product_id' => Product::first()->id,
                     'user_id' => $admin->id,
-                    'subscription_plan_id' => $proPlan->id,
+                    'subscription_plan_id' => $enterprisePlan->id,
                     'key' => License::generateKey(),
                     'status' => LicenseStatus::Active,
                     'max_devices' => 25,

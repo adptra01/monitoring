@@ -16,9 +16,6 @@ class RolePermissionSeeder extends Seeder
         $permissions = [
             'view licenses', 'create licenses', 'edit licenses', 'delete licenses',
             'view products', 'create products', 'edit products', 'delete products',
-            'view devices', 'view subscriptions',
-            'view activation requests', 'approve activation requests',
-            'view audit logs',
             'view users', 'manage users', 'manage roles',
             'view reports', 'manage settings',
         ];
@@ -37,17 +34,12 @@ class RolePermissionSeeder extends Seeder
         $managerRole->syncPermissions([
             'view licenses', 'create licenses', 'edit licenses',
             'view products', 'create products', 'edit products',
-            'view devices', 'view subscriptions',
-            'view activation requests', 'approve activation requests',
             'view users', 'view reports',
         ]);
 
         $supportRole = Role::updateOrCreate(['name' => 'support'], ['guard_name' => 'web']);
         $supportRole->syncPermissions([
             'view licenses', 'edit licenses',
-            'view devices',
-            'view activation requests', 'approve activation requests',
-            'view audit logs',
         ]);
 
         $userRole = Role::updateOrCreate(['name' => 'user'], ['guard_name' => 'web']);

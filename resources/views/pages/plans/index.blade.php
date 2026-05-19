@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\SubscriptionPlan;
-use App\Models\Product;
 use Flux\Flux;
 use Livewire\WithPagination;
 
@@ -20,8 +19,7 @@ state([
 ]);
 
 $plans = computed(function () {
-    return SubscriptionPlan::with('product')
-        ->where('name', 'like', '%' . $this->search . '%')
+    return SubscriptionPlan::where('name', 'like', '%' . $this->search . '%')
         ->latest()
         ->paginate(15);
 });
@@ -50,18 +48,16 @@ $delete = function () {
             <flux:breadcrumbs.item>{{ __('Subscription Plans') }}</flux:breadcrumbs.item>
         </flux:breadcrumbs>
 
-        {{-- Header --}}
         <div data-tour="plans-header" class="flex items-center justify-between">
             <div>
                 <flux:heading size="xl">{{ __('Subscription Plans') }}</flux:heading>
-                <flux:subheading>{{ __('Manage pricing plans for your products') }}</flux:subheading>
+                <flux:subheading>{{ __('Manage pricing plans') }}</flux:subheading>
             </div>
             <flux:button data-tour="plans-create" variant="primary" icon="plus" href="{{ route('plans.create') }}">
                 {{ __('Add Plan') }}
             </flux:button>
         </div>
 
-        {{-- Search --}}
         <flux:input size="md" wire:model.live="search" type="search" placeholder="{{ __('Search by plan name...') }}" />
 
         <div
@@ -69,7 +65,6 @@ $delete = function () {
             class="relative h-full flex-1 overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
             <flux:table :paginate="$this->plans">
                 <flux:table.columns>
-                    <flux:table.column>{{ __('Product') }}</flux:table.column>
                     <flux:table.column>{{ __('Plan Name') }}</flux:table.column>
                     <flux:table.column>{{ __('Duration') }}</flux:table.column>
                     <flux:table.column>{{ __('Active') }}</flux:table.column>
@@ -79,11 +74,6 @@ $delete = function () {
                 <flux:table.rows>
                     @foreach ($this->plans as $plan)
                         <flux:table.row :key="$plan->id">
-                            <flux:table.cell>
-                                <flux:badge size="sm" inset="top bottom">
-                                    {{ $plan->product->name }}
-                                </flux:badge>
-                            </flux:table.cell>
                             <flux:table.cell class="font-medium">{{ $plan->name }}</flux:table.cell>
                             <flux:table.cell>{{ $plan->duration_days }} {{ __('days') }}</flux:table.cell>
                             <flux:table.cell>
@@ -105,7 +95,6 @@ $delete = function () {
             </flux:table>
         </div>
 
-        {{-- Delete Confirmation Modal --}}
         <flux:modal wire:model.self="showDeleteModal" class="max-w-lg">
             <form wire:submit="delete" class="space-y-6">
                 <div class="flex items-start gap-4">
